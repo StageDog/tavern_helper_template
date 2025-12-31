@@ -45,28 +45,6 @@
       </div>
     </div>
 
-    <div class="nav-bar">
-      <div class="nav-item" @click="$router.push('/home')">
-        <i class="fas fa-home"></i>
-        <span>首页</span>
-      </div>
-      <div class="nav-item active" @click="$router.push('/discover')">
-        <i class="fas fa-compass"></i>
-        <span>发现</span>
-      </div>
-      <div class="nav-item" @click="$router.push('/service')">
-        <i class="fas fa-concierge-bell"></i>
-        <span>服务</span>
-      </div>
-      <div class="nav-item" @click="$router.push('/history')">
-        <i class="fas fa-history"></i>
-        <span>历史</span>
-      </div>
-      <div class="nav-item" @click="$router.push('/me')">
-        <i class="fas fa-user"></i>
-        <span>我的</span>
-      </div>
-    </div>
   </div>
   <input ref="fileInput" class="hidden-input" type="file" accept=".json,application/json" @change="handleFileChange" />
 </template>
@@ -145,10 +123,12 @@ function handleFileChange(event: Event) {
   display: flex;
   flex-direction: column;
   background-color: var(--bg-primary);
-  position: absolute;
-  top: 0;
-  left: 0;
+  /* position: absolute; */
+  /* top: 0; */
+  /* left: 0; */
   transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  display: flex;
+  flex-direction: column;
 }
 
 .app-header {

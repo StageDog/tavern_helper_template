@@ -7,9 +7,11 @@
     <div class="absolute inset-0 -z-20 bg-gradient-to-br from-slate-950 via-slate-900 to-black"></div>
     <div class="absolute inset-0 -z-10 bg-gradient-to-br from-blue-600/5 via-purple-600/5 to-orange-600/5"></div>
     <div class="absolute top-0 left-1/4 -z-10 h-96 w-96 animate-pulse rounded-full bg-blue-500/10 blur-3xl"></div>
-    <div class="absolute right-1/4 bottom-0 -z-10 h-96 w-96 animate-pulse rounded-full bg-purple-500/10 blur-3xl delay-1000"></div>
+    <div
+      class="absolute right-1/4 bottom-0 -z-10 h-96 w-96 animate-pulse rounded-full bg-purple-500/10 blur-3xl delay-1000"
+    ></div>
 
-    <div class="flex h-full w-full min-h-0">
+    <div class="flex h-full min-h-0 w-full">
       <!-- Sidebar -->
       <Sidebar />
 
@@ -18,8 +20,8 @@
         <ErrorBoundary>
           <div class="flex min-h-0 flex-1 flex-col">
             <RouterView v-slot="{ Component }">
-              <transition name="fade" mode="out-in">
-                <component :is="Component" class="min-h-0 flex-1" />
+              <transition name="fade">
+                <component :is="Component" v-if="Component" class="min-h-0 flex-1" />
               </transition>
             </RouterView>
           </div>
@@ -30,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, onErrorCaptured } from 'vue';
+import { onErrorCaptured, onMounted, onUnmounted, ref } from 'vue';
 import ErrorBoundary from './components/ErrorBoundary.vue';
 import Sidebar from './components/Sidebar.vue';
 import { enableIframeFullHeight } from './utils';
@@ -96,7 +98,8 @@ onErrorCaptured((err: Error) => {
 
 <style lang="scss">
 /* 让应用高度跟随宿主 iframe；滚动交给子容器 */
-html, body {
+html,
+body {
   height: 100%;
   width: 100%;
   margin: 0;

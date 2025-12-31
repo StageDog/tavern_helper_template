@@ -1,0 +1,121 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mythos AI RPG</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Theme Variables Definition */
+    :root {
+      /* Default Dark Theme */
+      --bg-main: #020617; /* slate-950 */
+      --bg-panel: #0f172a; /* slate-900 */
+      --bg-element: #1e293b; /* slate-800 */
+      --border-color: #334155; /* slate-700 */
+      --text-main: #e2e8f0; /* slate-200 */
+      --text-muted: #94a3b8; /* slate-400 */
+      --accent-primary: #f59e0b; /* amber-500 */
+      --accent-secondary: #b45309; /* amber-700 */
+      --accent-glow: rgba(245,158,11,0.5);
+      --scrollbar-track: #1e293b;
+      --scrollbar-thumb: #78350f;
+      --scrollbar-thumb-hover: #92400e;
+    }
+
+    body.theme-light {
+      --bg-main: #f0fdf4; /* green-50ish mixed */
+      --bg-panel: #ffffff;
+      --bg-element: #e2e8f0; /* slate-200 */
+      --border-color: #cbd5e1; /* slate-300 */
+      --text-main: #1e293b; /* slate-800 */
+      --text-muted: #64748b; /* slate-500 */
+      --accent-primary: #059669; /* emerald-600 */
+      --accent-secondary: #047857; /* emerald-700 */
+      --accent-glow: rgba(5,150,105,0.3);
+      --scrollbar-track: #e2e8f0;
+      --scrollbar-thumb: #059669;
+      --scrollbar-thumb-hover: #047857;
+    }
+
+    body.theme-colorful {
+      --bg-main: #2e1065; /* violet-950 */
+      --bg-panel: #4c1d95; /* violet-900 */
+      --bg-element: #5b21b6; /* violet-800 */
+      --border-color: #7c3aed; /* violet-600 */
+      --text-main: #e9d5ff; /* violet-200 */
+      --text-muted: #c4b5fd; /* violet-300 */
+      --accent-primary: #f472b6; /* pink-400 */
+      --accent-secondary: #db2777; /* pink-600 */
+      --accent-glow: rgba(244,114,182,0.6);
+      --scrollbar-track: #4c1d95;
+      --scrollbar-thumb: #f472b6;
+      --scrollbar-thumb-hover: #db2777;
+    }
+
+    body.theme-meituan {
+      --bg-main: #F4F4F4; /* Light gray background */
+      --bg-panel: #FFFFFF; /* White panels */
+      --bg-element: #FFFBE0; /* Very light yellow for elements */
+      --border-color: #FFD161; /* Soft Meituan border */
+      --text-main: #222222; /* Strong black text */
+      --text-muted: #666666; /* Grey text */
+      --accent-primary: #FFC300; /* Meituan Yellow Main */
+      --accent-secondary: #FFB000; /* Darker Yellow */
+      --accent-glow: rgba(255, 195, 0, 0.4);
+      --scrollbar-track: #FFFBE0;
+      --scrollbar-thumb: #FFC300;
+      --scrollbar-thumb-hover: #FFB000;
+    }
+
+    /* Custom Scrollbar for RPG feel */
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--scrollbar-track); 
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--scrollbar-thumb); 
+      border-radius: 5px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--scrollbar-thumb-hover); 
+    }
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@400;700&display=swap');
+    
+    .font-rpg-header {
+      font-family: 'Cinzel', serif;
+    }
+    .font-rpg-body {
+      font-family: 'Lato', sans-serif;
+    }
+    .text-glow {
+      text-shadow: 0 0 5px var(--accent-glow);
+    }
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "rxjs": "https://esm.sh/rxjs@^7.8.2?conditions=es2015",
+    "rxjs/operators": "https://esm.sh/rxjs@^7.8.2/operators?conditions=es2015",
+    "rxjs/ajax": "https://esm.sh/rxjs@^7.8.2/ajax?conditions=es2015",
+    "rxjs/webSocket": "https://esm.sh/rxjs@^7.8.2/webSocket?conditions=es2015",
+    "rxjs/testing": "https://esm.sh/rxjs@^7.8.2/testing?conditions=es2015",
+    "rxjs/fetch": "https://esm.sh/rxjs@^7.8.2/fetch?conditions=es2015",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0?external=rxjs",
+    "@angular/compiler": "https://esm.sh/@angular/compiler@^21.0.6?external=rxjs",
+    "@angular/core": "https://esm.sh/@angular/core@^21.0.6?external=rxjs",
+    "@angular/common": "https://esm.sh/@angular/common@^21.0.6?external=rxjs",
+    "@angular/forms": "https://esm.sh/@angular/forms@^21.0.6?external=rxjs",
+    "@angular/platform-browser": "https://esm.sh/@angular/platform-browser@^21.0.6?external=rxjs"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="bg-[var(--bg-main)] text-[var(--text-main)] overflow-hidden h-screen w-screen selection:bg-[var(--accent-secondary)] selection:text-white transition-colors duration-500">
+  <app-root></app-root>
+</body>
+</html>

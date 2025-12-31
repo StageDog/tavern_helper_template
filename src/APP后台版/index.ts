@@ -6,6 +6,23 @@ import app from './app.vue';
 // import '@fortawesome/fontawesome-free/css/all.min.css';
 // import 'toastr/build/toastr.min.css';
 
+// 给外部脚本的“就绪探针”一个确定初值（避免出现 APP_READY undefined）
+try {
+  (window as any).APP_READY = false;
+} catch {
+  // ignore
+}
+try {
+  (window.parent as any).APP_READY = false;
+} catch {
+  // ignore
+}
+try {
+  (window.top as any).APP_READY = false;
+} catch {
+  // ignore
+}
+
 // 确保全局可用 jQuery（部分代码/依赖使用全局 $）
 (window as any).$ = $;
 (window as any).jQuery = $;
@@ -116,7 +133,7 @@ const initMemoryMonitoring = () => {
 const preloadCriticalRoutes = async () => {
   try {
     // 预加载用户最可能访问的页面
-    const criticalRoutes = ['/service', '/history'];
+    const criticalRoutes = ['/service', '/play'];
     await Promise.all(
       criticalRoutes.map(path => {
         const route = router.resolve(path);
@@ -188,10 +205,18 @@ const initApp = async () => {
     // 等待所有初始化任务完成
     const [mvuReady] = await initTasks;
 
-    // 启动Web Vitals性能监控
-    initWebVitalsMonitoring();
-    // 启动内存使用监控
-    initMemoryMonitoring();
+    // 性能监控默认关闭（多 iframe 会显著增大开销）；需要时手动开启：localStorage.setItem('app-perf-monitor','1')
+    const enablePerfMonitoring = (() => {
+      try {
+        return localStorage.getItem('app-perf-monitor') === '1';
+      } catch {
+        return false;
+      }
+    })();
+    if (enablePerfMonitoring) {
+      initWebVitalsMonitoring();
+      initMemoryMonitoring();
+    }
 
     // 记录初始化耗时
     const initTime = performance.now() - perfStartTime;
@@ -206,6 +231,31 @@ const initApp = async () => {
 
     // 挂载Vue应用
     vueApp.mount('#app');
+
+    // 标记 APP 就绪（给外部脚本/插件识别用）
+    try {
+      (window as any).APP_READY = true;
+    } catch {
+      // ignore
+    }
+    try {
+      (window.parent as any).APP_READY = true;
+    } catch {
+      // ignore
+    }
+    try {
+      (window.top as any).APP_READY = true;
+    } catch {
+      // ignore
+    }
+    try {
+      if (typeof (window as any).eventEmit === 'function' && typeof (window as any).tavern_events !== 'undefined') {
+        // 通知酒馆侧“APP_READY”事件（若可用）
+        (window as any).eventEmit((window as any).tavern_events.APP_READY);
+      }
+    } catch {
+      // ignore
+    }
 
     // 记录挂载耗时
     const mountTime = performance.now() - perfStartTime;
@@ -232,9 +282,27 @@ $(window).on('pagehide', () => {
 // 全局错误处理 - 捕获未处理的Promise错误
 window.addEventListener('unhandledrejection', event => {
   sysLogger.error('未处理的Promise错误:', event.reason);
+  try {
+    window.dispatchEvent(
+      new CustomEvent('app-fatal-error', {
+        detail: { type: 'unhandledrejection', reason: event.reason },
+      }),
+    );
+  } catch {
+    // ignore
+  }
 });
 
 // 全局错误处理 - 捕获JavaScript运行时错误
 window.addEventListener('error', event => {
   sysLogger.error('JavaScript运行时错误:', event.error);
+  try {
+    window.dispatchEvent(
+      new CustomEvent('app-fatal-error', {
+        detail: { type: 'error', error: event.error, message: event.message, filename: event.filename, lineno: event.lineno },
+      }),
+    );
+  } catch {
+    // ignore
+  }
 });

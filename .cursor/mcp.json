@@ -2,9 +2,12 @@
   "mcpServers": {
     "browsermcp": {
       "command": "pnpx",
-      "args": [
-        "@browsermcp/mcp"
-      ]
+      "args": ["@browsermcp/mcp"]
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@latest"],
+      "alwaysAllow": ["list_pages", "evaluate_script"]
     }
   }
 }

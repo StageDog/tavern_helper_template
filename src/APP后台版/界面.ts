@@ -7,8 +7,6 @@ import Home from './Home.vue';
 
 const Discover = () => import('./Discover.vue');
 const Service = () => import('./Service.vue');
-const History = () => import('./History.vue');
-const Me = () => import('./Me.vue');
 const ShopDetail = () => import('./ShopDetail.vue');
 const ItemDetail = () => import('./ItemDetail.vue');
 const Dashboard = () => import('./Dashboard.vue');
@@ -21,8 +19,6 @@ const router = createRouter({
     { path: '/home', component: Home, name: 'Home' },
     { path: '/discover', component: Discover, name: 'Discover' },
     { path: '/service', component: Service, name: 'Service' },
-    { path: '/history', component: History, name: 'History' },
-    { path: '/me', component: Me, name: 'Me' },
     { path: '/shop/:id', component: ShopDetail, name: 'ShopDetail', props: true },
     { path: '/item/:id', component: ItemDetail, name: 'ItemDetail', props: true },
   ],
@@ -35,5 +31,55 @@ const router = createRouter({
     }
   },
 });
+
+// 路由错误兜底：避免某个页面异常导致整个 RouterView 空载
+router.onError(err => {
+  try {
+    console.error('[Router] 导航失败:', err);
+  } catch {
+    // ignore
+  }
+
+  // 尝试回到首页（避免“点了之后全空白”卡死）
+  try {
+    if (router.currentRoute.value.path !== '/home') {
+      router.replace('/home').catch(() => {});
+    }
+  } catch {
+    // ignore
+  }
+});
+
+// 兜底：捕获 push/replace 的 Promise rejection，避免出现未处理拒绝导致界面进入“空白且不可操作”的状态
+const rawPush = router.push.bind(router);
+router.push = ((...args: Parameters<typeof router.push>) => {
+  return rawPush(...(args as any)).catch(err => {
+    try {
+      console.error('[Router] push 失败:', err);
+    } catch {
+      // ignore
+    }
+    try {
+      if (router.currentRoute.value.path !== '/home') {
+        router.replace('/home').catch(() => {});
+      }
+    } catch {
+      // ignore
+    }
+    return Promise.resolve();
+  }) as any;
+}) as any;
+
+const rawReplace = router.replace.bind(router);
+router.replace = ((...args: Parameters<typeof router.replace>) => {
+  return rawReplace(...(args as any)).catch(err => {
+    try {
+      console.error('[Router] replace 失败:', err);
+    } catch {
+      // ignore
+    }
+    return Promise.resolve();
+  }) as any;
+}) as any;
 
 export default router;

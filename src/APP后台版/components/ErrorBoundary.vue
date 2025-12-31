@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onErrorCaptured } from 'vue';
+import { ref, onErrorCaptured, onMounted, onUnmounted } from 'vue';
 
 const hasError = ref(false);
 const errorMessage = ref('');
@@ -25,6 +25,32 @@ onErrorCaptured((err: Error) => {
   errorMessage.value = err.message || '发生了未知错误';
   console.log('[系统提示] 页面出现错误，已自动恢复');
   return false; // 阻止错误继续传播
+});
+
+function onFatalErrorEvent(event: any) {
+  try {
+    const detail = event?.detail || {};
+    const msg =
+      detail?.message ||
+      detail?.error?.message ||
+      detail?.reason?.message ||
+      (typeof detail?.reason === 'string' ? detail.reason : '') ||
+      '发生了未知错误';
+    console.error('[错误边界] 捕获到全局错误:', detail);
+    error.value = detail?.error || detail?.reason || new Error(msg);
+    hasError.value = true;
+    errorMessage.value = msg;
+  } catch (e) {
+    // ignore
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('app-fatal-error', onFatalErrorEvent as any);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('app-fatal-error', onFatalErrorEvent as any);
 });
 
 // 重试函数

@@ -328,35 +328,12 @@
       </div>
     </div>
 
-    <!-- 底部导航 -->
-    <div class="nav-bar">
-      <div class="nav-item" @click="$router.push('/home')">
-        <i class="fas fa-home"></i>
-        <span>首页</span>
-      </div>
-      <div class="nav-item" @click="$router.push('/discover')">
-        <i class="fas fa-compass"></i>
-        <span>发现</span>
-      </div>
-      <div class="nav-item active" @click="$router.push('/service')">
-        <i class="fas fa-concierge-bell"></i>
-        <span>服务</span>
-      </div>
-      <div class="nav-item" @click="$router.push('/history')">
-        <i class="fas fa-history"></i>
-        <span>历史</span>
-      </div>
-      <div class="nav-item" @click="$router.push('/me')">
-        <i class="fas fa-user"></i>
-        <span>我的</span>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed, onActivated, onMounted, ref, watch } from 'vue';
 import { filterActiveOrders, loadOrdersFromMVU, readCachedOrders } from './shared/serviceOrders';
-import { computed, onMounted, ref, watch } from 'vue';
 import { getNestedValue } from './utils';
 // 响应式数据
 const girlsData = ref<any[]>([]);
@@ -449,7 +426,9 @@ const packageInfo = computed(() => ({
 // 订单状态（添加映射）
 const orderStatus = computed(() => {
   const status =
-    currentGirl.value?.status || getNestedValue(currentGirl.value, '订单状态', '') || getNestedValue(currentGirl.value, '服务统计.订单状态', '未知');
+    currentGirl.value?.status ||
+    getNestedValue(currentGirl.value, '订单状态', '') ||
+    getNestedValue(currentGirl.value, '服务统计.订单状态', '未知');
   if (String(status).includes('服务中')) return '服务中';
   if (String(status).includes('服务结束')) return '服务结束';
   // 其他状态直接展示，并提示需要人工处理
@@ -558,9 +537,17 @@ function clothingIcon(key: string) {
 // ================ 生命周期 ================
 
 onMounted(async () => {
-  isLoading.value = true;
+  // 首次加载显示全屏 Loading
+  if (girlsData.value.length === 0) {
+    isLoading.value = true;
+  }
   await refreshData();
   isLoading.value = false;
+});
+
+onActivated(() => {
+  // 再次进入时静默刷新
+  refreshData();
 });
 </script>
 
@@ -571,9 +558,10 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   background: var(--bg-primary);
-  position: absolute;
-  top: 0;
-  left: 0;
+  /* 移除绝对定位，避免脱离文档流导致动画时布局塌陷 */
+  /* position: absolute; */
+  /* top: 0; */
+  /* left: 0; */
 }
 
 .app-header {
@@ -1580,5 +1568,3 @@ onMounted(async () => {
   }
 }
 </style>
-
-

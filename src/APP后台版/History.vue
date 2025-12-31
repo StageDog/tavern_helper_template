@@ -1,5 +1,5 @@
 <template>
-  <div class="app-view">
+  <div class="app-view active">
     <!-- 历史订单内容 -->
     <div class="app-header">
       <div class="title">
@@ -12,15 +12,20 @@
       <div class="card">
         <div class="card-title"><i class="fas fa-history"></i>历史订单</div>
         <div v-if="historyItems.length === 0" class="empty-state">暂无历史订单</div>
-        <div v-else>
-          <div v-for="item in historyItems" :key="item.order_time" class="history-card" @click="reorder(item)">
+          <div v-else>
+          <div
+            v-for="(item, index) in historyItems"
+            :key="item.id ?? `${item.order_time ?? 'history'}_${index}`"
+            class="history-card"
+            @click="reorder(item)"
+          >
             <!-- 头部：姓名套餐和价格 -->
             <div class="history-header">
               <div class="title-section">
                 <h3 class="history-title">{{ item.girl_name || '-' }} - {{ item.package_name || '-' }}</h3>
               </div>
               <div class="price-section">
-                <div class="history-price">{{ item.price || '-' }}</div>
+                <div class="history-price">{{ item.price ?? '-' }}</div>
               </div>
             </div>
 
@@ -52,12 +57,12 @@
     <div
       v-if="currentView === 'reorder' && selectedOrder"
       class="reorder-modal-overlay"
-      @click.self="currentView = 'history'"
+      @click.self="backToHistory"
     >
       <div class="reorder-modal-content">
         <div class="modal-header">
           <div class="modal-title"><i class="fas fa-shopping-cart"></i>确认订单</div>
-          <button class="btn-close" @click="currentView = 'history'"><i class="fas fa-arrow-left"></i> 返回</button>
+          <button class="btn-close" @click="backToHistory"><i class="fas fa-arrow-left"></i> 返回</button>
         </div>
 
         <div class="modal-body">
@@ -78,8 +83,8 @@
                 >
               </div>
             </div>
-            <div class="summary-price">
-              <span class="price-number">￥{{ selectedOrder.price || '-' }}</span>
+              <div class="summary-price">
+              <span class="price-number">￥{{ selectedOrder.price ?? '-' }}</span>
               <span class="price-tip">下单后立即生效</span>
             </div>
           </div>
@@ -249,7 +254,7 @@
           <button class="btn btn-primary" @click="showReorderModal">
             <i class="fas fa-check-circle"></i> 再次下单
           </button>
-          <button class="btn btn-secondary" @click="currentView = 'history'">
+          <button class="btn btn-secondary" @click="backToHistory">
             <i class="fas fa-times-circle"></i> 取消
           </button>
         </div>
@@ -312,7 +317,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue';
+import { computed, nextTick, onActivated, onMounted, ref } from 'vue';
 import { filterCompletedOrders, loadOrdersFromMVU, readCachedOrders } from './shared/serviceOrders';
 import { getNestedValue } from './utils';
 
@@ -395,19 +400,31 @@ function extractOrderFeatures(order: any): string[] {
 // 当前订单特色
 const currentOrderFeatures = computed(() => {
   if (selectedOrder.value) {
-    const orderFeatures = selectedOrder.value.features || extractOrderFeatures(selectedOrder.value.originalData);
+    const raw = selectedOrder.value.features || extractOrderFeatures(selectedOrder.value.originalData);
+    const orderFeatures = Array.isArray(raw) ? raw : typeof raw === 'string' ? raw.split(/\s*,\s*|\s+/).filter(Boolean) : [];
     if (orderFeatures.length > 0) return orderFeatures;
   }
   return [];
 });
 
+function backToHistory() {
+  currentView.value = 'history';
+  selectedOrder.value = null;
+  showModal.value = false;
+  orderRemark.value = '';
+}
+
 // 重新下单
 function reorder(item: any) {
+  if (!item || typeof item !== 'object') return;
+  const hasAnyInfo = Boolean(item.originalData) || Boolean(item.girl_name) || Boolean(item.package_name);
+  if (!hasAnyInfo) return;
   selectedOrder.value = item;
   currentView.value = 'reorder';
 }
 
 function showReorderModal() {
+  if (!selectedOrder.value) return;
   orderRemark.value = '';
   showModal.value = true;
   nextTick(() => {
@@ -452,6 +469,7 @@ function confirmOrder() {
 
   closeModal();
   currentView.value = 'history';
+  selectedOrder.value = null;
 
   if (!ok) {
     try {
@@ -484,6 +502,7 @@ async function refreshHistory() {
     const orders = await loadOrdersFromMVU();
     const completed = filterCompletedOrders(orders);
     historyItems.value = completed.map(order => ({
+      id: order.id,
       girl_name: order.基础信息?.姓名 || '未知',
       identity: order.基础信息?.身份 || '未知',
       package_name: order.套餐?.套餐名称 || '未知套餐',
@@ -499,6 +518,7 @@ async function refreshHistory() {
     const cached = readCachedOrders();
     const completed = filterCompletedOrders(cached);
     historyItems.value = completed.map(order => ({
+      id: order.id,
       girl_name: order.基础信息?.姓名 || '未知',
       identity: order.基础信息?.身份 || '未知',
       package_name: order.套餐?.套餐名称 || '未知套餐',
@@ -515,6 +535,10 @@ async function refreshHistory() {
 onMounted(async () => {
   await refreshHistory();
 });
+
+onActivated(async () => {
+  await refreshHistory();
+});
 </script>
 
 <style lang="scss" scoped>
@@ -524,9 +548,11 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   background-color: var(--bg-primary);
-  position: absolute;
-  top: 0;
-  left: 0;
+  /* position: absolute; */
+  /* top: 0; */
+  /* left: 0; */
+  display: flex;
+  flex-direction: column;
 }
 
 .app-header {
@@ -1366,4 +1392,3 @@ onMounted(async () => {
   }
 }
 </style>
-

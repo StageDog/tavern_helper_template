@@ -5,7 +5,9 @@
  * - 提供活跃/已完成过滤
  */
 
-const CACHE_KEY = 'service_orders_cache';
+// 缓存键：避免与其他脚本/界面冲突
+const CACHE_KEY = 'app_backend_service_orders_cache';
+const LEGACY_CACHE_KEYS = ['service_orders_cache'];
 const CACHE_LIMIT = 15;
 
 export interface ServiceOrder {
@@ -22,30 +24,84 @@ export interface ServiceOrder {
   __cachedAt?: number;
 }
 
-function readCache(): ServiceOrder[] {
+function pickCacheVariableOptions(): any[] {
+  // 优先按聊天维度缓存；在非酒馆/无聊天环境下再退到 global / localStorage
+  return [{ type: 'chat' }, { type: 'global' }, { type: 'script' }];
+}
+
+function readCacheFromLocalStorage(): ServiceOrder[] {
   try {
-    const vars = getVariables({ type: 'script', script_id: getScriptId() }) || {};
-    const cached = (vars as any)[CACHE_KEY];
-    if (!Array.isArray(cached)) return [];
-    return cached
+    const raw =
+      window.localStorage?.getItem(CACHE_KEY) ||
+      LEGACY_CACHE_KEYS.map(k => window.localStorage?.getItem(k)).find(Boolean);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
       .filter(Boolean)
       .sort((a, b) => (b.__cachedAt || 0) - (a.__cachedAt || 0))
       .slice(0, CACHE_LIMIT);
   } catch (e) {
-    console.warn('[ServiceOrders] 读取缓存失败', e);
+    console.warn('[ServiceOrders] localStorage 读取缓存失败', e);
     return [];
   }
 }
 
+function readCache(): ServiceOrder[] {
+  // 酒馆变量缓存
+  for (const option of pickCacheVariableOptions()) {
+    try {
+      if (typeof (window as any).getVariables !== 'function') break;
+      const vars = getVariables(option) || {};
+      const cached =
+        (vars as any)[CACHE_KEY] || LEGACY_CACHE_KEYS.map(k => (vars as any)[k]).find((v: any) => Array.isArray(v));
+      if (!Array.isArray(cached)) continue;
+      return cached
+        .filter(Boolean)
+        .sort((a, b) => (b.__cachedAt || 0) - (a.__cachedAt || 0))
+        .slice(0, CACHE_LIMIT);
+    } catch (e) {
+      // 尝试下一种变量作用域
+      continue;
+    }
+  }
+
+  // 退化到 localStorage（便于本地/非酒馆环境调试）
+  return readCacheFromLocalStorage();
+}
+
 function writeCache(list: ServiceOrder[]) {
+  const withCap = [...list]
+    .map((o, idx) => ({ ...o, __cachedAt: Date.now() + idx }))
+    .sort((a, b) => (b.__cachedAt || 0) - (a.__cachedAt || 0))
+    .slice(0, CACHE_LIMIT);
+
+  // 酒馆变量缓存：不要用 replaceVariables（会覆盖整个变量表，导致其他页面/功能“空载”）
+  for (const option of pickCacheVariableOptions()) {
+    try {
+      if (typeof (window as any).updateVariablesWith === 'function') {
+        updateVariablesWith((vars: Record<string, any>) => {
+          const next = vars && typeof vars === 'object' ? vars : {};
+          (next as any)[CACHE_KEY] = withCap;
+          return next;
+        }, option);
+        return;
+      }
+      if (typeof (window as any).insertOrAssignVariables === 'function') {
+        insertOrAssignVariables({ [CACHE_KEY]: withCap }, option);
+        return;
+      }
+    } catch (e) {
+      // 尝试下一种变量作用域
+      continue;
+    }
+  }
+
+  // 退化到 localStorage
   try {
-    const withCap = [...list]
-      .map((o, idx) => ({ ...o, __cachedAt: Date.now() + idx }))
-      .sort((a, b) => (b.__cachedAt || 0) - (a.__cachedAt || 0))
-      .slice(0, CACHE_LIMIT);
-    replaceVariables({ [CACHE_KEY]: withCap }, { type: 'script', script_id: getScriptId() });
+    window.localStorage?.setItem(CACHE_KEY, JSON.stringify(withCap));
   } catch (e) {
-    console.warn('[ServiceOrders] 写入缓存失败', e);
+    console.warn('[ServiceOrders] localStorage 写入缓存失败', e);
   }
 }
 
@@ -166,7 +222,11 @@ export async function loadOrdersFromMVU(): Promise<ServiceOrder[]> {
     if (!data) throw new Error('MVU 数据为空');
 
     const orders = extractOrdersFromMvuData(data);
-    if (orders.length === 0) throw new Error('未找到服务订单');
+    // “没有订单”不是致命错误：优先回退到缓存，否则返回空数组
+    if (orders.length === 0) {
+      const cached = readCache();
+      return cached;
+    }
 
     writeCache(orders);
     return orders;

@@ -155,36 +155,13 @@
       </div>
     </div>
 
-    <!-- 底部导航 -->
-    <div class="nav-bar">
-      <div class="nav-item active" @click="$router.push('/home')">
-        <i class="fas fa-home"></i>
-        <span>首页</span>
-      </div>
-      <div class="nav-item" @click="$router.push('/discover')">
-        <i class="fas fa-compass"></i>
-        <span>发现</span>
-      </div>
-      <div class="nav-item" @click="$router.push('/service')">
-        <i class="fas fa-concierge-bell"></i>
-        <span>服务</span>
-      </div>
-      <div class="nav-item" @click="$router.push('/history')">
-        <i class="fas fa-history"></i>
-        <span>历史</span>
-      </div>
-      <div class="nav-item" @click="$router.push('/me')">
-        <i class="fas fa-user"></i>
-        <span>我的</span>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { InlineInteractionService } from '../店铺生成Demo/utils/core';
 import { ShopGenerationAdapter } from '../店铺生成Demo/utils/adapters/shop-generation';
+import { InlineInteractionService } from '../店铺生成Demo/utils/core';
 
 // 响应式数据
 const searchKeyword = ref('');
@@ -233,9 +210,9 @@ function generateDLCContent() {
   display: flex;
   flex-direction: column;
   background-color: var(--bg-primary);
-  position: absolute;
-  top: 0;
-  left: 0;
+  /* position: absolute; */
+  /* top: 0; */
+  /* left: 0; */
   transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 

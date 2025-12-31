@@ -1,5 +1,5 @@
 <template>
-  <div class="app-view">
+  <div class="app-view active">
     <!-- 我的页面内容 -->
     <div class="app-header">
       <div class="title">
@@ -111,7 +111,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onActivated, onMounted, ref } from 'vue';
 
 // 安全获取嵌套对象属性的工具函数，替代 _.get
 function safeGet<T = any>(obj: any, path: string, defaultValue: T = undefined as any): T {
@@ -342,6 +342,10 @@ onMounted(async () => {
 
   await initDisplay();
 });
+
+onActivated(async () => {
+  await initDisplay();
+});
 </script>
 
 <style lang="scss" scoped>
@@ -351,9 +355,9 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   background-color: var(--bg-primary);
-  position: absolute;
-  top: 0;
-  left: 0;
+  /* position: absolute; */
+  /* top: 0; */
+  /* left: 0; */
   transition: background-color 0.3s ease;
 }
 

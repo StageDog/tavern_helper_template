@@ -65,8 +65,6 @@ const menuItems = [
   { icon: 'fas fa-home', label: 'Home', path: '/home' },
   { icon: 'fas fa-concierge-bell', label: 'Service', path: '/service' },
   { icon: 'fas fa-compass', label: 'Discover', path: '/discover' },
-  { icon: 'fas fa-history', label: 'History', path: '/history' },
-  { icon: 'fas fa-user', label: 'Me', path: '/me' },
 ];
 
 function navigate(path: string) {
