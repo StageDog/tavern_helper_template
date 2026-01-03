@@ -13,7 +13,10 @@ function cleanCustomBlocks(raw: string): string {
   let cleaned = raw;
   for (const tag of CUSTOM_BLOCK_TAGS) {
     // 匹配 <tag>...</tag>（不区分大小写，非贪婪匹配，避免跨标签匹配）
-    cleaned = cleaned.replace(new RegExp(`<${tag}>[^<]*<\\/${tag}>`, 'gi'), '');
+    // 使用字符串拼接避免模板字符串在打包时的转义问题
+    const openTag = '<' + tag + '>';
+    const closeTag = '<' + '/' + tag + '>';
+    cleaned = cleaned.replace(new RegExp(openTag + '[^<]*' + closeTag, 'gi'), '');
   }
   return cleaned;
 }
@@ -47,7 +50,7 @@ function parseInjectedText(raw: string): InjectedData {
   // 先过滤自定义块
   const cleaned = cleanCustomBlocks(raw);
 
-  // 按原版规则：取最后一个 <content>…</content>（或以 </option> / 结尾收束）
+  // 按原版规则：取最后一个 <content>...</content>（或以 </option> / 结尾收束）
   const contentMatch = cleaned.match(/(<content>(?!.*<content>)[\s\S]*?(?:<\/content>|<\/option>|$))/i);
   const optionMatch = cleaned.match(/(<option>(?!.*<option>)[\s\S]*?(?:<\/option>|$))/i);
 

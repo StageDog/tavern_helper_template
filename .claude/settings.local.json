@@ -4,7 +4,9 @@
       "Bash(pnpm dump:*)",
       "Bash(git fetch:*)",
       "Bash(git pull:*)",
-      "Bash(pnpm build)"
+      "Bash(pnpm build)",
+      "Bash(git commit:*)",
+      "Bash(git push)"
     ]
   }
 }

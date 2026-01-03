@@ -12,6 +12,7 @@
           </thead>
           <tbody>
             <tr v-for="(row, rowIdx) in seg.tableRows" :key="rowIdx">
+              // eslint-disable-next-line vue/no-v-html
               <td v-for="(cell, cellIdx) in row" :key="cellIdx" v-html="formatTableCell(cell)"></td>
             </tr>
           </tbody>
@@ -63,8 +64,7 @@ const segments = computed<Segment[]>(() => {
   const imageThinkPattern = /<imgthink>[\s\S]*?<\/imgthink>/g;
 
   // 通用正则：匹配图片、对话、思考、系统提示、伊甸/系统发言
-  const pattern =
-    /!\[(.*?)\]\((.*?)\)|"([^"]+)"|\*([^*]+)\*|【(.*?)】|(?:^|\n)((?:伊甸|系统|System)[：:].*?)(?=$|\n)/g;
+  const pattern = /!\[(.*?)\]\((.*?)\)|"([^"]+)"|\*([^*]+)\*|【(.*?)】|(?:^|\n)((?:伊甸|系统|System)[：:].*?)(?=$|\n)/g;
   const result: Segment[] = [];
 
   let lastIndex = 0;
@@ -80,7 +80,10 @@ const segments = computed<Segment[]>(() => {
 
     // 解析表格
     const tableContent = tableMatch[0];
-    const rows = tableContent.trim().split('\n').filter(row => row.trim().startsWith('|'));
+    const rows = tableContent
+      .trim()
+      .split('\n')
+      .filter(row => row.trim().startsWith('|'));
 
     if (rows.length >= 2) {
       // 去掉分隔行（|---|---）
