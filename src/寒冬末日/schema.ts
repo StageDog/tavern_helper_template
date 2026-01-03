@@ -135,8 +135,14 @@ const RoomSchema = z
       .describe('核心区域房间状态'),
     楼层房间: z
       .object({
-        楼层20房间: z.record(z.string(), z.object({ 入住者: z.array(z.string()) }).prefault({ 入住者: [] })).prefault({}).describe('20层各房间状态，key为房间号'),
-        楼层19房间: z.record(z.string(), z.object({ 入住者: z.array(z.string()) }).prefault({ 入住者: [] })).prefault({}).describe('19层各房间状态，key为房间号'),
+        楼层20房间: z
+          .record(z.string(), z.object({ 入住者: z.array(z.string()) }).prefault({ 入住者: [] }))
+          .prefault({})
+          .describe('20层各房间状态，key为房间号'),
+        楼层19房间: z
+          .record(z.string(), z.object({ 入住者: z.array(z.string()) }).prefault({ 入住者: [] }))
+          .prefault({})
+          .describe('19层各房间状态，key为房间号'),
       })
       .prefault({
         楼层20房间: {},
@@ -175,16 +181,18 @@ const NeighborsSchema = z
 const MissionSchema = z
   .object({
     当前阶段: z.string().prefault('阶段一：秩序的萌芽').describe('主线任务的当前阶段名称'),
-    阶段目标: z.array(z.string()).prefault([
-      '肃清20、19、21层的敌对幸存者',
-      '庇护至少3个核心女性角色或家庭',
-      '完成一个公寓内部的情报碎片任务',
-    ]).describe('当前阶段需要达成的目标列表'),
-    目标完成状态: z.record(z.string(), z.boolean()).prefault({
-      '0': false,
-      '1': false,
-      '2': false,
-    }).describe('目标完成状态，key为索引字符串（0/1/2...），value为true表示完成'),
+    阶段目标: z
+      .array(z.string())
+      .prefault(['肃清20、19、21层的敌对幸存者', '庇护至少3个核心女性角色或家庭', '完成一个公寓内部的情报碎片任务'])
+      .describe('当前阶段需要达成的目标列表'),
+    目标完成状态: z
+      .record(z.string(), z.boolean())
+      .prefault({
+        '0': false,
+        '1': false,
+        '2': false,
+      })
+      .describe('目标完成状态，key为索引字符串（0/1/2...），value为true表示完成'),
     情报碎片: z
       .record(
         z.string(),
@@ -209,11 +217,7 @@ const MissionSchema = z
   })
   .prefault({
     当前阶段: '阶段一：秩序的萌芽',
-    阶段目标: [
-      '肃清20、19、21层的敌对幸存者',
-      '庇护至少3个核心女性角色或家庭',
-      '完成一个公寓内部的情报碎片任务',
-    ],
+    阶段目标: ['肃清20、19、21层的敌对幸存者', '庇护至少3个核心女性角色或家庭', '完成一个公寓内部的情报碎片任务'],
     目标完成状态: {
       '0': false,
       '1': false,

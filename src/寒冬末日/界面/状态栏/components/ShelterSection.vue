@@ -94,8 +94,12 @@
             <div class="zone-label">🏢 20层 - 公寓走廊</div>
             <div class="floor-indicator">↓ 通往外部楼梯</div>
             <div class="room-grid floor-grid">
-              <div v-for="room in floor20Rooms" :key="room.number" class="room-cell"
-                   :class="{ 'user-room': room.number === '2001', occupied: hasFloorResident('20', room.number) }">
+              <div
+                v-for="room in floor20Rooms"
+                :key="room.number"
+                class="room-cell"
+                :class="{ 'user-room': room.number === '2001', occupied: hasFloorResident('20', room.number) }"
+              >
                 <div class="room-number">{{ room.number }}</div>
                 <div class="room-value">{{ getFloorRoomStatus('20', room.number) }}</div>
                 <div class="room-resident">{{ getFloorRoomNames('20', room.number) }}</div>
@@ -107,8 +111,12 @@
           <div class="map-zone">
             <div class="zone-label">🏢 19层 - 公寓走廊</div>
             <div class="room-grid floor-grid">
-              <div v-for="room in floor19Rooms" :key="room.number" class="room-cell"
-                   :class="{ occupied: hasFloorResident('19', room.number) }">
+              <div
+                v-for="room in floor19Rooms"
+                :key="room.number"
+                class="room-cell"
+                :class="{ occupied: hasFloorResident('19', room.number) }"
+              >
                 <div class="room-number">{{ room.number }}</div>
                 <div class="room-value">{{ getFloorRoomStatus('19', room.number) }}</div>
                 <div class="room-resident">{{ getFloorRoomNames('19', room.number) }}</div>
@@ -180,18 +188,12 @@ const floor19Rooms = [
 ];
 
 // 玄关区域计算属性
-const hasTempGuestA = computed(() =>
-  store.data.房间.玄关.临时客房A入住者.length > 0
-);
+const hasTempGuestA = computed(() => store.data.房间.玄关.临时客房A入住者.length > 0);
 
-const hasTempGuestB = computed(() =>
-  store.data.房间.玄关.临时客房B入住者.length > 0
-);
+const hasTempGuestB = computed(() => store.data.房间.玄关.临时客房B入住者.length > 0);
 
 function getTempGuestNames(room: 'A' | 'B'): string {
-  const names = room === 'A'
-    ? store.data.房间.玄关.临时客房A入住者
-    : store.data.房间.玄关.临时客房B入住者;
+  const names = room === 'A' ? store.data.房间.玄关.临时客房A入住者 : store.data.房间.玄关.临时客房B入住者;
   return names.length > 0 ? names.join('、') : '-';
 }
 
@@ -201,13 +203,9 @@ function getEntranceStatus(): string {
 }
 
 // 核心区计算属性
-const hasBedroomUser = computed(() =>
-  store.data.房间.核心区.主卧室使用者.length > 0
-);
+const hasBedroomUser = computed(() => store.data.房间.核心区.主卧室使用者.length > 0);
 
-const hasBathroomUser = computed(() =>
-  store.data.房间.核心区.主浴室使用者.length > 0
-);
+const hasBathroomUser = computed(() => store.data.房间.核心区.主浴室使用者.length > 0);
 
 function getBedroomUserNames(): string {
   const names = store.data.房间.核心区.主卧室使用者;

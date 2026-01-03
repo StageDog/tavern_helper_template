@@ -28,14 +28,18 @@
         </button>
         <div v-show="isGoalsExpanded" class="goals-list">
           <template v-if="store.data.主线任务.阶段目标.length > 0">
-            <div v-for="(goal, idx) in store.data.主线任务.阶段目标" :key="idx"
-                 class="goal-item" :class="{ completed: isGoalCompleted(idx) }">
+            <div
+              v-for="(goal, idx) in store.data.主线任务.阶段目标"
+              :key="idx"
+              class="goal-item"
+              :class="{ completed: isGoalCompleted(idx) }"
+            >
               <div class="goal-checkbox">
                 <svg v-if="isGoalCompleted(idx)" viewBox="0 0 24 24" class="check-icon">
-                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                 </svg>
                 <svg v-else viewBox="0 0 24 24" class="check-icon empty">
-                  <circle cx="12" cy="12" r="10"/>
+                  <circle cx="12" cy="12" r="10" />
                 </svg>
               </div>
               <div class="goal-content">
@@ -59,14 +63,18 @@
         </button>
         <div v-show="isIntelExpanded" class="intel-list">
           <template v-if="intelTotal > 0">
-            <div v-for="(intel, key) in store.data.主线任务.情报碎片" :key="key"
-                 class="intel-item" :class="intel.状态">
+            <div v-for="(intel, key) in store.data.主线任务.情报碎片" :key="key" class="intel-item" :class="intel.状态">
               <div class="intel-status-ring" :class="intel.状态">
                 <svg viewBox="0 0 36 36" class="progress-ring">
-                  <circle cx="18" cy="18" r="16" class="ring-bg"/>
-                  <circle cx="18" cy="18" r="16" class="ring-progress"
-                          :stroke-dasharray="getRingProgress(intel.状态)"
-                          :class="intel.状态"/>
+                  <circle cx="18" cy="18" r="16" class="ring-bg" />
+                  <circle
+                    cx="18"
+                    cy="18"
+                    r="16"
+                    class="ring-progress"
+                    :stroke-dasharray="getRingProgress(intel.状态)"
+                    :class="intel.状态"
+                  />
                 </svg>
                 <span class="ring-icon">{{ getStatusIcon(intel.状态) }}</span>
               </div>
@@ -101,9 +109,7 @@ const isGoalsExpanded = ref(false);
 const isIntelExpanded = ref(false);
 
 // 阶段目标完成状态存储
-const completedGoals = computed(() =>
-  store.data.主线任务.阶段目标.filter((_, idx) => isGoalCompleted(idx)).length
-);
+const completedGoals = computed(() => store.data.主线任务.阶段目标.filter((_, idx) => isGoalCompleted(idx)).length);
 
 const progressPercent = computed(() => {
   const total = store.data.主线任务.阶段目标.length;
@@ -119,25 +125,35 @@ function isGoalCompleted(idx: number): boolean {
 
 // 情报碎片统计
 const intelTotal = computed(() => Object.keys(store.data.主线任务.情报碎片).length);
-const intelCompleted = computed(() =>
-  Object.values(store.data.主线任务.情报碎片).filter(i => i.状态 === '已完成').length
+const intelCompleted = computed(
+  () => Object.values(store.data.主线任务.情报碎片).filter(i => i.状态 === '已完成').length,
 );
 
 function getStatusIcon(status: string): string {
   switch (status) {
-    case '已完成': return '✓';
-    case '已探索': return '◐';
-    case '未探索': return '○';
-    default: return '○';
+    case '已完成':
+      return '✓';
+    case '已探索':
+      return '◐';
+    case '未探索':
+      return '○';
+    default:
+      return '○';
   }
 }
 
 function getRingProgress(status: string): string {
   let progress = 33;
   switch (status) {
-    case '已完成': progress = 100; break;
-    case '已探索': progress = 66; break;
-    case '未探索': progress = 33; break;
+    case '已完成':
+      progress = 100;
+      break;
+    case '已探索':
+      progress = 66;
+      break;
+    case '未探索':
+      progress = 33;
+      break;
   }
   const circumference = 2 * Math.PI * 16;
   const offset = circumference - (progress / 100) * circumference;

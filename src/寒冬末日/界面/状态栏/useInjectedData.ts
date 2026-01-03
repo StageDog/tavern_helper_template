@@ -4,7 +4,9 @@ type InjectedData = {
 };
 
 // 声明全局函数类型
-declare function getChatMessages(range: string | number): Array<{ data?: { extra_text?: string }; text?: string; message?: string }>;
+declare function getChatMessages(
+  range: string | number,
+): Array<{ data?: { extra_text?: string }; text?: string; message?: string }>;
 
 // 要过滤的自定义标签列表（绘图提示词等）
 const CUSTOM_BLOCK_TAGS = ['imgthink', 'drawprompt', 'imageprompt', 'genimage'];
@@ -80,11 +82,7 @@ function fetchFromMessages(): InjectedData | null {
     const lastMsg = msgs?.[msgs.length - 1];
 
     // 优先读取 message 字段（AI 输出内容），其次是 data.extra_text 和 text
-    const raw =
-      lastMsg?.message ??
-      lastMsg?.data?.extra_text ??
-      lastMsg?.text ??
-      '';
+    const raw = lastMsg?.message ?? lastMsg?.data?.extra_text ?? lastMsg?.text ?? '';
 
     if (!raw) return null;
 
@@ -131,7 +129,7 @@ export function useInjectedData() {
       return;
     }
 
-    const fromMsg = fetchFromMessages();  // 同步调用
+    const fromMsg = fetchFromMessages(); // 同步调用
     if (fromMsg) {
       content.value = fromMsg.content;
       options.value = fromMsg.options;
