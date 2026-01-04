@@ -363,18 +363,20 @@ function formatTableCell(cell: string): string {
   const safe = cell.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
   // 再处理支持的格式
-  return safe
-    // 修复被转义的 inline-bracket span（表格内常见）
-    .replace(/&lt;span class="inline-bracket"&gt;([\s\S]*?)&lt;\/span&gt;/g, '<span class="inline-bracket">$1</span>')
-    // 修复被转义为 “inline-bracket> [xxx]” 的残留文本
-    .replace(/inline-bracket[`'"]?\s*&gt;\s*\[([^\]]+)\]/g, '<span class="inline-bracket">【$1】</span>')
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/【([^】\n]+)】/g, '<span class="inline-bracket">【$1】</span>')
-    .replace(/“([^”\n]+)”/g, '<span class="dialog-text">“$1”</span>')
-    .replace(/‘([^’\n]+)’/g, '<span class="dialog-text">‘$1’</span>')
-    .replace(/"([^"\n]+)"/g, '<span class="dialog-text">"$1"</span>')
-    .replace(/'([^'\n]+)'/g, '<span class="dialog-text">\'$1\'</span>');
+  return (
+    safe
+      // 修复被转义的 inline-bracket span（表格内常见）
+      .replace(/&lt;span class="inline-bracket"&gt;([\s\S]*?)&lt;\/span&gt;/g, '<span class="inline-bracket">$1</span>')
+      // 修复被转义为 “inline-bracket> [xxx]” 的残留文本
+      .replace(/inline-bracket[`'"]?\s*&gt;\s*\[([^\]]+)\]/g, '<span class="inline-bracket">【$1】</span>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/【([^】\n]+)】/g, '<span class="inline-bracket">【$1】</span>')
+      .replace(/“([^”\n]+)”/g, '<span class="dialog-text">“$1”</span>')
+      .replace(/‘([^’\n]+)’/g, '<span class="dialog-text">‘$1’</span>')
+      .replace(/"([^"\n]+)"/g, '<span class="dialog-text">"$1"</span>')
+      .replace(/'([^'\n]+)'/g, '<span class="dialog-text">\'$1\'</span>')
+  );
 }
 </script>
 
