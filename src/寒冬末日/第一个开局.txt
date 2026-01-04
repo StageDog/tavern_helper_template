@@ -134,7 +134,7 @@
 
 <UpdateVariable>
 <initvar>
-stat_data:
+
   世界:
     地址: 东和国 | 瑞峰市 | 中央区 | 星穹国际公寓 | 20层2001室
     日期: 末日纪元，9527年12月14日
@@ -371,3 +371,4 @@ stat_data:
     登场状态: 离场
 </initvar>
 </UpdateVariable>
+<StatusPlaceHolderImpl/>
