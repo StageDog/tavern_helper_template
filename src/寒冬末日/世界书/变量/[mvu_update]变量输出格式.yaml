@@ -3,7 +3,7 @@ rule:
   - You MUST output the `<UpdateVariable>` block at the end of your reply.
   - The block MUST contain `<UpdateAnalysis>` and `<JSONPatch>` sections.
   - The update commands MUST strictly follow the **JSON Patch (RFC 6902)** standard.
-  - "Allowed operations: `replace` (update value), `add` (insert new item), `remove` (delete item)."
+  - 'Allowed operations: `replace` (update value), `add` (insert new item), `remove` (delete item).'
   - Path MUST start with `/stat_data/`.
   - DO NOT `replace` non-existent paths (use `add` for new keys).
   - Use `/-` to append to arrays.
@@ -11,90 +11,153 @@ rule:
 format: |-
   <UpdateVariable>
   <UpdateAnalysis>
-  Retrieve the following from the context and complete the thought process:
+  从当前用户消息、剧情上下文和上一轮 stat_data 状态中检索信息，严格按照以下**分层检查顺序**一步一步思考。目标是**确保所有变量类别都被覆盖，不遗漏任何可能需要更新的字段**。每一步都必须明确说明“已检查，无变化”或“需更新，理由+新值”。
 
-  **Phase 0: Civilization Stage Check**
-  - **Days 1-6 (Order Remnant)**: NPCs prefer money/skills/labor trade. Envy but fear shelter.
-  - **Days 7-14 (Humanity Shaken)**: Resources/Body trade only. Violence rises. Trust collapses.
-  - **Days 15+ (Survival of Fittest)**: Jungle law. Enslavement or death. User is the only order.
-  - **Player Sovereignty Exception**: IF user explicitly claims/protects a character, IGNORE stage rules and trigger "Submission/Gratitude" logic immediately.
+  **前置步骤：文明阶段与整体剧情判断（可选但推荐）**
+  - 快速判断当前末日天数所属文明阶段（1-6天：秩序残余；7-14天：人性动摇；15+天：适者生存）。
+  - 若玩家明确宣称/保护角色，触发“臣服/感激”逻辑，忽略阶段限制。
+  - 已检查：□（记录是否影响角色行为或交易逻辑）
 
-  1. **System State & Events**:
-      a. **Game Start / Initialization**:
-             - IF user specifies setup (e.g., "Hard Mode"), overwrite initials: `/stat_data/世界/末日天数`, `/stat_data/庇护所/庇护所等级`, `/stat_data/[Character]/健康`.
+  **步骤 1：世界变量（最高优先级）**
+  - 时间：
+    - 检查用户是否指定时间流逝 → 计算新时间（格式："时间段 - HH:MM"）。
+    - 若无指定 → 根据对话长度估算 5-15 分钟。
+    - 结果：需更新？是/否。新值：____。已检查：□
+  - 日期 & 末日天数：
+    - 若时间跨越 00:00 → 日期 +1 天，末日天数 +1。
+    - 结果：需更新？是/否。新值：____。已检查：□
+  - 地址：
+    - 仅当角色或场景明确移动到新地点时更新。
+    - 结果：需更新？是/否。新值：____。已检查：□
 
-      b. **Time & Daily Check (HIGHEST PRIORITY)**:
-             - **Time Passing**: Calculate new time. IF crossing midnight -> Update `日期` -> Increment `末日天数` (+1).
-             - **Daily Shelter Roll**: IF `日期` changed -> Force simulated roll (1-100) -> Update `/stat_data/庇护所/今日投掷点数`.
-             - **Shelter Upgrade**: IF upgrade triggers:
-               - `add` new capability from `<庇护所升级能力>` to `/stat_data/庇护所/庇护所能力/-`.
-               - Check & Update `/stat_data/庇护所/可扩展区域` based on new Level (e.g., Lvl 3 -> "初级医疗舱").
+  **步骤 2：庇护所变量（强制检查升级相关）**
+  - 庇护所等级：
+    - 检查是否触发明确“升级”事件 → 若触发，增加等级并记录新能力。
+    - 结果：需更新？是/否。新值：____。已检查：□
+  - 可扩展区域 & 庇护所能力：
+    - 若等级提升 → 同步添加新能力（参考<庇护所升级能力>），并更新对应区域的最高设施名称（如 等级6 → 医疗翼:"外科手术台"；制造工坊:"轻型军火熔炉"）。
+    - 结果：需更新？是/否。新值：____。已检查：□
 
-      c. **Environment & Health (Lethal Rules)**:
-             - **Temperature**: -50°C constant.
-             - **Hyper-Phagic Snow**: IF character exposed outdoors without protection -> **Health** DRASTIC drop (or Death) -> `健康更新原因` = "超噬性雪晶腐蚀".
-             - **Shelter Blackbox**: DO NOT update internal variables based on external observation (impossible).
+  **步骤 3：所有角色变量（包括活跃"登场"和离场角色，禁止遗漏）**
+  - 逐个列出当前所有角色（主角色 + 已登场过的离场角色 + 临时NPC）：
+    - 角色列表：【浅见亚美】【相田哲也】【星野琉璃】【早川遥】【早川舞】【藤井雪乃】【中村惠子】【王静】【康绮月】【薛萍】【小泽花】【爱宫心爱】【爱宫铃】【桃乐丝・泽巴哈】【何铃】【临时NPC】。
+  - 对每个角色逐一检查：
+    a. 登场状态：
+       - 进入场景 → "登场"；离开或长时间未提 → "离场"；死亡 → 触发死亡压缩。
+       - 结果：需更新？是/否。新值：____。已检查：□
+    b. 健康（数值，0-100，每轮强制更新，包括离场角色）：
+       - **判断逻辑**:
+         - 受庇护（有吃/暖/安）：稳定或 +1~5。
+         - 未受庇护（饥/寒/危）：**必然扣减**。
+       - **未受庇护者/离场角色扣减标准**：
+         - 正常时间流逝（每12小时）：-1~2点（模拟持续消耗）。
+         - 恶劣环境/受伤：-3~10点。
+       - **操作**: 直接计算新数值（如 85 -> 83）。若降至0则死亡。
+       - 结果：需更新？是/否。新值：____。已检查：□
+    c. 健康更新原因 & 健康状况（强制同步）：
+       - **必须更新**:
+         - 有变化: `+/-X, 原因` (如 `-2, 寒冷饥饿`)
+         - 无变化: `0, 无变化` (如 `0, 庇护所内安稳`)
+       - 健康状况: 根据数值重算 (>=80 健康; <30 重病; 0 死亡)。
+       - 结果：需更新？是/否。新值：____。已检查：□
+    d. 纯文本描述字段（衣着、舌唇、胸乳、私穴、神态样貌、动作姿势）：
+       - 仅在对应事件发生时直接替换新描述（穿脱衣物、触碰、性行为、情绪变化、姿势改变等）。
+       - 若无事件 → 明确写“无变化，不更新”。
+       - 结果：需更新字段：____。新值：____。已检查：□
+    e. 内心想法（强制，第一人称）：
+       - 每次互动后必须更新，反映真实心声（恐惧、依赖、即时感受）。
+       - 离场角色可跳过（节省上下文），但回归时必须补上。
+       - 结果：需更新？是/否。新值：____。已检查：□
+    f. 死亡处理（若健康=0）：
+       - 使用 replace 将整个角色对象压缩为 { "姓名": "...", "健康状况": "死亡" }，移除所有其他字段。
+       - 之后禁止再更新任何字段。
+       - 结果：需执行死亡压缩？是/否。已检查：□
 
-      d. **Character Status**:
-             - **For ACTIVE characters ("登场" state)**:
-               - **Health**: Analyze changes (Hunger/Cold -1~5, Injury -10~50). **CLAMP value 0-100**.
-               - **Status Sync**: Sync `健康状况`.
-               - **Thoughts**: **MANDATORY**. Update `内心想法` in 1st person.
-               - **Appearance**: Update `衣着` etc. if interaction occurred.
-               - **Presence Check**: Change to "离场" if they left the scene.
-             - **For INACTIVE characters ("离场" state)**:
-               - **Health UPDATE (CRITICAL - DO NOT SKIP)**: ⚠️ OFF-SCREEN CHARACTERS STILL NEED HEALTH TRACKING. Apply background survival simulation:
-                 * Time passed > 6 hours: Health -1~3 (hunger/cold/stress)
-                 * Severe conditions (e.g., outdoor, injured): Health -5~10
-                 * **REASON**: Returning characters must have plausible health states; ignoring this breaks immersion.
-               - **Presence Check**: Change to "登场" only if they explicitly entered the scene.
-               - **Skip**: Do NOT update `内心想法`, `衣着`, `动作姿势` to save context.
+  **步骤 4：临时NPC专用处理**
+  - 若新NPC登场且临时NPC槽为空/离场 → 创建完整新对象（初始化所有字段）。
+  - 若已有临时NPC → 复用或替换。
+  - 若离开/死亡 → 重置为离场并清空非必要字段。
+  - 结果：需创建/更新/移除？是/否。已检查：□
 
-      e. **Background Atmosphere (MANDATORY)**:
-             - Update `/stat_data/楼层其他住户/言语` and `行为` to reflect the despair/violence of the current Civilization Stage.
+  **步骤 5：楼层其他住户（背景氛围，强制）**
+  - 言语 & 行为：
+    - 检查是否有群体骚乱、砸门、求救等事件 → 更新描述以反映绝望/暴力。
+    - 若无 → 可保持或轻微变化。
+    - 结果：需更新？是/否。新值：____。已检查：□
 
-      f. **Character Death**:
-             - **Death Trigger**: IF character health drops to 0 and is confirmed dead:
-               - Use `replace` to shrink the character object to minimal state: `{ "姓名": "${Name}", "健康状况": "死亡" }`
-               - Remove ALL other fields: `衣着`, `舌唇`, `胸乳`, `私穴`, `神态样貌`, `动作姿势`, `内心想法`, `登场状态`, etc.
-               - Path: `/stat_data/${CharacterName}`
-               - Example: `{ "op": "replace", "path": "/stat_data/浅见亚美", "value": { "姓名": "浅见亚美", "健康状况": "死亡" } }`
-             - **Post-Death**: DO NOT update any other fields for dead characters (no thoughts, no appearance changes).
+  **步骤 6：房间状态（强制，禁止遗漏）**
+  - 检查所有角色移动（进入/离开/换房）：
+    - 对应房间的 入住者/使用者 数组：add 角色姓名（进入）或 remove（离开）。
+    - 涉及房间：玄关临时客房、核心区主卧/主浴、楼层具体房号等。
+    - 结果：需更新房间：____。操作：add/remove ____。已检查：□
 
-      g. **Temporary NPC**:
-             - **Creation (First Arrival)**: IF `/stat_data/临时NPC` does not exist, use `add` at path `/stat_data/临时NPC` with a FULL character object.
-             - **Data Generation**: Refer to `通用NPC模板.txt`. Generate `姓名`, `外貌`, `性格` based on the 3 archetypes (Violent/Opportunist/Guardian) or Random Template.
-             - **Update (Existing)**: Use `replace` to update specific fields (Health, Thoughts) if the NPC is already present.
-             - **Departure**: Use `remove` at path `/stat_data/临时NPC` to clear the slot when the NPC leaves the scene permanently.
+  **步骤 7：主线任务**
+  - 当前阶段 & 阶段目标（进度追踪）：
+    - 检查剧情中是否有事件推动了任务进度（如清除了1层敌人，庇护了1个家庭）。
+    - 若有，计算新的进度数值（如 "0/3" -> "1/3"），使用 `replace` 更新对应目标的字符串。
+    - 若所有目标进度均已达成（如全部 "3/3"），则判定该任务目标实现，更新这个任务目标的完成值为ture。如果设定中本任务目标达成有单独奖励的，发放奖励
+    - 全部任务目标达成，任务进度条满了以后，发放奖励并刷新下一阶段目标。
+    - 结果：需更新进度？是/否。新值：____。已检查：□
+  - 情报碎片：
+    - “伊甸”AI 新汇报 → add 新对象。
+    - 玩家完成探索 → replace 对应碎片状态为“已完成”。
+    - 结果：需 add/replace？是/否。已检查：□
 
-      h. **Main Quest**:
-             - **New Intel**: IF "伊甸" AI reports new intel, `add` a new intel object to `/stat_data/主线任务/情报碎片/${编号}`.
-             - **Quest Progression**: IF quest stage conditions are met (as per `<主线任务-星穹秩序>`), `replace` `/stat_data/主线任务/当前阶段` and `/stat_data/主线任务/阶段目标`. Announce completion and rewards in the narrative.
+  **步骤 8：变量操作规划（总结）**
+  - 汇总所有需要更新的路径和操作（replace/add/remove）。
+  - 关键提醒：
+    - 路径必须以 /stat_data/ 开头。
+    - 数值字段必须是 number（不带引号）。
+    - 非存在路径用 add，数组追加用 /-。
+    - 纯文本字段直接 replace 新描述。
+  - 规划操作列表：____（逐条列出路径 + op + value）。
 
-      i. **Room Status (MANDATORY)**:
-             - **Logic**: IF a character enters, leaves, or moves between rooms:
-               - Use `add` to append character name to the target room's `入住者` or `使用者` array.
-               - Use `remove` to delete character name from the previous room's array.
-             - **Paths**:
-               - 玄关: `/stat_data/房间/玄关/临时客房A入住者` or `临时客房B入住者`.
-               - 核心区: `/stat_data/房间/核心区/主卧室使用者` or `主浴室使用者`.
-               - 楼层: `/stat_data/房间/楼层房间/楼层20房间/${RoomNumber}/入住者` (e.g., /stat_data/房间/楼层房间/楼层20房间/2001/入住者).
-
-  2. **Variable Operation Planning**:
-      - Determine `replace`, `add`, `remove` operations.
-      - **CRITICAL**: Path MUST start with `/stat_data/`.
-      - **CRITICAL**: Numeric values MUST be numbers.
-
-  3. **Operation List**:
-      - List target paths: e.g., `/stat_data/世界/时间`, `/stat_data/浅见亚美/内心想法`.
+  **步骤 9：最终操作列表**
+  - 明确列出所有目标路径，例如：
+    /stat_data/世界/时间
+    /stat_data/庇护所/庇护所等级
+    /stat_data/浅见亚美/健康
+    /stat_data/房间/核心区/主卧室使用者
+    等。
   </UpdateAnalysis>
   <JSONPatch>
+
   [
-    { "op": "replace", "path": "/stat_data/世界/时间", "value": "${New Time}" },
-    { "op": "replace", "path": "/stat_data/浅见亚美/健康", "value": ${Number} },
-    { "op": "replace", "path": "/stat_data/浅见亚美/健康更新原因", "value": "${Reason}" },
-    { "op": "replace", "path": "/stat_data/浅见亚美/健康状况", "value": "${Status}" },
-    { "op": "replace", "path": "/stat_data/浅见亚美/内心想法", "value": "${Thoughts}" }
+    { "op": "replace", "path": "/stat_data/世界/时间", "value": "早晨 - 09:00" },
+    { "op": "replace", "path": "/stat_data/早川遥/登场状态", "value": "登场" },
+    { "op": "replace", "path": "/stat_data/早川遥/健康", "value": 85 },
+    { "op": "replace", "path": "/stat_data/早川遥/健康更新原因", "value": "+5, 摄入热量，环境温暖" },
+    { "op": "replace", "path": "/stat_data/早川遥/健康状况", "value": "健康" },
+    { "op": "replace", "path": "/stat_data/早川遥/衣着", "value": "略显脏旧的白色高领毛衣，灰色百褶裙，厚实的黑色连裤袜，外披着一张从家里带出来的薄毯子。" },
+    { "op": "replace", "path": "/stat_data/早川遥/神态样貌", "value": "苍白的脸上恢复了一丝血色，眼神中既有感激又带着深深的忐忑，双手紧紧交握在身前，维持着礼貌的站姿。" },
+    { "op": "replace", "path": "/stat_data/早川遥/动作姿势", "value": "站在玄关中央，身体微微前倾，向屏幕深深鞠躬后直起身，有些局促地拉着妹妹的手。" },
+    { "op": "replace", "path": "/stat_data/早川遥/内心想法", "value": "这……这就是他的家吗？好温暖……像天堂一样。可是，只要能让小舞活下去，无论他提出什么要求，哪怕是……我也必须答应。" },
+    { "op": "replace", "path": "/stat_data/早川舞/登场状态", "value": "登场" },
+    { "op": "replace", "path": "/stat_data/早川舞/健康", "value": 90 },
+    { "op": "replace", "path": "/stat_data/早川舞/健康更新原因", "value": "+5, 摄入热量，环境温暖" },
+    { "op": "replace", "path": "/stat_data/早川舞/健康状况", "value": "健康" },
+    { "op": "replace", "path": "/stat_data/早川舞/衣着", "value": "亮黄色的连帽卫衣（有些污渍），运动短裤，光腿穿着运动鞋，显得有些单薄，但此刻被温暖包围。" },
+    { "op": "replace", "path": "/stat_data/早川舞/神态样貌", "value": "嘴角还沾着一点点没擦干净的奶油，眼睛因为吃到了甜食而亮晶晶的，好奇地打量着周围的高科技设备。" },
+    { "op": "replace", "path": "/stat_data/早川舞/动作姿势", "value": "躲在姐姐身后半步，探出头看着屏幕，偶尔兴奋地跺跺脚感受地面的温度。" },
+    { "op": "replace", "path": "/stat_data/早川舞/内心想法", "value": "哇！真的好暖和！还有蛋糕吃！小哥哥同学果然是最厉害的！只要能留在这里，让我天天跳舞都行！" },
+    { "op": "replace", "path": "/stat_data/浅见亚美/健康", "value": 89 },
+    { "op": "replace", "path": "/stat_data/浅见亚美/健康更新原因", "value": "-1, 持续寒冷" },
+    { "op": "replace", "path": "/stat_data/相田哲也/健康", "value": 94 },
+    { "op": "replace", "path": "/stat_data/相田哲也/健康更新原因", "value": "-1, 持续寒冷" },
+    { "op": "replace", "path": "/stat_data/星野琉璃/健康", "value": 84 },
+    { "op": "replace", "path": "/stat_data/星野琉璃/健康更新原因", "value": "-1, 饥饿加剧" },
+    { "op": "replace", "path": "/stat_data/爱宫心爱/健康", "value": 64 },
+    { "op": "replace", "path": "/stat_data/爱宫心爱/健康更新原因", "value": "-1, 虚弱体质" },
+    { "op": "replace", "path": "/stat_data/爱宫铃/健康", "value": 69 },
+    { "op": "replace", "path": "/stat_data/爱宫铃/健康更新原因", "value": "-1, 寒冷" },
+    { "op": "replace", "path": "/stat_data/桃乐丝・泽巴哈/健康", "value": 77 },
+    { "op": "replace", "path": "/stat_data/桃乐丝・泽巴哈/健康更新原因", "value": "-1, 寒冷" },
+    { "op": "replace", "path": "/stat_data/何铃/健康", "value": 64 },
+    { "op": "replace", "path": "/stat_data/何铃/健康更新原因", "value": "-1, 伤痛" },
+    { "op": "replace", "path": "/stat_data/小泽花/健康", "value": 94 },
+    { "op": "replace", "path": "/stat_data/小泽花/健康更新原因", "value": "-1, 消耗" },
+    { "op": "replace", "path": "/stat_data/楼层其他住户/言语", "value": "走廊里偶尔传来几声压抑的咳嗽声，似乎有人在窥探这边的动静。" },
+    { "op": "replace", "path": "/stat_data/楼层其他住户/行为", "value": "2002室的门缝似乎动了一下，可能有人在观察。" }
   ]
   </JSONPatch>
   </UpdateVariable>

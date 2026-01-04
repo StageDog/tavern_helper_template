@@ -3,7 +3,14 @@
     <h2 class="section-title">📖 正文剧情 📖</h2>
     <div class="content-text">
       <template v-for="seg in segments" :key="seg.key">
-        <img v-if="seg.isImage" :src="seg.imageUrl" :alt="seg.altText" class="story-image" />
+        <img
+          v-if="seg.isImage"
+          :src="seg.imageUrl"
+          :alt="seg.altText"
+          class="story-image"
+          @load="scheduleResize"
+          @error="scheduleResize"
+        />
         <table v-else-if="seg.isTable" class="markdown-table">
           <thead>
             <tr>
@@ -12,7 +19,7 @@
           </thead>
           <tbody>
             <tr v-for="(row, rowIdx) in seg.tableRows" :key="rowIdx">
-              // eslint-disable-next-line vue/no-v-html
+              <!-- eslint-disable-next-line vue/no-v-html -->
               <td v-for="(cell, cellIdx) in row" :key="cellIdx" v-html="formatTableCell(cell)"></td>
             </tr>
           </tbody>
@@ -46,213 +53,324 @@ const props = defineProps<{
 }>();
 
 const segments = computed<Segment[]>(() => {
-  const text = props.content ?? '';
+  const rawText = props.content ?? '';
+  const text = normalizeStoryText(rawText);
   if (!text.trim()) {
     return [{ key: 'empty', text: '(暂无正文)' }];
   }
 
-  // 表格正则：匹配完整的 markdown 表格
-  const tablePattern = /(?:^|\n)(\|[\s\S]*?\|)(?:\n\|[\s\S]*?\|)*/g;
-
-  // 系统消息正则：>>> content <<< 格式（可带可选的 ** 标记）
-  const systemPattern = /(\*{0,2}>>>(?:[\s\S]*?)<<<\*{0,2})/g;
-
-  // 图片提示词正则：image###prompt### - 保留格式供生图插件提取
-  const imagePromptPattern = /image###([\s\S]*?)###/g;
-
-  // 绘图思考标签：<imgthink>...</imgthink> - 隐藏不显示
-  const imageThinkPattern = /<imgthink>[\s\S]*?<\/imgthink>/g;
-
-  // 通用正则：匹配图片、对话、思考、系统提示、伊甸/系统发言
-  const pattern = /!\[(.*?)\]\((.*?)\)|"([^"]+)"|\*([^*]+)\*|【(.*?)】|(?:^|\n)((?:伊甸|系统|System)[：:].*?)(?=$|\n)/g;
-  const result: Segment[] = [];
-
-  let lastIndex = 0;
-
-  // 先处理表格
-  for (const tableMatch of text.matchAll(tablePattern)) {
-    const index = tableMatch.index ?? 0;
-
-    // 处理表格之前的普通文本
-    if (index > lastIndex) {
-      result.push({ key: `t${result.length}`, text: text.slice(lastIndex, index) });
-    }
-
-    // 解析表格
-    const tableContent = tableMatch[0];
-    const rows = tableContent
-      .trim()
-      .split('\n')
-      .filter(row => row.trim().startsWith('|'));
-
-    if (rows.length >= 2) {
-      // 去掉分隔行（|---|---）
-      const dataRows = rows.filter(row => !row.includes('---') && !row.includes('---'));
-
-      if (dataRows.length >= 1) {
-        const headers = parseTableRow(dataRows[0]);
-        const tableRows = dataRows.slice(1).map(parseTableRow);
-
-        result.push({
-          key: `table${result.length}`,
-          isTable: true,
-          tableHeaders: headers,
-          tableRows: tableRows,
-        });
-      }
-    }
-
-    lastIndex = index + tableMatch[0].length;
-  }
-
-  // 处理绘图思考标签 <imgthink> - 隐藏不显示
-  for (const thinkMatch of text.matchAll(imageThinkPattern)) {
-    const index = thinkMatch.index ?? 0;
-
-    // 处理之前的内容
-    if (index > lastIndex) {
-      result.push({ key: `t${result.length}`, text: text.slice(lastIndex, index) });
-    }
-
-    // 跳过，不添加到结果中（隐藏）
-    lastIndex = index + thinkMatch[0].length;
-  }
-
-  // 处理图片提示词 image###prompt### - 保留格式作为代码块显示
-  for (const imgMatch of text.matchAll(imagePromptPattern)) {
-    const index = imgMatch.index ?? 0;
-
-    // 处理之前的内容
-    if (index > lastIndex) {
-      result.push({ key: `t${result.length}`, text: text.slice(lastIndex, index) });
-    }
-
-    // 作为代码块保留，供生图插件提取
-    result.push({
-      key: `imgprompt${result.length}`,
-      text: imgMatch[0],
-      className: 'image-prompt',
-    });
-
-    lastIndex = index + imgMatch[0].length;
-  }
-
-  // 处理系统消息（>>> content <<<）
-  for (const systemMatch of text.matchAll(systemPattern)) {
-    const index = systemMatch.index ?? 0;
-
-    // 处理公告之前的普通文本
-    if (index > lastIndex) {
-      result.push({ key: `t${result.length}`, text: text.slice(lastIndex, index) });
-    }
-
-    // 清理内容：移除周围的 >>> 和 <<<，以及可选的 **
-    let content = systemMatch[1];
-    content = content.replace(/^\*{0,2}>>>\s*/, '').replace(/\s*<<<\*{0,2}$/, '');
-
-    result.push({
-      key: `system${result.length}`,
-      text: content,
-      isSystem: true,
-      className: 'system-message',
-    });
-
-    lastIndex = index + systemMatch[0].length;
-  }
-
-  // 处理剩余的非表格、非系统消息内容
-  if (lastIndex < text.length) {
-    const remainingText = text.slice(lastIndex);
-    for (const match of remainingText.matchAll(pattern)) {
-      const index = (match.index ?? 0) + lastIndex;
-
-      // 处理匹配项之前的普通文本
-      if (index > lastIndex) {
-        result.push({ key: `t${result.length}`, text: remainingText.slice(lastIndex - lastIndex, match.index) });
-      }
-
-      if (match[2] != null) {
-        // 图片 ![]() - match[1]可能是alt text（可空），match[2]是URL
-        result.push({
-          key: `img${result.length}`,
-          text: match[0],
-          isImage: true,
-          altText: match[1] ?? '',
-          imageUrl: match[2],
-        });
-      } else if (match[6] != null) {
-        // 伊甸：消息 或 系统：消息（统一为系统消息样式）
-        result.push({
-          key: `system${result.length}`,
-          text: match[6],
-          isSystem: true,
-          className: 'system-message',
-        });
-      } else if (match[5] === '系统') {
-        // 【系统】消息 - 黄色单独样式
-        result.push({
-          key: `t${result.length}`,
-          text: '【系统】消息',
-          className: 'system-hint',
-        });
-      } else if (match[5] != null) {
-        // 【角色名】- 蓝色高亮样式
-        result.push({
-          key: `t${result.length}`,
-          text: `【${match[5]}】`,
-          className: 'character-name',
-        });
-      } else if (match[3] != null) {
-        // "中文对话"
-        result.push({
-          key: `t${result.length}`,
-          text: `“${match[3]}"`,
-          className: 'dialog-text',
-        });
-      } else if (match[4] != null) {
-        // "英文对话"
-        result.push({
-          key: `t${result.length}`,
-          text: `"${match[4]}"`,
-          className: 'dialog-text',
-        });
-      }
-
-      lastIndex = index + match[0].length;
-    }
-
-    if (lastIndex < text.length) {
-      result.push({ key: `t${result.length}`, text: text.slice(lastIndex) });
-    }
-  }
-
-  return result;
+  return buildSegments(text);
 });
 
-// 解析表格行
-function parseTableRow(row: string): string[] {
-  return row
-    .trim()
-    .split('|')
-    .slice(1, -1) // 去掉首尾的空字符串
-    .map(cell => cell.trim());
+let __resizeScheduled = false;
+function scheduleResize() {
+  if (__resizeScheduled) return;
+  __resizeScheduled = true;
+  requestAnimationFrame(() => {
+    __resizeScheduled = false;
+    window.dispatchEvent(new Event('resize'));
+  });
+}
+
+function normalizeStoryText(raw: string): string {
+  // 1) 隐藏绘图思维链
+  // 2) 隐藏 <image> 包裹标签，但保留其中的 image###...### 供生图插件提取
+  // 3) 归一化空白行，减少图片/提示词前后的“被动拉高”
+  return raw
+    .replace(/\r\n/g, '\n')
+    .replace(/<imgthink>[\s\S]*?<\/imgthink>/gi, '')
+    .replace(/<\/?image(?:\s[^>]*)?>/gi, '')
+    .replace(/\n{3,}/g, '\n\n');
+}
+
+type TableBlock = {
+  start: number;
+  end: number;
+  headers: string[];
+  rows: string[][];
+};
+
+function buildSegments(text: string): Segment[] {
+  // 系统消息块：>>> content <<<（可带 **）
+  const systemBlockRe = /\*{0,2}>>>([\s\S]*?)<<<\*{0,2}/g;
+  // 图片提示词块：image###prompt###（保留供插件提取）
+  const imagePromptRe = /image###([\s\S]*?)###/g;
+  // markdown 图片：![](url)
+  const mdImageRe = /!\[(.*?)\]\((.*?)\)/g;
+  // 单行系统提示：伊甸：... / 系统：... / System: ...
+  const systemLineRe = /^(?:伊甸|系统|System)[：:].*$/gm;
+
+  const out: Segment[] = [];
+  let cursor = 0;
+  let segId = 0;
+
+  const pushInline = (chunk: string) => {
+    const normalized = normalizeInlineChunk(chunk);
+    if (!normalized) return;
+    for (const seg of splitInline(normalized, () => `t${segId++}`)) out.push(seg);
+  };
+
+  while (cursor < text.length) {
+    const nextTable = findNextTable(text, cursor);
+    const nextSystemBlock = execFrom(systemBlockRe, text, cursor);
+    const nextImagePrompt = execFrom(imagePromptRe, text, cursor);
+    const nextMdImage = execFrom(mdImageRe, text, cursor);
+    const nextSystemLine = execFrom(systemLineRe, text, cursor);
+
+    const candidates: Array<
+      | { kind: 'table'; start: number; end: number; table: TableBlock }
+      | { kind: 'systemBlock'; start: number; end: number; content: string }
+      | { kind: 'imagePrompt'; start: number; end: number; raw: string }
+      | { kind: 'mdImage'; start: number; end: number; alt: string; url: string }
+      | { kind: 'systemLine'; start: number; end: number; content: string }
+    > = [];
+
+    if (nextTable) candidates.push({ kind: 'table', start: nextTable.start, end: nextTable.end, table: nextTable });
+    if (nextSystemBlock)
+      candidates.push({
+        kind: 'systemBlock',
+        start: nextSystemBlock.index ?? 0,
+        end: (nextSystemBlock.index ?? 0) + nextSystemBlock[0].length,
+        content: nextSystemBlock[1] ?? '',
+      });
+    if (nextImagePrompt)
+      candidates.push({
+        kind: 'imagePrompt',
+        start: nextImagePrompt.index ?? 0,
+        end: (nextImagePrompt.index ?? 0) + nextImagePrompt[0].length,
+        raw: nextImagePrompt[0],
+      });
+    if (nextMdImage)
+      candidates.push({
+        kind: 'mdImage',
+        start: nextMdImage.index ?? 0,
+        end: (nextMdImage.index ?? 0) + nextMdImage[0].length,
+        alt: nextMdImage[1] ?? '',
+        url: nextMdImage[2] ?? '',
+      });
+    if (nextSystemLine)
+      candidates.push({
+        kind: 'systemLine',
+        start: nextSystemLine.index ?? 0,
+        end: (nextSystemLine.index ?? 0) + nextSystemLine[0].length,
+        content: nextSystemLine[0] ?? '',
+      });
+
+    if (candidates.length === 0) {
+      pushInline(text.slice(cursor));
+      break;
+    }
+
+    // 选择最靠前的块；同位置时按优先级：table > systemBlock > imagePrompt > mdImage > systemLine
+    const priority: Record<string, number> = { table: 1, systemBlock: 2, imagePrompt: 3, mdImage: 4, systemLine: 5 };
+    candidates.sort((a, b) => (a.start !== b.start ? a.start - b.start : priority[a.kind] - priority[b.kind]));
+    const pick = candidates[0];
+
+    if (pick.start > cursor) {
+      pushInline(text.slice(cursor, pick.start));
+    }
+
+    if (pick.kind === 'table') {
+      out.push({
+        key: `table${segId++}`,
+        isTable: true,
+        tableHeaders: pick.table.headers,
+        tableRows: pick.table.rows,
+      });
+    } else if (pick.kind === 'systemBlock') {
+      out.push({
+        key: `system${segId++}`,
+        isSystem: true,
+        className: 'system-message',
+        text: pick.content.trim(),
+      });
+    } else if (pick.kind === 'imagePrompt') {
+      out.push({
+        key: `imgprompt${segId++}`,
+        className: 'image-prompt',
+        text: pick.raw,
+      });
+    } else if (pick.kind === 'mdImage') {
+      out.push({
+        key: `img${segId++}`,
+        isImage: true,
+        imageUrl: pick.url,
+        altText: pick.alt,
+        text: pick.url,
+      });
+    } else if (pick.kind === 'systemLine') {
+      out.push({
+        key: `system${segId++}`,
+        isSystem: true,
+        className: 'system-message',
+        text: pick.content.trim(),
+      });
+    }
+
+    cursor = Math.max(cursor, pick.end);
+  }
+
+  return out.length ? out : [{ key: 'empty', text: '(暂无正文)' }];
+}
+
+function normalizeInlineChunk(chunk: string): string {
+  // 收敛块与块之间的空白（尤其是生图结果插入后常出现的多余空行）
+  const normalized = chunk.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n');
+  if (!normalized.trim()) return '';
+  return normalized;
+}
+
+function execFrom(re: RegExp, text: string, from: number): RegExpExecArray | null {
+  re.lastIndex = from;
+  return re.exec(text);
+}
+
+function splitInline(chunk: string, nextKey: () => string): Segment[] {
+  if (!chunk) return [];
+
+  // 需求：仅保留【】高亮；所有中英文引号/单引号都作为对话高亮
+  const inlineRe = /【[^】\n]+】|“[^”\n]+”|‘[^’\n]+’|"[^"\n]+"|'[^'\n]+'/g;
+  const parts: Segment[] = [];
+  let cursor = 0;
+
+  for (const m of chunk.matchAll(inlineRe)) {
+    const start = m.index ?? 0;
+    const raw = m[0] ?? '';
+    if (start > cursor) {
+      parts.push({ key: nextKey(), text: chunk.slice(cursor, start) });
+    }
+
+    const isBracket = raw.startsWith('【');
+    parts.push({ key: nextKey(), text: raw, className: isBracket ? 'inline-bracket' : 'dialog-text' });
+    cursor = start + raw.length;
+  }
+
+  if (cursor < chunk.length) {
+    parts.push({ key: nextKey(), text: chunk.slice(cursor) });
+  }
+
+  return parts;
+}
+
+function findNextTable(text: string, from: number): TableBlock | null {
+  // 从 from 之后的下一行开始找，避免从行中间误判
+  let i = text.lastIndexOf('\n', Math.max(0, from - 1)) + 1;
+  if (i < from) {
+    const nl = text.indexOf('\n', from);
+    if (nl === -1) return null;
+    i = nl + 1;
+  }
+
+  while (i < text.length) {
+    const lineEnd = text.indexOf('\n', i);
+    const end = lineEnd === -1 ? text.length : lineEnd;
+    const line = text.slice(i, end);
+    const trimmed = line.trim();
+
+    if (trimmed.startsWith('|')) {
+      const headerLine = trimmed;
+
+      // 下一行必须是分隔行
+      const nextLineStart = end + 1;
+      if (nextLineStart >= text.length) return null;
+      const nextLineEnd = text.indexOf('\n', nextLineStart);
+      const nextEnd = nextLineEnd === -1 ? text.length : nextLineEnd;
+      const delimiterLine = text.slice(nextLineStart, nextEnd).trim();
+
+      if (isMarkdownTableDelimiter(delimiterLine)) {
+        const headers = splitMarkdownTableRow(headerLine);
+        const rows: string[][] = [];
+
+        let rowStart = nextEnd + 1;
+        let tableEnd = nextEnd;
+        while (rowStart < text.length) {
+          const rowLineEnd = text.indexOf('\n', rowStart);
+          const rowEnd = rowLineEnd === -1 ? text.length : rowLineEnd;
+          const rowLine = text.slice(rowStart, rowEnd);
+          const rowTrimmed = rowLine.trim();
+
+          if (!rowTrimmed.startsWith('|')) break;
+
+          const cells = splitMarkdownTableRow(rowTrimmed);
+          rows.push(normalizeRowCells(cells, headers.length));
+          tableEnd = rowEnd;
+          rowStart = rowEnd + 1;
+        }
+
+        if (headers.length >= 2) {
+          return {
+            start: i,
+            end: tableEnd,
+            headers,
+            rows: rows.length ? rows : [normalizeRowCells([], headers.length)],
+          };
+        }
+      }
+    }
+
+    i = end + 1;
+  }
+
+  return null;
+}
+
+function isMarkdownTableDelimiter(line: string): boolean {
+  // | --- | :---: | ---: | 等
+  return /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(line);
+}
+
+function splitMarkdownTableRow(row: string): string[] {
+  let s = row.trim();
+  if (s.startsWith('|')) s = s.slice(1);
+  if (s.endsWith('|')) s = s.slice(0, -1);
+
+  const cells: string[] = [];
+  let buf = '';
+  let escaped = false;
+
+  for (let idx = 0; idx < s.length; idx++) {
+    const ch = s[idx];
+    if (escaped) {
+      buf += ch;
+      escaped = false;
+      continue;
+    }
+    if (ch === '\\') {
+      escaped = true;
+      continue;
+    }
+    if (ch === '|') {
+      cells.push(buf.trim());
+      buf = '';
+      continue;
+    }
+    buf += ch;
+  }
+
+  cells.push(buf.trim());
+  return cells;
+}
+
+function normalizeRowCells(cells: string[], width: number): string[] {
+  const out = cells.slice(0, width);
+  while (out.length < width) out.push('');
+  return out;
 }
 
 // 格式化表格单元格（支持粗体、斜体等）- 安全处理防止 XSS
 function formatTableCell(cell: string): string {
   // 先转义 HTML 特殊字符
-  const safe = cell
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+  const safe = cell.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
   // 再处理支持的格式
   return safe
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/【(.*?)】/g, '【$1】');
+    .replace(/【([^】\n]+)】/g, '<span class="inline-bracket">【$1】</span>')
+    .replace(/“([^”\n]+)”/g, '<span class="dialog-text">“$1”</span>')
+    .replace(/‘([^’\n]+)’/g, '<span class="dialog-text">‘$1’</span>')
+    .replace(/"([^"\n]+)"/g, '<span class="dialog-text">"$1"</span>')
+    .replace(/'([^'\n]+)'/g, '<span class="dialog-text">\'$1\'</span>');
 }
 </script>
 
@@ -292,6 +410,11 @@ function formatTableCell(cell: string): string {
 
 .markdown-table td :deep(em) {
   color: var(--accent-blue);
+}
+
+.markdown-table td :deep(.inline-bracket) {
+  color: var(--accent-blue);
+  font-weight: 600;
 }
 
 .markdown-table tr:last-child td {
@@ -346,5 +469,10 @@ function formatTableCell(cell: string): string {
   font-size: 0.85em;
   color: var(--accent-gold);
   overflow-x: auto;
+}
+
+.inline-bracket {
+  color: var(--accent-blue, #bd93f9);
+  font-weight: 600;
 }
 </style>

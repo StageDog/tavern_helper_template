@@ -186,7 +186,10 @@ function parse_configuration(entry: Entry): (_env: any, argv: any) => webpack.Co
     experiments: {
       outputModule: !is_ui_entry,
     },
-    devtool: argv.mode === 'production' ? 'source-map' : 'eval-source-map',
+    // UI outputs are frequently copy-pasted/embedded into SillyTavern regex scripts.
+    // `eval-source-map` wraps modules in `eval("...")`, which can break when the output
+    // is re-serialized/embedded as a JS string (e.g. invalid escape/control chars).
+    devtool: argv.mode === 'production' ? 'source-map' : is_ui_entry ? 'source-map' : 'eval-source-map',
     watchOptions: {
       ignored: ['**/dist', '**/node_modules'],
     },

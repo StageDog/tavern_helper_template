@@ -303,6 +303,19 @@ import javascript_content from './script.ts?raw';
 import css_content from './style.scss?raw';
 ```
 
+### 5.5 SillyTavern 正则替换粘贴规范（重要）
+
+> 适用场景：你想把 `dist/**/index.html` 的整份内容粘贴到酒馆「正则脚本/正则替换」的“替换为”输入框里（通常会用到 `$1` 占位注入）。
+
+- **禁止**直接粘贴 `dist/**/index.html`：酒馆会将替换内容序列化为 JSON 字符串保存，JSON 会自动反转义 `\n`/`\t`/`\r`/`\b`/`\uXXXX` 等序列，导致打包脚本中的字符串/正则被破坏，最终在酒馆控制台出现 `Invalid or unexpected token` 并渲染空白。
+- **必须**改用 `dist/**/paste.html`：该文件由构建后脚本自动生成，保留 `$1` 注入位，同时将内联脚本包装为 base64 运行时解码执行，避免 JSON 反转义与 `$1` 误替换问题。
+- **如果你不需要“整页粘贴”**，优先用 URL 加载方式（推荐）：把 `dist/**/index.html` 上传到可访问地址（如 jsdelivr 或本地静态服务器），再用 jQuery `$('...').load(url)` 或使用同目录的 `dist/**/loader.js` 进行加载。
+- **更推荐的规避方式（从根上减少注入）**：对于“消息楼层 iframe”界面，不要把正文/选项用 `$1` 注入到 HTML 里，改用 `getCurrentMessageId()` 定位当前楼层，再用 `getChatMessages(message_id)` 读取该楼层消息文本并解析 `<content>/<option>`；这样基本不再依赖“整页粘贴”，也就不会触发 JSON 反转义破坏脚本的问题。
+
+**影响说明（提前告知）**
+- `paste.html` 的功能行为与原 `index.html` 等价，但会增加一次 base64 解码与脚本重建开销；在性能较弱的移动端首帧可能更慢，不建议频繁重复注入同一界面。
+- 如果你把数据注入从 `$1` 切换为 `getChatMessages` 读取：界面将以“聊天记录里保存的楼层消息”为唯一数据源；因此楼层消息本身必须包含 `<content>/<option>` 等标签（而不是只存在于正则替换结果里），否则界面会显示为空。
+
 ---
 
 ## 6. 酒馆变量系统
