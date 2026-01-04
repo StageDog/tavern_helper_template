@@ -13,9 +13,7 @@
             @click="setActiveCharacter(key)"
           >
             {{ getCharacterDisplayName(key) }}
-            <span class="status-pill" :class="getCharacterStatus(key)">{{
-              getCharacterStatus(key)
-            }}</span>
+            <span class="status-pill" :class="getCharacterStatus(key)">{{ getCharacterStatus(key) }}</span>
           </button>
         </div>
 
