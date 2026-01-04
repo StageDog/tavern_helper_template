@@ -33,7 +33,7 @@
               <div class="progress-bar-container">
                 <div class="progress-bar-value" :style="{ width: `${healthPercent(key)}%` }"></div>
               </div>
-              <div class="value-subtext">{{ getCharacter(key)?.健康更新原因 ?? '--' }}</div>
+              <div class="value-subtext">{{ getCharacterChange(key) }}</div>
             </div>
 
             <div class="details-grid">
@@ -158,7 +158,8 @@ function getCharacter(key: CharacterKey) {
 
 function getCharacterDisplayName(key: CharacterKey) {
   const char = getCharacter(key);
-  return char?.姓名 ?? key;
+  const name = typeof char?.姓名 === 'string' ? char.姓名.trim() : '';
+  return name ? name : key;
 }
 
 function setActiveCharacter(key: CharacterKey) {
