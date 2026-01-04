@@ -12,6 +12,16 @@ const CharacterSchema = z
     // 关系系统
     关系: z.enum(['拒绝', '交易', '顺从', '忠诚', '性奴']).optional(),
     关系倾向: z.enum(['拒绝', '交易', '顺从', '忠诚', '性奴']).optional(),
+    秩序刻印: z
+      .number()
+      .min(0)
+      .max(100)
+      .prefault(20)
+      .describe('Imp数值(0-100)，衡量关系深度。0-19拒绝, 20-39交易, 40-59顺从, 60-89忠诚, 90-100性奴'),
+    秩序刻印更新原因: z
+      .string()
+      .prefault('')
+      .describe('记录秩序刻印变化的原因和数值，格式示例：+3, 高级设施体验 / -5, 期望落空'),
 
     // 健康系统
     健康: z.coerce
@@ -52,6 +62,7 @@ const CharacterSchema = z
     神态样貌: '',
     动作姿势: '',
     内心想法: '',
+    秩序刻印更新原因: '',
     登场状态: '离场',
   });
 
@@ -182,11 +193,17 @@ const MissionSchema = z
   .object({
     当前阶段: z.string().prefault('阶段一：秩序的萌芽').describe('主线任务的当前阶段名称'),
     阶段目标: z
-      .array(z.string())
+      .array(
+        z.object({
+          描述: z.string(),
+          当前值: z.number().prefault(0),
+          目标值: z.number().prefault(1),
+        }),
+      )
       .prefault([
-        '肃清20、19、21层的敌对幸存者 0/3',
-        '庇护至少3个核心女性角色或家庭 0/3',
-        '完成一个公寓内部的情报碎片任务 0/1',
+        { 描述: '肃清20、19、21层的敌对幸存者', 当前值: 0, 目标值: 3 },
+        { 描述: '庇护至少3个核心女性角色或家庭', 当前值: 0, 目标值: 3 },
+        { 描述: '完成一个公寓内部的情报碎片任务', 当前值: 0, 目标值: 1 },
       ])
       .describe('当前阶段需要达成的目标列表'),
     目标完成状态: z
@@ -222,9 +239,9 @@ const MissionSchema = z
   .prefault({
     当前阶段: '阶段一：秩序的萌芽',
     阶段目标: [
-      '肃清20、19、21层的敌对幸存者 0/3',
-      '庇护至少3个核心女性角色或家庭 0/3',
-      '完成一个公寓内部的情报碎片任务 0/1',
+      { 描述: '肃清20、19、21层的敌对幸存者', 当前值: 0, 目标值: 3 },
+      { 描述: '庇护至少3个核心女性角色或家庭', 当前值: 0, 目标值: 3 },
+      { 描述: '完成一个公寓内部的情报碎片任务', 当前值: 0, 目标值: 1 },
     ],
     目标完成状态: {
       '0': false,
@@ -257,8 +274,11 @@ export const Schema = z.object({
   薛萍: CharacterSchema,
   小泽花: CharacterSchema,
 
-  // 动态 NPC (Optional)
-  临时NPC: CharacterSchema.optional().describe('当有临时NPC登场时使用，离场时设为undefined或重置'),
+  // 动态 NPC (Record)
+  临时NPC: z
+    .record(z.string(), CharacterSchema)
+    .prefault({})
+    .describe('存储所有临时NPC的状态，key为NPC姓名。新NPC登场时在此处添加。'),
 
   楼层其他住户: NeighborsSchema,
 });

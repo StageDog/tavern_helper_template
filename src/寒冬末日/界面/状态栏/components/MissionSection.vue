@@ -43,7 +43,12 @@
                 </svg>
               </div>
               <div class="goal-content">
-                <span class="goal-text" :class="{ completed: isGoalCompleted(idx) }">{{ goal }}</span>
+                <div class="goal-text" :class="{ completed: isGoalCompleted(idx) }">
+                  {{ getGoalText(goal) }}
+                </div>
+                <div class="goal-meta" v-if="hasGoalProgress(goal)">
+                  <span class="meta-chip">进度：{{ goal.当前值 ?? 0 }}/{{ goal.目标值 ?? 0 }}</span>
+                </div>
                 <span v-if="isGoalCompleted(idx)" class="goal-status-tag">已完成</span>
               </div>
             </div>
@@ -61,6 +66,7 @@
           <span class="toggle-text">🔍 情报碎片</span>
           <span class="intel-count">({{ intelCompleted }}/{{ intelTotal }})</span>
         </button>
+        <div v-if="intelTotal === 0" class="intel-empty-hint">暂无情报碎片，继续探索/搜刮可解锁新的线索。</div>
         <div v-show="isIntelExpanded" class="intel-list">
           <template v-if="intelTotal > 0">
             <div v-for="(intel, key) in store.data.主线任务.情报碎片" :key="key" class="intel-item" :class="intel.状态">
@@ -121,6 +127,17 @@ const progressPercent = computed(() => {
 function isGoalCompleted(idx: number): boolean {
   const key = String(idx);
   return store.data.主线任务.目标完成状态[key] === true;
+}
+
+function getGoalText(goal: any): string {
+  if (!goal) return '';
+  if (typeof goal === 'string') return goal;
+  if (typeof goal === 'object' && '描述' in goal) return goal.描述 as string;
+  return String(goal);
+}
+
+function hasGoalProgress(goal: any): boolean {
+  return goal && typeof goal === 'object' && goal.当前值 !== undefined && goal.目标值 !== undefined;
 }
 
 // 情报碎片统计
@@ -234,6 +251,13 @@ function getRingProgress(status: string): string {
   opacity: 0.7;
 }
 
+.intel-empty-hint {
+  margin-top: 6px;
+  font-size: 0.8em;
+  color: var(--text-color);
+  opacity: 0.7;
+}
+
 .goals-list,
 .intel-list {
   margin-top: 8px;
@@ -288,17 +312,30 @@ function getRingProgress(status: string): string {
 .goal-content {
   flex: 1;
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .goal-text {
   font-size: 0.9em;
   color: var(--text-color);
   line-height: 1.4;
-  flex: 1;
   transition: all 0.2s ease;
+}
+
+.goal-meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.meta-chip {
+  font-size: 0.75em;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--accent-blue);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .goal-text.completed {

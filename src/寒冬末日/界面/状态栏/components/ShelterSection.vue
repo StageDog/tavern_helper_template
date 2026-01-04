@@ -152,6 +152,7 @@ import { ref, computed } from 'vue';
 import { useDataStore } from '../../store';
 
 const store = useDataStore();
+// 默认折叠，保持原有交互
 const isMapExpanded = ref(false);
 const isAbilityExpanded = ref(false);
 
