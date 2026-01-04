@@ -220,7 +220,15 @@ function imprintPercent(key: CharacterKey) {
 
 function getRelationStage(key: CharacterKey) {
   const char = getCharacter(key);
-  return char?.关系 ?? '未知';
+  if (char?.关系) return char.关系;
+  // fallback: 推断自秩序刻印数值
+  const mark = typeof char?.秩序刻印 === 'number' ? char.秩序刻印 : null;
+  if (mark === null) return '未知';
+  if (mark < 20) return '拒绝';
+  if (mark < 40) return '交易';
+  if (mark < 60) return '顺从';
+  if (mark < 90) return '忠诚';
+  return '性奴';
 }
 
 function getRelationTendency(key: CharacterKey) {
