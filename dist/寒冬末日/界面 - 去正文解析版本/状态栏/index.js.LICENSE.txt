@@ -1,7 +1,1 @@
-/*!
- * pinia v3.0.4
- * (c) 2025 Eduardo San Martin Morote
- * @license MIT
- */
-
 /*! #__NO_SIDE_EFFECTS__ */

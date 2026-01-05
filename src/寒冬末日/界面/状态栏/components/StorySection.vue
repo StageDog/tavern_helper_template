@@ -58,13 +58,9 @@ const segments = computed<Segment[]>(() => {
   // 抽取 <content>/<game> 内正文；同时收集这些块外的 image###...### 备用
   const contentBlocks = [...rawText.matchAll(/<content[^>]*>([\s\S]*?)<\/content>/gi)];
   const gameBlocks = [...rawText.matchAll(/<game[^>]*>([\s\S]*?)<\/game>/gi)];
-  const mergedBlocks = [...contentBlocks, ...gameBlocks].sort(
-    (a, b) => (a.index ?? 0) - (b.index ?? 0),
-  );
+  const mergedBlocks = [...contentBlocks, ...gameBlocks].sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
 
-  const mainText = mergedBlocks.length
-    ? mergedBlocks.map(m => m[1] ?? '').join('\n')
-    : rawText;
+  const mainText = mergedBlocks.length ? mergedBlocks.map(m => m[1] ?? '').join('\n') : rawText;
 
   const contentRanges = mergedBlocks.map(m => ({
     start: m.index ?? 0,
