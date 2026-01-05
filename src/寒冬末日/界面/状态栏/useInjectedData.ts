@@ -65,9 +65,7 @@ function parseInjectedText(raw: string): InjectedData {
     : [];
 
   // 收集正文内已出现的 image### 以便去重
-  const promptsInContent = new Set(
-    [...contentBody.matchAll(/image###([\s\S]*?)###/g)].map(m => m[0]),
-  );
+  const promptsInContent = new Set([...contentBody.matchAll(/image###([\s\S]*?)###/g)].map(m => m[0]));
 
   // 捕获正文块之外的 image###...###，并去重
   const outsideImagePrompts: string[] = [];
@@ -82,31 +80,35 @@ function parseInjectedText(raw: string): InjectedData {
     }
   }
 
-  const mergedContent = [contentBody, outsideImagePrompts.join('\n')]
-    .filter(Boolean)
-    .join('\n\n');
+  const mergedContent = [contentBody, outsideImagePrompts.join('\n')].filter(Boolean).join('\n\n');
 
   // 去重：同一 image### 或 <image> 块只保留首次出现，防止双倍渲染
   const dedupedContent = mergedContent
     // 处理 image###...###
-    .replace(/image###([\s\S]*?)###/g, (() => {
-      const seen = new Set<string>();
-      return (m: string) => {
-        if (seen.has(m)) return '';
-        seen.add(m);
-        return m;
-      };
-    })())
+    .replace(
+      /image###([\s\S]*?)###/g,
+      (() => {
+        const seen = new Set<string>();
+        return (m: string) => {
+          if (seen.has(m)) return '';
+          seen.add(m);
+          return m;
+        };
+      })(),
+    )
     // 处理 <image>...</image>
-    .replace(/<image[^>]*>([\s\S]*?)<\/image>/gi, (() => {
-      const seen = new Set<string>();
-      return (m: string, inner: string) => {
-        const key = inner.trim();
-        if (seen.has(key)) return '';
-        seen.add(key);
-        return m;
-      };
-    })());
+    .replace(
+      /<image[^>]*>([\s\S]*?)<\/image>/gi,
+      (() => {
+        const seen = new Set<string>();
+        return (m: string, inner: string) => {
+          const key = inner.trim();
+          if (seen.has(key)) return '';
+          seen.add(key);
+          return m;
+        };
+      })(),
+    );
 
   return { content: dedupedContent, options };
 }
