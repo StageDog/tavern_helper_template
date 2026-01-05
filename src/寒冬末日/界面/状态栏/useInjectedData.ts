@@ -26,13 +26,23 @@ function stripHiddenBlocks(raw: string): string {
 function parseInjectedText(raw: string): InjectedData {
   const cleaned = stripHiddenBlocks(raw);
 
-  // 按原版规则：取最后一个 <content>...</content> / <game>...</game>（或以 </option> / 结尾收束）
+  // 定位正文块范围，便于识别正文外的 image###...###
   const contentMatch = cleaned.match(
     /(<(?:content|game)(?:\s[^>]*)?>(?![\s\S]*?<(?:content|game)(?:\s[^>]*)?>)[\s\S]*?(?:<\/(?:content|game)>|<\/option>|$))/i,
   );
+
+  const contentRanges = contentMatch
+    ? [
+        {
+          start: contentMatch.index ?? 0,
+          end: (contentMatch.index ?? 0) + (contentMatch[0]?.length ?? 0),
+        },
+      ]
+    : [];
+
   const optionMatch = cleaned.match(/(<option(?:\s[^>]*)?>(?![\s\S]*?<option(?:\s[^>]*)?>)[\s\S]*?(?:<\/option>|$))/i);
 
-  const content = contentMatch
+  const contentBody = contentMatch
     ? contentMatch[1]
         .replace(/^<(?:content|game)(?:\s[^>]*)?>/i, '')
         .replace(/<\/(?:content|game)>\s*$/i, '')
@@ -54,7 +64,51 @@ function parseInjectedText(raw: string): InjectedData {
         .filter(Boolean)
     : [];
 
-  return { content, options };
+  // 收集正文内已出现的 image### 以便去重
+  const promptsInContent = new Set(
+    [...contentBody.matchAll(/image###([\s\S]*?)###/g)].map(m => m[0]),
+  );
+
+  // 捕获正文块之外的 image###...###，并去重
+  const outsideImagePrompts: string[] = [];
+  for (const m of cleaned.matchAll(/image###([\s\S]*?)###/g)) {
+    const pos = m.index ?? -1;
+    const inContent = contentRanges.some(r => pos >= r.start && pos < r.end);
+    if (!inContent) {
+      const rawPrompt = m[0];
+      if (!promptsInContent.has(rawPrompt) && !outsideImagePrompts.includes(rawPrompt)) {
+        outsideImagePrompts.push(rawPrompt);
+      }
+    }
+  }
+
+  const mergedContent = [contentBody, outsideImagePrompts.join('\n')]
+    .filter(Boolean)
+    .join('\n\n');
+
+  // 去重：同一 image### 或 <image> 块只保留首次出现，防止双倍渲染
+  const dedupedContent = mergedContent
+    // 处理 image###...###
+    .replace(/image###([\s\S]*?)###/g, (() => {
+      const seen = new Set<string>();
+      return (m: string) => {
+        if (seen.has(m)) return '';
+        seen.add(m);
+        return m;
+      };
+    })())
+    // 处理 <image>...</image>
+    .replace(/<image[^>]*>([\s\S]*?)<\/image>/gi, (() => {
+      const seen = new Set<string>();
+      return (m: string, inner: string) => {
+        const key = inner.trim();
+        if (seen.has(key)) return '';
+        seen.add(key);
+        return m;
+      };
+    })());
+
+  return { content: dedupedContent, options };
 }
 
 function fetchFromCurrentMessage(isDebug: boolean): InjectedData | null {

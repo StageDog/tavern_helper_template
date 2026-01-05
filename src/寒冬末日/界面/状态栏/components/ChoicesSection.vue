@@ -71,7 +71,7 @@ const font_size = useLocalStorage<string>('eden_font_size_key', '16');
 const SETTINGS_PATH = 'ui_settings';
 
 function loadPersistedSettings() {
-  const vars = getVariables({ type: 'script' }) ?? {};
+  const vars = getVariables({ type: 'chat' }) ?? {};
   const saved = _.get(vars, SETTINGS_PATH, {}) as Record<string, string>;
   if (typeof saved.theme === 'string') theme.value = saved.theme;
   if (typeof saved.font_key === 'string') font_key.value = saved.font_key;
@@ -86,7 +86,7 @@ watch(
         _.set(vars, SETTINGS_PATH, { theme: t, font_key: f, font_size: s });
         return vars;
       },
-      { type: 'script' },
+      { type: 'chat' },
     );
   },
   { immediate: false },

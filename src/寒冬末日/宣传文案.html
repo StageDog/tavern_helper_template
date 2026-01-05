@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>寒冬末日：星穹秩序 · 进化版</title>
+    <style>
+      :root {
+        --bg-core: #0d1117;
+        --bg-panel: #161b22;
+        --border-color: #30363d;
+        --text-main: #c9d1d9;
+        --text-header: #ffffff;
+        --accent-primary: #58a6ff;
+        --accent-secondary: #79c0ff;
+        --accent-glow: rgba(88, 166, 255, 0.15);
+        --gold-accent: #f2cc60;
+      }
+
+      body {
+        background-color: var(--bg-core);
+        color: var(--text-main);
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji',
+          'Segoe UI Emoji';
+        line-height: 1.6;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+      }
+
+      .container {
+        background-color: var(--bg-panel);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 25px; /* 减少内边距 */
+        max-width: 800px;
+        /* 限制最大高度为视口高度的 90%，占满屏幕但不溢出 */
+        max-height: 90vh;
+        overflow-y: auto; /* 内容过多时才滚动 */
+        margin: 0 auto;
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+        position: relative;
+      }
+
+      /* 自定义滚动条 */
+      .container::-webkit-scrollbar {
+        width: 8px;
+      }
+      .container::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+      }
+      .container::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 4px;
+      }
+      .container::-webkit-scrollbar-thumb:hover {
+        background: var(--accent-primary);
+      }
+
+      /* 顶部装饰条 */
+      .container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent-primary), var(--gold-accent));
+      }
+
+      h1 {
+        color: var(--accent-primary);
+        text-align: center;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 15px;
+        margin-bottom: 20px; /* 减少间距 */
+        font-size: 1.6em; /* 稍微调小字体 */
+        letter-spacing: 1px;
+        text-shadow: 0 0 10px rgba(88, 166, 255, 0.3);
+      }
+
+      .quote-box {
+        background: linear-gradient(90deg, var(--accent-glow) 0%, transparent 100%);
+        border-left: 4px solid var(--accent-primary);
+        padding: 15px;
+        margin-bottom: 25px; /* 减少间距 */
+        border-radius: 0 6px 6px 0;
+      }
+
+      .quote-box p {
+        margin: 0;
+        font-style: italic;
+        color: #ffffff;
+        font-size: 1.1em;
+      }
+
+      .section {
+        margin-bottom: 30px;
+      }
+
+      h2 {
+        color: var(--accent-secondary);
+        font-size: 1.4em;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      h2::before {
+        content: '';
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background-color: var(--accent-secondary);
+        border-radius: 50%;
+        box-shadow: 0 0 8px var(--accent-secondary);
+      }
+
+      p {
+        margin-top: 0;
+        margin-bottom: 15px;
+      }
+
+      strong {
+        color: #ffffff;
+        font-weight: 600;
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
+
+      .feature-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border-color);
+        padding: 20px;
+        border-radius: 8px;
+        transition:
+          transform 0.2s,
+          border-color 0.2s;
+      }
+
+      .feature-card:hover {
+        transform: translateY(-2px);
+        border-color: var(--accent-primary);
+      }
+
+      .cta-box {
+        text-align: center;
+        margin-top: 30px; /* 减少间距 */
+        padding: 20px;
+        border: 1px solid var(--accent-primary);
+        border-radius: 12px;
+        background: radial-gradient(circle at center, rgba(88, 166, 255, 0.1) 0%, transparent 70%);
+      }
+
+      .cta-title {
+        color: var(--gold-accent);
+        font-size: 1.3em;
+        font-weight: bold;
+        margin-bottom: 15px;
+        text-shadow: 0 0 10px rgba(242, 204, 96, 0.2);
+      }
+
+      .cta-hint {
+        color: var(--text-main);
+        font-size: 0.9em;
+        opacity: 0.8;
+      }
+
+      /* 移动端适配 */
+      @media (max-width: 600px) {
+        .container {
+          padding: 20px;
+        }
+        h1 {
+          font-size: 1.4em;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>❄️ 寒冬末日：星穹秩序 · 全新进化 ❄️</h1>
+
+      <div class="quote-box">
+        <p>“从温暖的公寓孤岛，到掌控整片雪原的帝国霸主——这一次，你的秩序，将覆盖整个世界。”</p>
+      </div>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h2>💖 关系系统 · 步步惊喜</h2>
+          <p>从天马行空进化为<strong>完整的Imp秩序刻印数值</strong>！</p>
+          <p>
+            为实现多角色风格化互动效果，每位核心角色拥有0-100的精准数值轨迹。从【拒绝】到【性奴】，每个阶段解锁专属行为与语言模式。你的每一次资源分配，都真实撬动她们的内心天平。
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <h2>🌍 世界格局 · 雪原霸权</h2>
+          <p>视野从星穹公寓拓宽至整座城市！</p>
+          <p>
+            新增<strong>24个幸存者家庭</strong>与三大外部势力（雪狼帮、方舟教会、拾荒者联盟）。外交、战争、结盟……体验真正的区域霸权策略。
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <h2>👥 角色阵容 · 深度升级</h2>
+          <p>经典角色档案全面精修，新增多位高冲突角色。</p>
+          <p>
+            逐渐升级庇护所等级，完成主线任务...
+            解锁婀娜多姿的空姐、性感妖艳的主播格式奖励保障可玩性。无论是温柔守护还是禁忌刺激，总有一个让你心动。
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <h2>🖥️ UI体验 · 沉浸科幻</h2>
+          <p>升级<strong>电影级黑暗科幻界面</strong>！</p>
+          <p>主线面板、多层级地图、详情页双进度条... 每一页都像置身未来指挥舱，操作流畅，沉浸感爆表。</p>
+        </div>
+      </div>
+
+      <div class="section" style="margin-top: 30px">
+        <h2>🎮 玩法深度 · 三维共振</h2>
+        <p>
+          伊甸智能汇报、科技树、永久损失机制... 所有经典元素强化。 加入外部势力博弈、情报碎片解锁、动态天气窗口期。
+          步步为营的生存快感，与一统雪原的帝王快感，双倍享受！
+        </p>
+      </div>
+
+      <div class="cta-box">
+        <div class="cta-title">🌟 现在，选择你的开局！</div>
+        <p>
+          <strong>Lv1 硬核生存</strong> · 从物资匮乏的第一天开始，亲手铸就传奇<br />
+          <span style="opacity: 0.6">—— 或 ——</span><br />
+          <strong>Lv3 奢华开局</strong> · 直接成为星穹隐秘霸主，掌控全场
+        </p>
+        <div class="cta-hint">>>> 右滑本消息，选择心仪开局，立即进入全新《星穹秩序》世界 <<<</div>
+      </div>
+    </div>
+  </body>
+</html>
