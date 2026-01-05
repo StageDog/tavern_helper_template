@@ -10,10 +10,16 @@ const CharacterSchema = z
     姓名: z.string().prefault(''),
 
     // 关系系统
-    关系: z.enum(['拒绝', '交易', '顺从', '忠诚', '性奴']).optional(),
-    关系倾向: z.enum(['拒绝', '交易', '顺从', '忠诚', '性奴']).optional(),
+    关系: z
+      .enum(['拒绝', '交易', '顺从', '忠诚', '性奴'])
+      .prefault('拒绝')
+      .describe('角色当前对{{user}}的关系档位'),
+    关系倾向: z
+      .enum(['拒绝', '交易', '顺从', '忠诚', '性奴'])
+      .prefault('拒绝')
+      .describe('角色关系的倾向（可理解为更偏向于哪一档）'),
     秩序刻印: z
-      .number()
+      .coerce.number()
       .min(0)
       .max(100)
       .prefault(20)
@@ -52,6 +58,9 @@ const CharacterSchema = z
   })
   .prefault({
     姓名: '',
+    关系: '拒绝',
+    关系倾向: '拒绝',
+    秩序刻印: 20,
     健康: 100,
     健康更新原因: '',
     健康状况: '健康',
