@@ -170,11 +170,14 @@ watch(
 );
 
 function getCharacter(key: CharacterKey) {
+  // 某些转译流会把日文中点替换成占位符「?」，查找前先还原
+  const normalizedKey = typeof key === 'string' ? key.replace(/\?/g, '・') : key;
+
   if (typeof key === 'string' && key.startsWith('临时NPC:')) {
     const realName = key.split(':')[1];
     return store.data.临时NPC[realName];
   }
-  return store.data[key as keyof typeof store.data] as any;
+  return store.data[normalizedKey as keyof typeof store.data] as any;
 }
 
 function getCharacterChange(key: CharacterKey) {

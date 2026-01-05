@@ -1,0 +1,982 @@
+---
+description: 当用户需要创建基于 MVU Zod 系统的角色卡时，你应该参考本文件
+---
+# MVU Zod 组件包
+
+> **📌 版本说明**：本文档描述的是 MVU Zod 版本，是 MVU 系统的重大升级版本。对于旧的 MVU Beta 项目，请参考 [.cursor/rules/mvu变量框架.mdc](mvu变量框架.mdc)。
+
+MVU Zod 是一个基于 **Zod Schema** 和 **JSON Patch (RFC 6902)** 标准的变量管理框架，用于实现角色和世界的动态性。
+
+---
+
+## 目录
+
+- [1. 系统概述](#1-系统概述)
+- [2. 核心组件](#2-核心组件)
+- [3. 工作流程](#3-工作流程)
+- [4. Zod Schema 设计规范](#4-zod-schema-设计规范)
+- [5. 文件生成模块](#5-文件生成模块)
+- [6. JSON Patch 更新规范](#6-json-patch-更新规范)
+- [7. EJS 动态内容](#7-ejs-动态内容)
+- [8. HTML 状态栏](#8-html-状态栏)
+- [9. 迁移指南](#9-迁移指南)
+
+---
+
+## 1. 系统概述
+
+### 核心特性
+
+| 特性 | 说明 |
+|------|------|
+| **类型安全** | 基于 Zod 4.x 的 Schema 定义，提供运行时验证 |
+| **标准化更新** | 使用 JSON Patch (RFC 6902) 标准进行变量更新 |
+| **幂等操作** | 支持增量更新，确保 `Schema.parse(Schema.parse(data)) === Schema.parse(data)` |
+| **自动修正** | 使用 `z.transform()` 进行容错处理，而非直接拒绝 |
+
+### 数据存储
+
+MVU Zod 将变量数据存储在 `stat_data` 字段中：
+
+```typescript
+// 获取变量数据
+const stat_data = _.get(getVariables({type: 'message', message_id: 5}), 'stat_data');
+
+// 等价于
+const stat_data = Mvu.getMvuData({type: 'message', message_id: 5});
+```
+
+### 与 MVU Beta 的区别
+
+| 特性 | MVU Beta | MVU Zod |
+|------|----------|---------|
+| 类型定义 | YAML 描述 | Zod Schema（强类型） |
+| 更新格式 | 自定义 `_.set` | JSON Patch (RFC 6902) |
+| 边界控制 | 仅建议 | `z.transform()` 强制限制 |
+| 数据结构 | 数组 | 对象（`z.record()`） |
+
+---
+
+## 2. 核心组件
+
+MVU Zod 系统由以下 6 个核心模块组成：
+
+### 模块 1.0：变量结构设计（Zod 脚本）
+
+**功能**：使用 Zod Schema 定义变量的结构、类型和验证规则
+
+**输出文件**：`变量结构.js`
+
+**特点**：
+- 使用 Zod 4.x 定义变量结构
+- 提供类型安全和运行时验证
+- 支持增量更新和幂等操作
+- 为后续的变量初始化和更新提供结构约束
+
+### 模块 1.1：变量初始化
+
+**功能**：为 Zod Schema 中定义的变量生成符合类型约束的初始值
+
+**输出文件**：`[initvar]变量初始化.yaml`
+
+**特点**：
+- 基于模块 1.0 的 Schema 生成初始值
+- 使用 YAML 格式
+- 所有值必须符合 Schema 定义的类型
+
+### 模块 2：变量更新规则
+
+**功能**：为 Zod Schema 中定义的变量制定更新规则
+
+**输出文件**：`[mvu_update]变量更新规则.yaml`
+
+**特点**：
+- `type`：变量类型（string 类型可省略）
+- `format`、`range`、`category` 等可选字段
+- `check`：触发更新的条件和规则
+- 支持合并相似规则（如 `${六维}`）
+
+### 模块 3.1：变量列表
+
+**功能**：向 AI 展示当前变量的状态值
+
+**输出文件**：`变量列表.yaml`
+
+**核心内容**：
+```yaml
+---
+<status_current_variable>
+{{format_message_variable::stat_data}}
+</status_current_variable>
+```
+
+### 模块 3.2：变量输出格式
+
+**功能**：规定 AI 输出变量更新命令的标准格式
+
+**输出文件**：`[mvu_update]变量输出格式.yaml`
+
+**使用 JSON Patch (RFC 6902)** 标准进行变量更新：
+- `replace` - 替换现有值
+- `add` - 添加新项到数组或对象
+- `remove` - 删除项
+
+### 模块 4：动态内容展示
+
+**功能**：根据变量值动态调整内容
+
+**实现方式**：使用 EJS 条件判断，基于变量状态选择不同的内容
+
+**子模块**：
+- **4.1 分阶段角色设定**：好感度变化、故事进展等触发的角色行为差异
+- **4.2 动态世界内容**：场景描述、事件触发、内心独白等
+
+### 模块 5：HTML 状态栏
+
+**功能**：为用户提供直观的变量状态可视化界面
+
+**输出文件**：`状态栏.html`
+
+**特点**：
+- 实时显示重要变量的当前值
+- 进度条、文本等多种展示方式
+- 增强用户沉浸感
+
+---
+
+## 3. 工作流程
+
+```
+模块1.0（变量结构.js）
+         ↓
+模块1.1（[initvar]变量初始化.yaml）
+         ↓
+模块2（[mvu_update]变量更新规则.yaml）
+         ↓
+模块3.1（变量列表.yaml）
+         ↓
+模块3.2（[mvu_update]变量输出格式.yaml）
+         ↓
+模块4（分阶段角色设定/动态世界内容.xyaml）
+         ↓
+模块5（状态栏.html）
+```
+
+**执行顺序**：
+1. 按照模块顺序依次生成文件
+2. 后续模块需读取前置模块生成的文件
+3. 修改前置模块后需重新生成后续模块
+
+---
+
+## 4. Zod Schema 设计规范
+
+### 可用库
+
+**重要说明**：`z`（来自 Zod）和 `_`（来自 Lodash）默认可用，可以直接使用，无需再次导入。
+
+```js
+// ✅ 正确：直接使用
+好感度: z.coerce.number().transform(v => _.clamp(v, -100, 100))
+
+// ❌ 错误：不要重复导入
+import _ from 'lodash';
+import { z } from 'zod';
+```
+
+### Zod 版本要求
+
+**重要说明**：本项目使用 Zod 4.x 版本。
+
+- ✅ 使用 Zod 4.x 的所有标准功能
+- ❌ **禁止使用** `.passthrough()` 方法
+
+```js
+// ✅ 正确：使用 Zod 4.x 的标准方法
+export const Schema = z.object({
+  日期: z.string(),
+  好感度: z.coerce.number()
+});
+
+// ❌ 错误：不要使用 .passthrough()
+export const Schema = z.object({
+  日期: z.string()
+}).passthrough();
+```
+
+### 幂等操作原则
+
+Schema 设计必须支持增量更新，确保：
+
+```javascript
+Schema.parse(Schema.parse(input)) === Schema.parse(input)
+```
+
+### 类型定义规则
+
+#### 数字类型
+
+**优先使用** `z.coerce.number()`：
+
+```js
+// 推荐：自动转换字符串数字
+好感度: z.coerce.number()
+
+// 不推荐：无法处理字符串输入
+好感度: z.number()
+```
+
+**注意**：仅对数字使用 `z.coerce.xxx()`，其他类型直接使用基础类型
+
+#### 对象结构优于数组
+
+**推荐方式**（使用 record）：
+
+```js
+物品栏: z.record(
+  z.string().describe('物品名'),
+  z.object({
+    描述: z.string(),
+    数量: z.coerce.number()
+  })
+)
+```
+
+**不推荐**（使用 array）：
+
+```js
+物品栏: z.array(z.object({
+  名称: z.string(),
+  描述: z.string(),
+  数量: z.coerce.number()
+}))
+```
+
+**原因**：数组索引难以理解和维护，使用对象键更直观
+
+#### 对象 Schema 的选择策略
+
+| 场景 | Schema 定义 |
+|------|-------------|
+| 固定必需键 + 相同类型 | `z.record(z.enum(['key1', 'key2', ...]), valueType)` |
+| 固定可选键 + 相同类型 | `z.partialRecord(z.enum(['key1', 'key2', ...]), valueType)` |
+| 动态可选键 + 相同类型 | `z.record(z.string(), valueType)` |
+| 固定必需键 + 不同类型 | `z.object({ key1: type1, key2: type2, ... })` |
+| 部分必需键 + 动态键 | `z.intersection(z.object({ reqKey: type }), z.record(z.string(), type))` |
+
+#### 默认值设置
+
+**推荐**：
+
+```js
+z.string().prefault("默认值")
+```
+
+**不推荐**：
+
+```js
+z.string().default("默认值")
+```
+
+**重要**：除非 Explorer 明确要求，否则不要设置默认值
+
+#### 约束与验证规则
+
+**容错优先原则**：当接收到违反 schema 的更新时，优先使用 `z.transform` 进行修正，而非直接拒绝
+
+**推荐方式**（自动修正）：
+
+```js
+// 值限制在 0-100 之间
+好感度: z.coerce.number().transform(value => _.clamp(value, 0, 100))
+
+// 对象键数量限制：保留最新的 10 条记录
+记忆: z.record(z.string(), z.string()).transform(obj => {
+  return _(obj).entries().takeRight(10).fromPairs().value();
+})
+```
+
+**不推荐**（直接拒绝）：
+
+```js
+好感度: z.number().min(0).max(100)  // 会抛出错误
+```
+
+### 描述字段的使用
+
+仅在没有字段名来解释 schema 用途时才使用 `z.describe()`：
+
+```js
+// 应该使用 describe
+物品栏: z.record(
+  z.string().describe('物品名'),  // 键没有字段名，需要描述
+  z.object({ 描述: z.string() })
+)
+
+// 不应该使用 describe
+好感度: z.coerce.number().describe('好感度数值')  // ❌ 字段名已说明用途
+```
+
+### 避免重复定义
+
+尽可能合并相同的变量 schema，但不要为此定义额外的变量：
+
+```js
+// 可以接受（内联合并）
+export const Schema = z.object({
+  角色A: z.object({ 好感度: z.coerce.number() }),
+  角色B: z.object({ 好感度: z.coerce.number() })
+});
+
+// 不推荐（定义额外变量）
+const 角色Schema = z.object({ 好感度: z.coerce.number() });  // ❌ 不要这样做
+export const Schema = z.object({
+  角色A: 角色Schema,
+  角色B: 角色Schema
+});
+```
+
+### 函数类型的使用
+
+#### registerMvuSchema 的函数形式
+
+```typescript
+registerMvuSchema = (schema: z.ZodObject | (() => z.ZodObject)) => void
+```
+
+**直接传入 schema**：
+
+```js
+export const Schema = z.object({
+  日期: z.string(),
+});
+
+$(() => {
+  registerMvuSchema(Schema);
+})
+```
+
+**传入函数**（延迟计算）：
+
+```js
+$(() => {
+  registerMvuSchema(() => z.object({
+    日期: z.string(),
+    当前时区: z.string().prefault(() => Intl.DateTimeFormat().resolvedOptions().timeZone),
+  }));
+})
+```
+
+#### z.prefault / z.catch 的函数形式
+
+```js
+z.prefault(value | (() => value))
+```
+
+**动态值**（每次使用时重新计算）：
+
+```js
+记忆: z.record(
+  z.string().describe('记忆ID'),
+  z.object({
+    内容: z.string(),
+    $time: z.coerce.number().prefault(() => Date.now())  // 每次插入时生成新时间戳
+  })
+)
+```
+
+### 键顺序处理
+
+当需要处理键的插入时间相关操作时，使用 `_(data).entries()` 方法：
+
+```js
+// 保留最新的 10 条记录
+记忆: z.record(z.string(), z.string()).transform(obj => {
+  return _(obj).entries().takeRight(10).fromPairs().value();
+})
+```
+
+**使用时间戳排序**：
+
+```js
+记忆: z.record(
+  z.string().describe('记忆ID'),
+  z.object({
+    内容: z.string(),
+    $time: z.coerce.number().prefault(() => Date.now())
+  })
+).transform(obj => {
+  return _(obj)
+    .entries()
+    .sortBy(([_, v]) => v.$time)
+    .takeRight(10)
+    .fromPairs()
+    .value();
+})
+```
+
+### 标准输出格式
+
+```js
+import { registerMvuSchema } from 'https://testingcf.jsdelivr.net/gh/StageDog/tavern_resource/dist/util/mvu_zod.js';
+
+export const Schema = z.object({
+  // 在此定义你的变量结构
+  日期: z.string(),
+  时间: z.string(),
+  user: z.object({
+    身份: z.string(),
+    当前位置: z.string(),
+    好感度: z.coerce.number().transform(v => _.clamp(v, -100, 100))
+  }),
+});
+
+$(() => {
+  registerMvuSchema(Schema);
+})
+```
+
+---
+
+## 5. 文件生成模块
+
+### 模块 1.0：变量结构设计（Zod 脚本）
+
+**生成任务**：根据项目需求，使用 Zod 4.x 定义变量结构的 schema
+
+**输出文件**：`变量结构.js`
+
+**设计原则确认**：
+- 符合幂等操作要求
+- 数字类型使用 `z.coerce.number()`
+- 优先使用对象（record）而非数组
+- 仅在 Explorer 明确要求时添加约束和默认值
+- 使用 `z.transform()` 进行容错处理
+
+### 模块 1.1：变量初始化条目
+
+**生成任务**：读取 `变量结构.js`，基于 Schema 生成初始值
+
+**输出文件**：`[initvar]变量初始化.yaml`
+
+**YAML 格式规范**：
+- 纯净数据：禁止使用任何形式的注释
+- 所有值必须符合 Schema 中定义的类型要求
+- 结构必须与 Schema 定义一致
+
+**示例**：
+
+```yaml
+络络:
+  亲密度: 0
+  阅读日记数量: 0
+  拥有联系方式: false
+  物品栏: {}
+世界:
+  当前日期: 2025-07-26
+  当前星期: 星期五
+  当前时间: 17:36
+```
+
+### 模块 2：变量更新规则
+
+**生成任务**：读取 `变量结构.js`，为变量制定更新规则
+
+**输出文件**：`[mvu_update]变量更新规则.yaml`
+
+**基本结构**：
+
+```yaml
+---
+变量更新规则:
+  ${变量名}:
+    type: ${变量类型，string 可省略}
+    ${其他字段}
+    check:
+      - ${更新规则1}
+      - ${更新规则2}
+```
+
+**字段说明**：
+- `type`：数据类型，string 类型可省略
+- `format`：字符串格式约束
+- `range`：数值范围
+- `category`：数值分段说明
+- `check`：更新条件和规则
+
+**编写原则**：
+1. **合并相似规则**：使用占位符（如 `${六维}`）
+2. **嵌套相同对象**：减少 token 消耗
+3. **省略自明变量**：名称自解释的变量无需列出
+4. **String 类型省略**：字符串类型省略 `type` 字段
+
+**示例**：
+
+```yaml
+---
+变量更新规则:
+  世界:
+    当前时间:
+      format: ${xx历}-${YYYY/MM/DD}-${HH:MM}
+      check:
+        - 每次事件推进、休息或旅行后更新，保持时间流逝合理
+        - 若场景跳转跨度较大，应说明跳跃原因
+
+  主角:
+    能力面板.${六维}.数值:
+      type: number
+      range: 0~100
+      category:
+        20~40: 普通人
+        40~70: 冒险者常驻
+      check:
+        - 训练、战斗、重伤、系统奖励等显著事件才调整
+        - 单次变化不超过 ±10，除非剧情有明确强化/削弱
+
+  任务列表:
+    type: |-
+      {
+        [任务名: string]: {
+          类型: '主线' | '支线' | '每日' | '临危受命';
+          说明: string;
+          目标: string;
+          奖励: string;
+          惩罚: string;
+        }
+      }
+    check:
+      - 避免一次性添加超过3个主线任务，保持焦点
+      - 日常任务完成后可重置但需记录冷却
+```
+
+### 模块 3.1：变量列表
+
+**生成任务**：输出标准变量列表模板
+
+**输出文件**：`变量列表.yaml`
+
+**模板**：
+
+```yaml
+---
+<status_current_variable>
+{{format_message_variable::stat_data}}
+</status_current_variable>
+```
+
+### 模块 3.2：变量输出格式
+
+**生成任务**：输出标准变量输出格式模板
+
+**输出文件**：`[mvu_update]变量输出格式.yaml`
+
+**模板**：
+
+```yaml
+---
+变量输出格式:
+  rule:
+    - you should output the update analysis and the actual update commands in the end of the next reply
+    - the update commands must strictly follow the **JSON Patch (RFC 6902)** standard, but can only use the following operations: `replace` (replace the value of existing paths), `add` (only used to insert new items into an object or array), `remove`; that is, the output must be a valid JSON array containing operation objects
+  format: |-
+    <UpdateVariable>
+    <Analysis>$(IN ENGLISH, no more than 80 words)
+    - ${calculate time passed: ...}
+    - ${decide whether dramatic updates are allowed as it's in a special case or the time passed is more than usual: yes/no}
+    - ${analyze every variable based on its corresponding `check`, according only to current reply instead of previous plots: ...}
+    </Analysis>
+    <JSONPatch>
+    [
+      { "op": "replace", "path": "${/path/to/variable}", "value": "${new_value}" },
+      { "op": "add", "path": "${/path/to/object/newKey}", "value": "${content}" }
+      { "op": "remove", "path": "${/path/to/array/0}" },
+      ...
+    ]
+    </JSONPatch>
+    </UpdateVariable>
+```
+
+---
+
+## 6. JSON Patch 更新规范
+
+### 路径格式
+
+使用 JSON Pointer (RFC 6901) 格式：
+
+| 场景 | 格式示例 |
+|------|----------|
+| 嵌套对象 | `/角色关系/络络/亲密度` |
+| 数组索引 | `/记忆/0/事件` |
+| 数组末尾 | `/记忆/-` |
+| 特殊字符 | `/obj/key-name` |
+
+### 操作类型
+
+| 操作 | 作用 | 示例 |
+|------|------|------|
+| `replace` | 替换现有值 | `{ "op": "replace", "path": "/好感度", "value": 60 }` |
+| `add` | 向数组末尾添加或向对象添加新键 | `{ "op": "add", "path": "/记忆/-", "value": "新记忆" }` |
+| `remove` | 删除数组项或对象键 | `{ "op": "remove", "path": "/记忆/0" }` |
+
+### 更新示例
+
+**场景**：络络的好感度从 90 增加到 100
+
+```json
+[
+  {
+    "op": "replace",
+    "path": "/角色关系/络络/亲密度",
+    "value": 100
+  }
+]
+```
+
+**场景**：在记忆数组中，删除第一条记忆，添加新记忆
+
+```json
+[
+  {
+    "op": "remove",
+    "path": "/角色/记忆/0"
+  },
+  {
+    "op": "add",
+    "path": "/角色/记忆/-",
+    "value": { "时间": "2024-03", "事件": "并肩作战" }
+  }
+]
+```
+
+---
+
+## 7. EJS 动态内容
+
+### 模块 4.1：分阶段角色设定
+
+**功能**：根据变量值动态展示角色不同阶段的行为
+
+**输出文件**：`[角色名]分阶段设定.xyaml`
+
+**EJS 条件判断规则**：
+- 必须使用严格的一层 `if/else if` 结构
+- **严禁**在 EJS 块内声明任何局部变量
+- 不包含最终 `else` 分支，确保阶段数值范围覆盖所有可能值
+
+**模板**：
+
+```yaml
+---
+<[角色名的小写英文或拼音]_staged_performance>
+角色阶段:
+  描述: "${总体概述}"
+  行为指导: "${说明}"
+  变化倾向: "${说明}"
+
+${主名}:
+  associated_variable: ${关联变量名} (<%= getvar('stat_data.角色名.关联变量名') %>)
+  stage_names_overview:
+    - ${阶段1名称} (${阶段1范围})
+    - ${阶段2名称} (${阶段2范围})
+    - ${阶段3名称} (${阶段3范围})
+    - ${阶段max名称} (${阶段max范围})
+
+  <%_ if (getvar('stat_data.角色名.关联变量名') < 20) { _%>
+  ${阶段1名称}:
+    行为指导:
+      - "${行为1}"
+      - "${行为2}"
+      - "${行为3}"
+      - "${行为4}"
+    变化倾向:
+      - "${倾向1}"
+      - "${倾向2}"
+  <%_ } else if (getvar('stat_data.角色名.关联变量名') >= 20 && getvar('stat_data.角色名.关联变量名') < 50) { _%>
+  ${阶段2名称}:
+    行为指导:
+      - "${行为1}"
+      - "${行为2}"
+    变化倾向:
+      - "${倾向1}"
+  <%_ } ... _%>
+</[角色名的小写英文或拼音]_staged_performance>
+```
+
+### 模块 4.2：动态世界内容
+
+**功能**：根据变量状态生成动态的世界书内容
+
+**输出文件**：`动态世界内容.xyaml`
+
+**EJS 结构规范**：
+1. 错误优先处理：检查关键变量是否已定义
+2. 条件逻辑链：使用 `else if` 处理有效条件分支
+3. 禁止声明局部变量
+4. 每个分支的内容应该是完整的、自洽的指令
+5. 使用小写英文 XML 标签包裹提示词内容
+
+**模板**：
+
+```yaml
+---
+<%_ if (getvar('stat_data.角色名.好感度') === undefined) { _%>
+{{// 错误：关联变量未定义}}
+<%_ } else if (getvar('stat_data.角色名.好感度') < 20) { _%>
+<plot_guide>
+当前角色对 <user> 的好感度较低，处于陌生或警戒状态。
+</plot_guide>
+<%_ } else if (getvar('stat_data.角色名.好感度') >= 20 && getvar('stat_data.角色名.好感度') < 50) { _%>
+<plot_guide>
+当前角色对 <user> 的好感度处于初步认识阶段，可以进行日常交流。
+</plot_guide>
+<%_ } else if (getvar('stat_data.角色名.好感度') >= 50 && getvar('stat_data.角色名.好感度') < 80) { _%>
+<plot_guide>
+当前角色对 <user> 的好感度较高，可以安排更深入的互动。
+</plot_guide>
+<%_ } else if (getvar('stat_data.角色名.好感度') >= 80) { _%>
+<plot_guide>
+当前角色对 <user> 的好感度非常高，应安排表白事件或关键剧情。
+</plot_guide>
+<%_ } _%>
+```
+
+### 内容设计原则
+
+**模块 4.1（分阶段角色设定）**：
+- **阶段独立性**：每个阶段的描述必须是完整且自洽的
+- **独特性，避免升级**：新阶段应引入该阶段特有的行为，而非简单增强
+- **内容丰富性**：覆盖角色与 `<user>` 的互动、对其他 NPC 的态度、角色独立行为
+- **角色底线**：所有阶段的行为都不能违背角色的核心设定
+
+**模块 4.2（动态世界内容）**：
+- **指令性内容**：编写给 LLM 的指令性提示词
+- **独特性与逻辑性**：每个区间触发的内容与变量状态逻辑相符
+
+---
+
+## 8. HTML 状态栏
+
+### 模块 5：交互式 HTML 状态栏
+
+**功能**：创建可交互、能动态展示 MVU 变量的状态栏
+
+**输出文件**：`状态栏.html`
+
+### 可用库
+
+状态栏可以直接使用以下全局库：
+- **jQuery** - DOM 操作
+- **jQuery UI** - UI 组件
+- **lodash** (`_`) - 工具函数
+- **Zod** (`z`) - 类型验证
+- **toastr** - 提示消息
+
+### 数据获取
+
+```javascript
+const all_variables = getAllVariables();
+const characterData = all_variables.stat_data;
+```
+
+### 初始化流程
+
+```javascript
+async function init() {
+    /* 等待 MVU 系统初始化完成 */
+    await waitGlobalInitialized('Mvu');
+
+    /* 填充数据 */
+    populateCharacterData();
+
+    /* 绑定事件 */
+    $('.section-header').on('click', function () {
+        toggleSection($(this));
+    });
+}
+
+$(errorCatched(init));
+```
+
+### 约束
+
+- **必须使用 jQuery** 进行 DOM 操作
+- **必须使用 `_.get()`** 安全获取嵌套变量
+- **必须使用 `/**/` 格式**的注释，禁止使用 `//`
+- **必须使用 `errorCatched`** 包装主初始化函数
+- **必须在 `$(() => {})`** 中执行初始化代码
+- **必须等待** `waitGlobalInitialized('Mvu')` 完成后再访问数据
+
+### HTML 结构要求
+
+- 只需 `<head>` 和 `<body>`，无需完整文档声明
+- 根据角色设定或氛围编写样式
+- 若无特殊要求，设计为卡片式结构，不设置整体背景颜色
+- 为需要动态更新的元素分配唯一的 `id`
+
+### 完整模板
+
+```html
+<head>
+    <style>
+        /* 样式定义 */
+    </style>
+    <script type="module">
+        /* 进度条辅助函数 */
+        function updateProgressBar(barId, valueId, rawValue, min = 0, max = 100, color = '#667eea') {
+            const numericValue = parseFloat(rawValue);
+            if (!isNaN(numericValue)) {
+                const clampedValue = _.clamp(numericValue, min, max);
+                const percentage = max - min === 0 ? 0 : ((clampedValue - min) / (max - min)) * 100;
+                $(`#${valueId}`).text(clampedValue);
+                $(`#${barId}`).css({ width: `${percentage}%`, backgroundColor: color });
+            } else {
+                $(`#${valueId}`).text(rawValue);
+            }
+        }
+
+        /* 填充状态栏数据 */
+        function populateCharacterData() {
+            try {
+                const all_variables = getAllVariables();
+                const characterData = all_variables.stat_data;
+
+                if (!characterData) {
+                    $('#status-card').html("<div class='error-tip'>无法加载状态数据</div>");
+                    return;
+                }
+
+                /* 使用 _.get 安全获取变量值 */
+                $('#current-time').text(_.get(characterData, '世界.当前时间', 'N/A'));
+
+                /* 更新进度条 */
+                updateProgressBar(
+                    'affection-bar',
+                    'affection-value',
+                    _.get(characterData, '角色.好感度', 0),
+                    0, 100, '#ff6b9d'
+                );
+            } catch (error) {
+                $('#status-card').html(`<div class='error-tip'>状态栏加载出错: ${error.message}</div>`);
+            }
+        }
+
+        /* 切换标签 */
+        function switchTab(tabName, $tabElement) {
+            $('.tab-button').removeClass('active');
+            $('.tab-panel').removeClass('active');
+            if ($tabElement) {
+                $tabElement.addClass('active');
+            } else {
+                $(`[data-tab="${tabName}"]`).addClass('active');
+            }
+            $(`#tab-content-${tabName}`).addClass('active');
+        }
+
+        /* 初始化 */
+        async function init() {
+            await waitGlobalInitialized('Mvu');
+            populateCharacterData();
+            $('.tab-button').on('click', function () {
+                const tabName = $(this).data('tab');
+                switchTab(tabName, $(this));
+            });
+        }
+
+        $(errorCatched(init));
+    </script>
+</head>
+<body>
+    <!-- HTML 结构 -->
+</body>
+```
+
+---
+
+## 9. 迁移指南
+
+### 从 MVU Beta 迁移
+
+#### 第 1 步：编写 Zod Schema
+
+```javascript
+import { z } from 'zod'
+import _ from 'lodash'
+
+const Schema = z.object({
+  好感度: z.coerce.number()
+    .transform(v => _.clamp(v, 0, 100)),
+
+  角色关系: z.record(
+    z.object({
+      亲密度: z.coerce.number(),
+      信任度: z.coerce.number()
+    })
+  ),
+
+  记忆: z.array(z.string())
+}).strict()
+
+export default Schema
+```
+
+#### 第 2 步：更新变量初始化格式
+
+```yaml
+# 旧版本（JSON5）
+{
+  "好感度": 0,
+  "角色关系": [
+    { "name": "络络", "亲密度": 50 }
+  ]
+}
+
+# 新版本（YAML，基于 Schema）
+好感度: 0
+角色关系:
+  络络:
+    亲密度: 50
+    信任度: 30
+记忆: []
+```
+
+#### 第 3 步：更新变量更新规则
+
+```yaml
+# 旧版本
+好感度:
+  type: number
+  range: 0-100
+  check: 当角色表现出喜爱时增加
+
+# 新版本（简化，因为约束已在 Schema 中）
+好感度:
+  check: 当角色表现出喜爱时增加
+  # type 和 range 已在 Schema 中定义
+```
+
+#### 第 4 步：更新指令集输出格式
+
+```yaml
+# 旧版本
+输出格式: |
+  _.set('好感度', 60)
+  _.add('记忆', '新记忆')
+
+# 新版本（JSON Patch）
+输出格式: |
+  [
+    { "op": "replace", "path": "/好感度", "value": 60 },
+    { "op": "add", "path": "/记忆/-", "value": "新记忆" }
+  ]
+```
+
+---
+
+## 重要提示
+
+1. **类型安全**：所有操作都经过 Zod Schema 验证，确保数据一致性和正确性
+2. **幂等性**：确保 `Schema.parse(Schema.parse(data))` 等于 `Schema.parse(data)`
+3. **容错优先**：使用 `z.transform()` 进行修正，而非直接拒绝输入
+4. **模块化使用**：各功能模块基于此框架进行构建，理解核心框架是高效使用的基础
+5. **文件顺序**：按照模块顺序依次生成，修改前置模块后需重新生成后续模块

@@ -54,12 +54,46 @@ const props = defineProps<{
 
 const segments = computed<Segment[]>(() => {
   const rawText = props.content ?? '';
-  const text = normalizeStoryText(rawText);
-  if (!text.trim()) {
+
+  // 抽取 <content>/<game> 内正文；同时收集这些块外的 image###...### 备用
+  const contentBlocks = [...rawText.matchAll(/<content[^>]*>([\s\S]*?)<\/content>/gi)];
+  const gameBlocks = [...rawText.matchAll(/<game[^>]*>([\s\S]*?)<\/game>/gi)];
+  const mergedBlocks = [...contentBlocks, ...gameBlocks].sort(
+    (a, b) => (a.index ?? 0) - (b.index ?? 0),
+  );
+
+  const mainText = mergedBlocks.length
+    ? mergedBlocks.map(m => m[1] ?? '').join('\n')
+    : rawText;
+
+  const contentRanges = mergedBlocks.map(m => ({
+    start: m.index ?? 0,
+    end: (m.index ?? 0) + (m[0]?.length ?? 0),
+  }));
+
+  const outsideImagePrompts: string[] = [];
+  for (const m of rawText.matchAll(/image###([\s\S]*?)###/g)) {
+    const pos = m.index ?? -1;
+    const inContent = contentRanges.some(r => pos >= r.start && pos < r.end);
+    if (!inContent) outsideImagePrompts.push(m[0]);
+  }
+
+  const text = normalizeStoryText(mainText);
+  if (!text.trim() && outsideImagePrompts.length === 0) {
     return [{ key: 'empty', text: '(暂无正文)' }];
   }
 
-  return buildSegments(text);
+  const segs = buildSegments(text);
+  // 未包裹在 <content>/<game> 的 image###...### 追加到末尾展示
+  outsideImagePrompts.forEach((raw, idx) => {
+    segs.push({
+      key: `imgprompt_extra${segs.length + idx}`,
+      className: 'image-prompt',
+      text: raw,
+    });
+  });
+
+  return segs.length ? segs : [{ key: 'empty', text: '(暂无正文)' }];
 });
 
 let __resizeScheduled = false;

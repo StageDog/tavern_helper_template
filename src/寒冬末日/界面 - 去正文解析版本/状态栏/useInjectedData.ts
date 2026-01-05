@@ -74,27 +74,14 @@ function fetchFromCurrentMessage(isDebug: boolean): InjectedData | null {
   }
 }
 
-function getMockData(): InjectedData {
-  return {
-    options: ['前往尖叫声传来的方向查看', '立刻寻找房间躲避', '呼叫其他幸存者支援'],
-  };
-}
-
 export function useInjectedData() {
   const options = ref<string[]>([]);
 
-  // 开发模式检测 (通过 URL 查询参数)
+  // 调试模式检测 (通过 URL 查询参数)
   const search = new URLSearchParams(window.location.search);
-  const isDevMode = search.has('dev');
-  const isDebug = isDevMode || search.has('debug');
+  const isDebug = search.has('debug') || search.has('dev');
 
   const refresh = () => {
-    if (isDevMode) {
-      const mockData = getMockData();
-      options.value = mockData.options;
-      return;
-    }
-
     const fromMsg = fetchFromCurrentMessage(isDebug); // 同步调用
     if (fromMsg) {
       options.value = fromMsg.options;

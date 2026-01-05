@@ -1,6 +1,6 @@
 <template>
   <section id="characters-section" class="section">
-    <h2 class="section-title">?? 登场角色 ??</h2>
+    <h2 class="section-title">👤 登场角色 👤</h2>
     <div class="status-tabs-container">
       <template v-if="active_character_keys.length > 0">
         <div class="tab-buttons">
@@ -27,7 +27,7 @@
           <div class="status-grid">
             <div class="status-item health-section">
               <div class="health-section-header">
-                <div class="label">?? 健康</div>
+                <div class="label">❤️ 健康</div>
                 <div class="value">{{ getCharacter(key)?.健康 ?? '--' }}</div>
               </div>
               <div class="health-status-subtext">{{ getCharacter(key)?.健康状况 ?? '--' }}</div>
@@ -39,7 +39,7 @@
 
             <div class="status-item imprint-section">
               <div class="health-section-header">
-                <div class="label">?? 秩序刻印</div>
+                <div class="label">🔱 秩序刻印</div>
                 <div class="value">{{ getCharacter(key)?.秩序刻印 ?? '--' }}</div>
               </div>
               <div class="imprint-status-subtext">
@@ -58,33 +58,33 @@
 
             <div class="details-grid">
               <div class="status-item">
-                <div class="label">?? 衣着</div>
+                <div class="label">👚 衣着</div>
                 <div class="value">{{ getCharacter(key)?.衣着 ?? '--' }}</div>
               </div>
               <div class="status-item">
-                <div class="label">?? 舌唇</div>
+                <div class="label">👅 舌唇</div>
                 <div class="value">{{ getCharacter(key)?.舌唇 ?? '--' }}</div>
               </div>
               <div class="status-item">
-                <div class="label">?? 胸乳</div>
+                <div class="label">🍈 胸乳</div>
                 <div class="value">{{ getCharacter(key)?.胸乳 ?? '--' }}</div>
               </div>
               <div class="status-item">
-                <div class="label">?? 私穴</div>
+                <div class="label">🌸 私穴</div>
                 <div class="value">{{ getCharacter(key)?.私穴 ?? '--' }}</div>
               </div>
               <div class="status-item">
-                <div class="label">?? 神态样貌</div>
+                <div class="label">😊 神态样貌</div>
                 <div class="value">{{ getCharacter(key)?.神态样貌 ?? '--' }}</div>
               </div>
               <div class="status-item">
-                <div class="label">?? 动作姿势</div>
+                <div class="label">💃 动作姿势</div>
                 <div class="value">{{ getCharacter(key)?.动作姿势 ?? '--' }}</div>
               </div>
             </div>
 
             <div class="status-item">
-              <div class="label">?? 内心想法</div>
+              <div class="label">💭 内心想法</div>
               <div class="value thought-text">{{ getCharacter(key)?.内心想法 ?? '--' }}</div>
             </div>
           </div>
@@ -170,11 +170,14 @@ watch(
 );
 
 function getCharacter(key: CharacterKey) {
+  // 某些转译流会把日文中点「・」替换成占位符「?」，查数据前先还原
+  const normalizedKey = typeof key === 'string' ? (key as string).replace(/\?/g, '・') : key;
+
   if (typeof key === 'string' && key.startsWith('临时NPC:')) {
     const realName = key.split(':')[1];
     return store.data.临时NPC[realName];
   }
-  return store.data[key as keyof typeof store.data] as any;
+  return store.data[normalizedKey as keyof typeof store.data] as any;
 }
 
 function getCharacterChange(key: CharacterKey) {

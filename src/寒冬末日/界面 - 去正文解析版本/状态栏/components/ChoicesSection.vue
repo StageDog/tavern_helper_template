@@ -68,6 +68,29 @@ const palette_open = ref(false);
 const theme = useLocalStorage<string>('eden_theme', 'apocalypse_tech');
 const font_key = useLocalStorage<string>('eden_font_key', 'yahei');
 const font_size = useLocalStorage<string>('eden_font_size_key', '16');
+const SETTINGS_PATH = 'ui_settings';
+
+function loadPersistedSettings() {
+  const vars = getVariables({ type: 'script' }) ?? {};
+  const saved = _.get(vars, SETTINGS_PATH, {}) as Record<string, string>;
+  if (typeof saved.theme === 'string') theme.value = saved.theme;
+  if (typeof saved.font_key === 'string') font_key.value = saved.font_key;
+  if (typeof saved.font_size === 'string') font_size.value = saved.font_size;
+}
+
+watch(
+  [theme, font_key, font_size],
+  ([t, f, s]) => {
+    updateVariablesWith(
+      vars => {
+        _.set(vars, SETTINGS_PATH, { theme: t, font_key: f, font_size: s });
+        return vars;
+      },
+      { type: 'script' },
+    );
+  },
+  { immediate: false },
+);
 
 const palette_button = ref<HTMLElement | null>(null);
 const palette_modal = ref<HTMLElement | null>(null);
@@ -116,10 +139,9 @@ watch(
 );
 
 function handleChoiceClick(text: string) {
-  const trigger = (window as any).triggerSlash;
-  if (typeof trigger === 'function') {
+  if (typeof triggerSlash === 'function') {
     try {
-      trigger(`/send ${text} | /trigger await=true`);
+      triggerSlash(`/send ${text} | /trigger await=true`);
       return;
     } catch {
       alert(`指令发送失败: ${text}`);
@@ -141,6 +163,7 @@ function onDocumentClick(ev: MouseEvent) {
 }
 
 onMounted(() => {
+  loadPersistedSettings();
   document.addEventListener('click', onDocumentClick);
 });
 

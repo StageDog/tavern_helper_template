@@ -12,7 +12,7 @@
       <div class="goals-progress-bar">
         <div class="progress-header">
           <span>🎯 阶段目标进度</span>
-          <span class="progress-text">{{ completedGoals }}/{{ store.data.主线任务.阶段目标.length }}</span>
+          <span class="progress-text">{{ completedGoals }}/{{ stageTargets.length }}</span>
         </div>
         <div class="progress-track">
           <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
@@ -27,15 +27,15 @@
           <span class="goals-count">({{ completedGoals }}/{{ store.data.主线任务.阶段目标.length }})</span>
         </button>
         <div v-show="isGoalsExpanded" class="goals-list">
-          <template v-if="store.data.主线任务.阶段目标.length > 0">
+          <template v-if="stageTargets.length > 0">
             <div
-              v-for="(goal, idx) in store.data.主线任务.阶段目标"
-              :key="idx"
+              v-for="(goal, idx) in stageTargets"
+              :key="goal.key || idx"
               class="goal-item"
-              :class="{ completed: isGoalCompleted(idx) }"
+              :class="{ completed: isGoalCompleted(goal.key, idx) }"
             >
               <div class="goal-checkbox">
-                <svg v-if="isGoalCompleted(idx)" viewBox="0 0 24 24" class="check-icon">
+                <svg v-if="isGoalCompleted(goal.key, idx)" viewBox="0 0 24 24" class="check-icon">
                   <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
                 </svg>
                 <svg v-else viewBox="0 0 24 24" class="check-icon empty">
@@ -43,13 +43,13 @@
                 </svg>
               </div>
               <div class="goal-content">
-                <div class="goal-text" :class="{ completed: isGoalCompleted(idx) }">
+                <div class="goal-text" :class="{ completed: isGoalCompleted(goal.key, idx) }">
                   {{ getGoalText(goal) }}
                 </div>
                 <div class="goal-meta" v-if="hasGoalProgress(goal)">
                   <span class="meta-chip">进度：{{ goal.当前值 ?? 0 }}/{{ goal.目标值 ?? 0 }}</span>
                 </div>
-                <span v-if="isGoalCompleted(idx)" class="goal-status-tag">已完成</span>
+                <span v-if="isGoalCompleted(goal.key, idx)" class="goal-status-tag">已完成</span>
               </div>
             </div>
           </template>
@@ -114,19 +114,38 @@ const store = useDataStore();
 const isGoalsExpanded = ref(false);
 const isIntelExpanded = ref(false);
 
-// 阶段目标完成状态存储
-const completedGoals = computed(() => store.data.主线任务.阶段目标.filter((_, idx) => isGoalCompleted(idx)).length);
+type StageTarget = { key: string; 描述: string; 当前值: number; 目标值: number };
+const stageTargets = computed<StageTarget[]>(() => {
+  const raw = store.data.主线任务.阶段目标 as any;
+  if (Array.isArray(raw)) {
+    return (raw as any[]).map((t, idx) => ({
+      key: String(idx),
+      描述: t?.描述 ?? '',
+      当前值: Number(t?.当前值 ?? 0),
+      目标值: Number(t?.目标值 ?? 0),
+    }));
+  }
+  return Object.entries(raw ?? {}).map(([key, t]) => ({
+    key,
+    描述: (t as any)?.描述 ?? key,
+    当前值: Number((t as any)?.当前值 ?? 0),
+    目标值: Number((t as any)?.目标值 ?? 0),
+  }));
+});
+
+const completedGoals = computed(() => stageTargets.value.filter((g, idx) => isGoalCompleted(g.key, idx)).length);
 
 const progressPercent = computed(() => {
-  const total = store.data.主线任务.阶段目标.length;
+  const total = stageTargets.value.length;
   if (total === 0) return 0;
   return Math.round((completedGoals.value / total) * 100);
 });
 
-// 从 store 读取目标完成状态
-function isGoalCompleted(idx: number): boolean {
-  const key = String(idx);
-  return store.data.主线任务.目标完成状态[key] === true;
+function isGoalCompleted(goalKey: string, idx: number): boolean {
+  const status = store.data.主线任务.目标完成状态 ?? {};
+  if (goalKey in status) return status[goalKey] === true;
+  const fallbackKey = String(idx);
+  return status[fallbackKey] === true;
 }
 
 function getGoalText(goal: any): string {

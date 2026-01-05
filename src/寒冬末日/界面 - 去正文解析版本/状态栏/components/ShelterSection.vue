@@ -134,8 +134,8 @@
           <span class="toggle-text">💡 庇护所能力列表</span>
         </button>
         <div v-show="isAbilityExpanded" class="ability-list">
-          <template v-if="store.data.庇护所.庇护所能力.length > 0">
-            <div v-for="(ab, idx) in store.data.庇护所.庇护所能力" :key="idx" class="ability-card">
+          <template v-if="abilities.length > 0">
+            <div v-for="(ab, idx) in abilities" :key="idx" class="ability-card">
               <div class="name">{{ ab.name }}</div>
               <div class="desc">{{ ab.desc }}</div>
             </div>
@@ -155,6 +155,15 @@ const store = useDataStore();
 // 默认展开，避免玩家误以为“数据缺失”
 const isMapExpanded = ref(true);
 const isAbilityExpanded = ref(true);
+
+const abilities = computed(() => {
+  const raw = store.data.庇护所.庇护所能力 as any;
+  if (Array.isArray(raw)) return raw;
+  return Object.entries(raw ?? {}).map(([name, val]) => ({
+    name,
+    desc: (val as any)?.desc ?? '',
+  }));
+});
 
 // 20层房间数据
 const floor20Rooms = [

@@ -127,7 +127,7 @@ export const useDataStore = defineStore(
 
 当执行 `pnpm build` 或 `pnpm watch` 后, `schema.ts` 同目录下将会生成 json schema 文件 `schema.json`, 该文件描述了 `export const Schema = z.object({...})` 支持的输入数据. 可以据此完成`世界书/变量/initvar.yaml`即`世界书/index.yaml`中`[initvar]变量初始化勿开`条目的编写.
 
-除了`[initvar]变量初始化勿开`外, 世界书里还应该有`变量列表`、`[mvu_update]变量更新规则`、`[mvu_update]变量输出格式`三个条目. 其中`变量列表`和`[mvu_update]变量输出格式`完全固定, 如果还没有设定, 可以按照初始模板中的设置.
+除了`[initvar]变量初始化勿开`外, 世界书里还应该有`[mvu_update]变量列表`、`[mvu_update]变量更新规则`、`[mvu_update]变量输出格式`三个条目. 其中`变量列表`和`[mvu_update]变量输出格式`完全固定, 如果还没有设定, 可以按照初始模板中的设置.
 
 `[mvu_update]变量更新规则`则应该按照以下要求:
 
