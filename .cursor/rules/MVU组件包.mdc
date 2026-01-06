@@ -576,8 +576,13 @@ $(() => {
 ---
 变量输出格式:
   rule:
-    - you should output the update analysis and the actual update commands in the end of the next reply
-    - the update commands must strictly follow the **JSON Patch (RFC 6902)** standard, but can only use the following operations: `replace` (replace the value of existing paths), `add` (only used to insert new items into an object or array), `remove`; that is, the output must be a valid JSON array containing operation objects
+    - you must output the update analysis and the actual update commands at once in the end of the next reply
+    - the update commands works like the **JSON Patch (RFC 6902)** standard, must be a valid JSON array containing operation objects, but supports the following operations instead:
+      - replace: replace the value of existing paths
+      - delta: update the value of existing number paths by a delta value
+      - insert: insert new items into an object or array
+      - remove
+    - don't update field names starts with `_` as they are readonly, such as `_变量`
   format: |-
     <UpdateVariable>
     <Analysis>$(IN ENGLISH, no more than 80 words)
@@ -588,7 +593,8 @@ $(() => {
     <JSONPatch>
     [
       { "op": "replace", "path": "${/path/to/variable}", "value": "${new_value}" },
-      { "op": "add", "path": "${/path/to/object/newKey}", "value": "${content}" }
+      { "op": "delta", "path": "${/path/to/number/variable}", "value": "${positve_or_negative_delta}" },
+      { "op": "insert", "path": "${/path/to/object/new_key}", "value": "${new_value}" },
       { "op": "remove", "path": "${/path/to/array/0}" },
       ...
     ]
@@ -616,12 +622,13 @@ $(() => {
 | 操作 | 作用 | 示例 |
 |------|------|------|
 | `replace` | 替换现有值 | `{ "op": "replace", "path": "/好感度", "value": 60 }` |
-| `add` | 向数组末尾添加或向对象添加新键 | `{ "op": "add", "path": "/记忆/-", "value": "新记忆" }` |
+| `delta` | 对数字路径进行增量更新（正负值） | `{ "op": "delta", "path": "/好感度", "value": 10 }` |
+| `insert` | 向对象或数组插入新键/项 | `{ "op": "insert", "path": "/记忆/-", "value": "新记忆" }` |
 | `remove` | 删除数组项或对象键 | `{ "op": "remove", "path": "/记忆/0" }` |
 
 ### 更新示例
 
-**场景**：络络的好感度从 90 增加到 100
+**场景**：络络的好感度从 90 增加到 100（使用 replace）
 
 ```json
 [
@@ -629,6 +636,18 @@ $(() => {
     "op": "replace",
     "path": "/角色关系/络络/亲密度",
     "value": 100
+  }
+]
+```
+
+**场景**：络络的好感度增加 10 点（使用 delta）
+
+```json
+[
+  {
+    "op": "delta",
+    "path": "/角色关系/络络/亲密度",
+    "value": 10
   }
 ]
 ```
@@ -642,7 +661,7 @@ $(() => {
     "path": "/角色/记忆/0"
   },
   {
-    "op": "add",
+    "op": "insert",
     "path": "/角色/记忆/-",
     "value": { "时间": "2024-03", "事件": "并肩作战" }
   }
@@ -967,7 +986,7 @@ export default Schema
 输出格式: |
   [
     { "op": "replace", "path": "/好感度", "value": 60 },
-    { "op": "add", "path": "/记忆/-", "value": "新记忆" }
+    { "op": "insert", "path": "/记忆/-", "value": "新记忆" }
   ]
 ```
 
