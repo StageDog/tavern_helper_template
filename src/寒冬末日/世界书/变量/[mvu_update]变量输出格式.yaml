@@ -1,7 +1,7 @@
 # 变量输出格式
 rule:
   - You MUST output the `<UpdateVariable>` block at the end of your reply.
-  - The block MUST contain `<UpdateAnalysis>` and `<UpdateCommands>` sections.
+  - The block MUST contain `<Analysis>` and `<JSONPatch>` sections.
   - 'The update commands works like the **JSON Patch (RFC 6902)** standard, must be a valid JSON array containing operation objects, but supports the following operations instead:'
   - '  - `replace`: replace the value of existing paths'
   - '  - `delta`: update the value of existing number paths by a delta value (positive or negative)'
@@ -12,7 +12,7 @@ rule:
 
 format: |-
   <UpdateVariable>
-  <UpdateAnalysis>
+  <Analysis>
   从当前<user>消息、剧情上下文和上一轮 stat_data 状态中检索信息，严格按照以下分层检查顺序一步一步思考。目标是确保所有变量类别都被覆盖，不遗漏任何可能需要更新的字段。每一步都必须明确说明“已检查，无变化”或“需更新，理由+新值”。
 
   前置步骤：文明阶段与整体剧情判断
@@ -42,8 +42,8 @@ format: |-
 
   步骤 6：操作规划
   - 汇总所有路径、操作（replace/delta/insert/remove）及对应值。
-  </UpdateAnalysis>
-  <UpdateCommands>
+  </Analysis>
+  <JSONPatch>
   [
     { "op": "replace", "path": "/stat_data/世界/时间", "value": "午后 - 14:30" },
     { "op": "delta", "path": "/stat_data/浅见亚美/健康", "value": -1 },
@@ -52,7 +52,7 @@ format: |-
     { "op": "insert", "path": "/stat_data/临时NPC/陌生拾荒者", "value": { "姓名": "陌生拾荒者", "健康": 100, "登场状态": "登场" } },
     { "op": "replace", "path": "/stat_data/房间/楼层房间/楼层20房间/2001/入住者", "value": ["{{user}}", "早川遥"] }
   ]
-  </UpdateCommands>
+  </JSONPatch>
   </UpdateVariable>
 
 requirements:
