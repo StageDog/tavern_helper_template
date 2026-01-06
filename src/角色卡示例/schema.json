@@ -14,12 +14,12 @@
         "近期事务": {
           "type": "object",
           "propertyNames": {
-            "description": "事务名",
-            "type": "string"
+            "type": "string",
+            "description": "事务名"
           },
           "additionalProperties": {
-            "description": "事务描述",
-            "type": "string"
+            "type": "string",
+            "description": "事务描述"
           }
         }
       },
@@ -49,15 +49,23 @@
             ]
           },
           "additionalProperties": {
-            "description": "服装描述",
-            "type": "string"
-          }
+            "type": "string",
+            "description": "服装描述"
+          },
+          "required": [
+            "上装",
+            "下装",
+            "内衣",
+            "袜子",
+            "鞋子",
+            "饰品"
+          ]
         },
         "称号": {
           "type": "object",
           "propertyNames": {
-            "description": "称号名",
-            "type": "string"
+            "type": "string",
+            "description": "称号名"
           },
           "additionalProperties": {
             "type": "object",
@@ -88,8 +96,8 @@
         "物品栏": {
           "type": "object",
           "propertyNames": {
-            "description": "物品名",
-            "type": "string"
+            "type": "string",
+            "description": "物品名"
           },
           "additionalProperties": {
             "type": "object",
