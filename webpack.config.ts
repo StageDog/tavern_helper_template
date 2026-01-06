@@ -525,14 +525,10 @@ function parse_configuration(entry: Entry): (_env: any, argv: any) => webpack.Co
         return callback();
       }
 
-      const builtin = ['vue3-pixi', 'vue-demi'];
-      if (builtin.includes(request)) {
-        return callback();
-      }
-      if (argv.mode !== 'production' && ['vue', 'pixi'].some(key => request.includes(key))) {
-        return callback();
-      }
-      if (['react'].some(key => request.includes(key))) {
+      if (
+        ['vue', 'vue-router', 'pixi.js'].every(key => request !== key) &&
+        ['pixi', 'react', 'vue'].some(key => request.includes(key))
+      ) {
         return callback();
       }
       const global = {

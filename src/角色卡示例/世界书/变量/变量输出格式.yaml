@@ -1,8 +1,12 @@
 ---
 变量输出格式:
   rule:
-    - you must output the update analysis and the actual update commands in the end of the next reply
-    - 'the update commands must strictly follow the **JSON Patch (RFC 6902)** standard, but can only use the following operations: `replace` (replace the value of existing paths), `add` (insert new items into an object or array, "value" should be the result value instead of the delta value), `remove`; that is, the output must be a valid JSON array containing operation objects'
+    - you must output the update analysis and the actual update commands at once in the end of the next reply
+    - the update commands works like the **JSON Patch (RFC 6902)** standard, must be a valid JSON array containing operation objects, but supports the following operations instead:
+      - replace: replace the value of existing paths
+      - delta: update the value of existing number paths by a delta value
+      - insert: insert new items into an object or array
+      - remove
     - don't update field names starts with `_` as they are readonly, such as `_变量`
   format: |-
     <UpdateVariable>
@@ -14,7 +18,8 @@
     <JSONPatch>
     [
       { "op": "replace", "path": "${/path/to/variable}", "value": "${new_value}" },
-      { "op": "add", "path": "${/path/to/object/new_key}", "value": "${new_value}" }
+      { "op": "delta", "path": "${/path/to/number/variable}", "value": "${positve_or_negative_delta}" },
+      { "op": "insert", "path": "${/path/to/object/new_key}", "value": "${new_value}" },
       { "op": "remove", "path": "${/path/to/array/0}" },
       ...
     ]

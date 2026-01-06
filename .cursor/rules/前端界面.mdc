@@ -42,6 +42,7 @@ description: 当需要编写前端界面时, 你应该参考本文件
 ### iframe 适配要求
 
 - 当对前端界面高度进行调整时, 禁止使用 `vh` 单位等会受宿主高度影响的单位, 而是使用 `width` 和 `aspect-ratio` 来让高度根据宽度动态调整.
+<<<<<<< HEAD
 - 避免使用会强制撑高父容器的元素 (如 `min-height`、`overflow: auto`)
 - 页面整体应适配容器宽度，不产生横向滚动条
 - 如果样式更适合卡片形状，则不要有背景颜色，除非用户有明确要求
@@ -70,3 +71,9 @@ import something from 'https://testingcf.jsdelivr.net/npm/package-name@version/+
 // ❌ 错误：可能无法在国内访问
 import something from 'https://cdn.jsdelivr.net/npm/package-name@version/+esm';
 ```
+=======
+- 避免使用会强制撑高父容器的元素 (如 `min-height`、`overflow: auto`).
+- 页面必须有外部支撑, 主体内容不能使用 `position: absolute` 等会脱离文档流的样式.
+- 页面整体应适配容器宽度，不产生横向滚动条.
+- 如果样式更适合卡片形状，则不要有背景颜色，除非用户有明确要求.
+>>>>>>> 640d7d7c3f446a2c95904767cd9075c4284f5111
