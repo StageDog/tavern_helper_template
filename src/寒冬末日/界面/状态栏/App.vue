@@ -1,9 +1,9 @@
 <template>
   <main id="eden-main-container">
     <WorldSection />
-    <MissionSection />
     <StorySection :content="content" />
     <ShelterSection />
+    <MissionSection />
     <CharactersSection />
     <OtherResidentsSection />
     <ChoicesSection :options="options" />
