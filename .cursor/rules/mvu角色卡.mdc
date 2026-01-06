@@ -84,42 +84,34 @@ $(() => {
 
 MVU 角色卡可能会设置状态栏界面, 因此`初始模板/角色卡/新建为src文件夹中的文件夹/界面`中提供了状态栏模板.
 
-此外, 初始模板中还提供了 `store.ts`, 这是模板推荐的 Vue 访问 MVU 变量方式:
+此外, 模板在 `src/util/mvu.ts` 中定义了 `defineMvuDataStore` 函数, 这是模板推荐的 Vue 访问 MVU 变量方式:
 
 ```ts
-import { Schema } from '../schema';
+function defineMvuDataStore<T extends z.ZodObject>(
+  schema: T,
+  variable_option: VariableOption,
+  additional_setup?: (data: Ref<z.infer<T>>) => void,
+): ReturnType<typeof defineStore>;
+```
 
-export const useDataStore = defineStore(
-  'data',
-  errorCatched(() => {
-    const message_id = getCurrentMessageId();
+其中 `Schema` 是变量结构, `variable_option` 是要访问的变量类型, `additional_setup` 是可选的额外设置函数.
 
-    const data = ref(Schema.parse(_.get(getVariables({ type: 'message', message_id }), 'stat_data', {})));
+例如, `src/角色卡示例/store.ts` 中定义了访问 `useDataStore` 函数:
 
-    watchDebounced(
-      data,
-      new_data => {
-        const parsed = Schema.parse(new_data);
-        if (!_.isEqual(parsed, new_data)) {
-          data.value = parsed;
-        }
-        updateVariablesWith(
-          variables => {
-            _.set(variables, 'stat_data', parsed);
-            return variables;
-          },
-          { type: 'message', message_id },
-        );
-      },
-      { deep: true, debounce: 500 },
-    );
-
-    return { data };
-  }),
-);
+```ts
+export const useDataStore = defineMvuDataStore(Schema, { type: 'message', message_id: getCurrentMessageId() });
 ```
 
 其中 `const message_id = getCurrentMessageId()` 即获取界面所在楼层的楼层号, 因此`const data = useDataStore()`将能用于获取或修改该楼层的 MVU 变量.
+
+或者, 前端界面可能会有需要在界面初始化时对 MVU 变量进行额外设置的需求, 则可以使用 `additional_setup`:
+
+```ts
+export const useDataStore = defineMvuDataStore(Schema, { type: 'message', message_id: getCurrentMessageId() }, data => {
+  // 无论界面所在楼层原本记录有什么日志, 在初始化时强制置空
+  data.value.系统状态.玩家本轮操作日志 = [];
+});
+```
 
 ## 世界书
 

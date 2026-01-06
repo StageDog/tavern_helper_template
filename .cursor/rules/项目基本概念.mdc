@@ -19,13 +19,28 @@ alwaysApply: true
 - 如果文件夹中既有 `index.ts` 文件也有 `index.html` 文件, 则是前端界面项目. 例如, `src/界面示例` 是一个前端界面项目.
 - 如果文件夹中仅有 `index.ts` 文件, 则是脚本项目. 例如, `src/脚本示例` 是一个脚本项目.
 
+<<<<<<< HEAD
 你可以在 `模板/**/新建为src文件夹中的文件夹` 中找到前端界面和脚本项目的初始模板.
+=======
+你可以在 `模板/*/新建为src文件夹中的文件夹` 中找到前端界面和脚本项目的初始模板.
+
+此外, 针对 MVU zod 所做的一张完整角色卡, 本项目提供了额外支持. 如 `src/角色卡示例` 所示:
+
+- `src/角色卡示例/脚本/*/` 中是角色卡的所有脚本
+- `src/角色卡示例/界面/*/` 中是角色卡的所有前端界面
+- `src/角色卡示例/schema.ts` 中是用 zod 4 库书写的角色卡 MVU 变量结构定义
+  - 提供给脚本、前端界面导入使用
+  - 会在 `pnpm build` 或 `pnpm watch` 时生成对应的 json schema 文件 `src/角色卡示例/schema.json`, 便于编写变量初始值文件 initvar.yaml `# yaml-language-server: $schema=schema文件路径`
+- `src/util/mvu.ts` 中提供了 `defineMvuDataStore` 函数, 它基于 pinia 实现了本项目推荐的前端界面获取、修改 MVU 变量方式, 支持与酒馆实际变量之间的双向同步; `src/角色卡示例/界面/store.ts` 中的 `useDataStore` 就是用它获取和修改界面所在楼层变量的.
+
+你同样可以在 `模板/角色卡/新建为src文件夹中的文件夹` 中找到 MVU zod 角色卡的初始模板.
+>>>>>>> 640d7d7c3f446a2c95904767cd9075c4284f5111
 
 ## 项目参考文件
 
 ### 可用的第三方库
 
-项目使用 pnpm 作为包管理器, 在 `package.json` 的 `dependencies` 部分定义了可用的第三方库 (dedent、gsap、jquery、jquery-ui、lodash、pinia、pixi.js、toastr、yaml、vue、vue-router、@vueuse/core、react、@pixi/react、zod), 你也可以自己通过 `pnpm add` 添加更多第三方库, 如添加 (@vueuse/integrations 等).
+项目使用 pnpm 作为包管理器, 在 `package.json` 的 `dependencies` 部分定义了可用的第三方库 (dedent、gsap、jquery、jquery-ui、lodash、pinia、pixi.js、toastr、yaml、vue、vue-router、@vueuse/core、react、@pixi/react、async-wait-until、zod), 你也可以自己通过 `pnpm add` 添加更多第三方库, 如添加 (@vueuse/integrations 等).
 
 前端界面或脚本都是在浏览器中使用, 因此你不能使用 nodejs 库
 

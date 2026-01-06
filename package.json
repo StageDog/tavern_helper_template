@@ -24,7 +24,7 @@
     "@types/showdown": "^2.0.6",
     "@types/toastr": "^2.1.43",
     "@types/webpack": "^5.28.5",
-    "@typescript-eslint/parser": "^8.50.1",
+    "@typescript-eslint/parser": "^8.51.0",
     "autoprefixer": "^10.4.23",
     "chokidar": "^4.0.3",
     "css-loader": "^7.1.2",
@@ -66,7 +66,7 @@
     "tslib": "^2.8.1",
     "type-fest": "^4.41.0",
     "typescript": "6.0.0-dev.20250807",
-    "typescript-eslint": "^8.50.1",
+    "typescript-eslint": "^8.51.0",
     "unplugin-auto-import": "^20.3.0",
     "unplugin-vue-components": "^29.2.0",
     "vue-eslint-parser": "^10.2.0",
@@ -82,6 +82,7 @@
     "@vueuse/core": "^13.9.0",
     "@vueuse/integrations": "^13.9.0",
     "@vueuse/shared": "^13.9.0",
+    "async-wait-until": "^2.0.31",
     "compare-versions": "^6.1.1",
     "dedent": "^1.7.1",
     "gsap": "^3.14.2",
@@ -99,7 +100,7 @@
     "vue-router": "^4.6.4",
     "vue3-pixi": "1.0.0-beta.3",
     "yaml": "^2.8.2",
-    "zod": "^4.2.1"
+    "zod": "^4.3.4"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
