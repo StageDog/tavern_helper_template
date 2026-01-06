@@ -191,12 +191,14 @@ type BuiltinPrompt =
  * @returns 生成的最终文本
  *
  * @example
- * // 流式生成
- * const result = await generate({ user_input: '你好', should_stream: true });
+ * // 请求生成
+ * const result = await generate({ user_input: '你好' });
+ * console.info('收到回复: ', result);
  *
  * @example
  * // 图片输入
  * const result = await generate({ user_input: '你好', image: 'https://example.com/image.jpg' });
+ * console.info('收到回复: ', result);
  *
  * @example
  * // 注入、覆盖提示词
@@ -211,6 +213,7 @@ type BuiltinPrompt =
  *     }
  *   }
  * });
+ * console.info('收到回复: ', result);
  *
  * @example
  * // 使用自定义API
@@ -223,6 +226,19 @@ type BuiltinPrompt =
  *     source: 'openai'
  *   }
  * });
+ * console.info('收到回复: ', result);
+ *
+ * @example
+ * // 流式生成
+ *
+ * // 需要预先监听事件来接收流式回复
+ * eventOn(iframe_events.STREAM_TOKEN_RECEIVED_FULLY, text => {
+ *   console.info('收到流式回复: ', text);
+ * });
+ *
+ * // 然后进行生成
+ * const result = await generate({ user_input: '你好', should_stream: true });
+ * console.info('收到最终回复: ', result);
  */
 declare function generate(config: GenerateConfig): Promise<string>;
 
@@ -256,6 +272,7 @@ declare function generate(config: GenerateConfig): Promise<string>;
  *     'user_input',
  *   ]
  * })
+ * console.info('收到回复: ', result);
  *
  * @example
  * // 使用自定义API和自定义提示词顺序
@@ -273,6 +290,7 @@ declare function generate(config: GenerateConfig): Promise<string>;
  *     'user_input',
  *   ]
  * })
+ * console.info('收到回复: ', result);
  */
 declare function generateRaw(config: GenerateRawConfig): Promise<string>;
 

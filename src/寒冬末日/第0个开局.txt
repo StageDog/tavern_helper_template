@@ -1,80 +1,78 @@
 <div style="background-color: #0d1117; color: #e6edf3; padding: 30px; border: 1px solid #30363d; border-radius: 12px; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 20px auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
     <h1 style="color: #58a6ff; text-align: center; border-bottom: 2px solid #21262d; padding-bottom: 15px; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 2px;">
-        ❄️ 寒冬末日：星穹秩序 · 全新进化 ❄️
+        ❄️ 寒冬末日：星穹秩序 ❄️
     </h1>
 
     <div style="background: linear-gradient(90deg, rgba(88,166,255,0.1) 0%, rgba(0,0,0,0) 100%); padding: 15px; border-left: 4px solid #58a6ff; margin-bottom: 25px;">
         <p style="margin: 0; font-style: italic; color: #8b949e;">
-            "从温暖的公寓孤岛，到掌控整片雪原的帝国霸主——这一次，你的秩序，将覆盖整个世界。"
+            "永恒暴雪降临，旧日文明崩塌。在这片白色的地狱中，唯有你的‘伊甸’是最后的方舟。"
         </p>
     </div>
 
-    <h2 style="color: #79c0ff; border-left: 4px solid #79c0ff; padding-left: 15px; margin-top: 30px;">💖 关系系统 · 步步惊喜</h2>
-    <div style="background-color: #161b22; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-        <p style="margin: 0;">
-            从天马行空进化为<strong>完整的Imp秩序刻印数值</strong>！为实现多角色风格化互动效果，每位核心角色拥有0-100的精准数值轨迹。从【拒绝】到【性奴】，每个阶段解锁专属行为与语言模式。你的每一次资源分配，都真实撬动她们的内心天平。
-        </p>
+    <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+        <div style="background-color: #161b22; padding: 20px; border-radius: 8px;">
+            <h2 style="color: #79c0ff; border-bottom: 1px solid #30363d; padding-bottom: 10px; margin-top: 0;">🔥 核心剧情</h2>
+            <p style="margin-bottom: 10px;">
+                你拥有世界上唯一的<strong>可进化避难所系统——“伊甸”</strong>。当外界气温骤降至零下70度，当曾经高傲的邻居们为了半块发霉的面包出卖尊严时，你坐在恒温24度的奢华客厅里，摇晃着手中的红酒杯。
+            </p>
+            <p style="margin: 0;">
+                是成为救苦救难的圣人，还是成为掌控一切的暴君？在这个秩序真空的末日，<strong>你，就是唯一的神。</strong>
+            </p>
+        </div>
+
+        <div style="background-color: #161b22; padding: 20px; border-radius: 8px;">
+            <h2 style="color: #d2a8ff; border-bottom: 1px solid #30363d; padding-bottom: 10px; margin-top: 0;">🎮 玩法推介</h2>
+            <ul style="padding-left: 20px; margin: 0;">
+                <li style="margin-bottom: 10px;">
+                    <span style="color: #ffa657;"><strong>庇护所经营：</strong></span> 升级医疗舱、制造工坊、全息娱乐室……打造你的末日后宫。
+                </li>
+                <li style="margin-bottom: 10px;">
+                    <span style="color: #ffa657;"><strong>人性实验场：</strong></span> 高傲的女明星、清纯的校花姐妹、恶毒的邻居……饥饿与寒冷会剥下所有伪装，展现最真实的人性。
+                </li>
+                <li style="margin-bottom: 10px;">
+                    <span style="color: #ffa657;"><strong>势力争霸：</strong></span> 探索废墟，与雪狼帮、方舟教会等势力博弈，重建新世界的秩序。
+                </li>
+                <li style="margin-bottom: 0;">
+                    <span style="color: #ffa657;"><strong>动态推演：</strong></span> 你的每一个决定，都将引发蝴蝶效应，改变这座公寓楼乃至整座城市的命运。
+                </li>
+            </ul>
+        </div>
     </div>
 
-    <h2 style="color: #79c0ff; border-left: 4px solid #79c0ff; padding-left: 15px; margin-top: 30px;">🌍 世界格局 · 雪原霸权</h2>
-    <div style="background-color: #161b22; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-        <p style="margin: 0;">
-            视野从星穹公寓拓宽至整座城市！新增<strong>24个幸存者家庭</strong>与三大外部势力（雪狼帮、方舟教会、拾荒者联盟）。外交、战争、结盟……体验真正的区域霸权策略。
-        </p>
-    </div>
-
-    <h2 style="color: #79c0ff; border-left: 4px solid #79c0ff; padding-left: 15px; margin-top: 30px;">👥 角色阵容 · 深度升级</h2>
-    <div style="background-color: #161b22; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-        <p style="margin: 0;">
-            经典角色档案全面精修，新增多位高冲突角色。逐渐升级庇护所等级，完成主线任务...解锁婀娜多姿的空姐、性感妖艳的主播等格式奖励保障可玩性。无论是温柔守护还是禁忌刺激，总有一个让你心动。
-        </p>
-    </div>
-
-    <h2 style="color: #79c0ff; border-left: 4px solid #79c0ff; padding-left: 15px; margin-top: 30px;">🖥️ UI体验 · 沉浸科幻</h2>
-    <div style="background-color: #161b22; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-        <p style="margin: 0;">
-            升级<strong>电影级黑暗科幻界面</strong>！主线面板、多层级地图、详情页双进度条...每一页都像置身未来指挥舱，操作流畅，沉浸感爆表。
-        </p>
-    </div>
-
-    <h2 style="color: #ff7b72; border-left: 4px solid #ff7b72; padding-left: 15px; margin-top: 30px;">🎮 玩法深度 · 三维共振</h2>
-    <div style="background-color: #161b22; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-        <p style="margin: 0;">
-            伊甸智能汇报、科技树、永久损失机制...所有经典元素强化。加入外部势力博弈、情报碎片解锁、动态天气窗口期。步步为营的生存快感，与一统雪原的帝王快感，双倍享受！
-        </p>
-    </div>
-
-    <h2 style="color: #d2a8ff; border-left: 4px solid #d2a8ff; padding-left: 15px; margin-top: 30px;">⚠️ 注意事项 (生存指南)</h2>
+    <h2 style="color: #ff7b72; border-left: 4px solid #ff7b72; padding-left: 15px; margin-top: 30px;">⚠️ 生存法则</h2>
     <div style="background-color: #161b22; padding: 15px; border-radius: 8px; border: 1px dashed #484f58; margin-bottom: 25px;">
         <ol style="padding-left: 20px; margin: 0;">
             <li style="margin-bottom: 10px;">
-                <span style="color: #ffa657;"><strong>永久损失：</strong></span> 核心角色并非无限刷新的资源。一旦死亡，将无法复活，意味着相关剧情线的永久终结。
+                <strong>核心角色死亡不可逆：</strong> 请务必保护好你的“资产”。
             </li>
             <li style="margin-bottom: 10px;">
-                <span style="color: #ffa657;"><strong>致命环境：</strong></span> 严禁无防护接触<strong>超噬性雪晶</strong>。在没有高级载具前，外界即是消融血肉的禁区。
+                <strong>警惕“超噬性雪晶”：</strong> 外界不仅有寒冷，还有能消融血肉的致命冰晶。
             </li>
-            <li style="margin-bottom: 10px;">
-                <span style="color: #ffa657;"><strong>黑盒效应：</strong></span> 你的庇护所是绝对隔绝的。外界无法探测内部。
+            <li style="margin-bottom: 0;">
+                <strong>伊甸并非万能：</strong> 能源、物资、人心……维持神的地位需要智慧，而不仅仅是武力。
             </li>
         </ol>
     </div>
 
-    <h2 style="color: #f0883e; border-left: 4px solid #f0883e; padding-left: 15px; margin-top: 30px;">🌟 现在，选择你的开局！</h2>
-    <div style="background-color: #1c2128; padding: 20px; border-radius: 8px; border: 1px solid #444c56;">
-        <p style="margin-bottom: 15px;">
-            <strong>【Lv1 硬核生存】</strong> · 从物资匮乏的第一天开始，亲手铸就传奇<br>
-        </p>
-        <p style="margin-bottom: 15px; opacity: 0.6;">
-            —— 或 ——
-        </p>
-        <p style="margin: 0;">
-            <strong>【Lv3 奢华开局】</strong> · 直接成为星穹隐秘霸主，掌控全场
-        </p>
+    <h2 style="color: #f0883e; text-align: center; margin-top: 40px; margin-bottom: 20px;">🌟 请选择你的命运起点 🌟</h2>
+    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+        <div style="flex: 1; background-color: #1c2128; padding: 20px; border-radius: 8px; border: 1px solid #f0883e; min-width: 250px;">
+            <h3 style="color: #f0883e; margin-top: 0; text-align: center;">【末日第七天】</h3>
+            <p style="font-size: 0.9em; color: #8b949e; text-align: center;">Lv3 奢华开局</p>
+            <hr style="border: 0; border-top: 1px solid #30363d; margin: 15px 0;">
+            <p>跳过初期混乱，直接坐拥3级庇护所。当邻居们在死亡边缘挣扎时，你如神明般降临，收割她们的信仰。</p>
+        </div>
+        <div style="flex: 1; background-color: #1c2128; padding: 20px; border-radius: 8px; border: 1px solid #444c56; min-width: 250px;">
+            <h3 style="color: #79c0ff; margin-top: 0; text-align: center;">【末日第一天】</h3>
+            <p style="font-size: 0.9em; color: #8b949e; text-align: center;">Lv1 硬核生存</p>
+            <hr style="border: 0; border-top: 1px solid #30363d; margin: 15px 0;">
+            <p>亲历灾难降临的瞬间。从物资匮乏开始，在一片混乱中建立初步秩序，亲手铸就你的传奇。</p>
+        </div>
     </div>
 
     <div style="text-align: center; margin-top: 40px; border-top: 1px solid #21262d; padding-top: 20px;">
         <p style="color: #ff7b72; font-weight: bold; font-size: 1.1em; background-color: rgba(255,123,114,0.1); padding: 10px; border-radius: 5px;">
-            📢 提醒：本楼层仅为玩法展示，不进行实际游玩。
+            📢 提醒：本楼层仅为玩法介绍。
         </p>
         <p style="color: #8b949e; margin-top: 10px;">
             >>> 请<strong>向右滑动 (右滑切换 Swipe)</strong> 本消息，选择你心仪的开局档位开始游玩 <<<
