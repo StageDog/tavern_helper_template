@@ -13,19 +13,19 @@
       "properties": {
         "地址": {
           "description": "当前所在的物理位置",
-          "type": "string"
+          "$ref": "#/$defs/__schema0"
         },
         "日期": {
           "description": "格式：末日纪元，XXXX年XX月XX日",
-          "type": "string"
+          "$ref": "#/$defs/__schema1"
         },
         "时间": {
           "description": "格式：时间段 - HH:MM",
-          "type": "string"
+          "$ref": "#/$defs/__schema2"
         },
         "末日天数": {
           "description": "自\"永恒暴雪\"降临以来的总天数",
-          "type": "number"
+          "$ref": "#/$defs/__schema3"
         }
       }
     },
@@ -46,38 +46,20 @@
         "庇护所等级": {
           "description": "等级上限为10。升级来源：1.每日Roll点命中；2.剧情奖励；3.保底触发(7天)。",
           "default": 1,
-          "type": "number"
+          "$ref": "#/$defs/__schema4"
         },
         "今日投掷点数": {
           "description": "记录每日升级判定结果。跨天时Roll点(0-10)，命中幸运数(7,10)触发升级。格式：\"今日已投掷: X点 (触发幸运升级！/未升级)\"",
-          "type": "string"
+          "$ref": "#/$defs/__schema5"
         },
         "距离上次升级": {
           "description": "记录保底进度。若连续7天未升级，则在第8天跨天时强制触发保底升级。格式：\"X天 | 剩余保底升级天数：Y天\"。升级后重置。",
-          "type": "string"
+          "$ref": "#/$defs/__schema6"
         },
         "庇护所能力": {
           "description": "已激活的庇护所能力列表。包含等级提升奖励与主线任务解锁的特殊奖励。",
           "default": {},
-          "type": "object",
-          "propertyNames": {
-            "description": "能力名",
-            "type": "string"
-          },
-          "additionalProperties": {
-            "default": {
-              "desc": ""
-            },
-            "type": "object",
-            "properties": {
-              "desc": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "desc"
-            ]
-          }
+          "$ref": "#/$defs/__schema7"
         },
         "可扩展区域": {
           "description": "记录庇护所可扩展区域的解锁状态",
@@ -86,24 +68,7 @@
             "制造工坊": "未解锁",
             "载具格纳库": "未解锁"
           },
-          "type": "object",
-          "properties": {
-            "医疗翼": {
-              "description": "等级3:初级医疗舱; 等级6:外科手术台; 等级9:专家级自动医师",
-              "default": "未解锁",
-              "type": "string"
-            },
-            "制造工坊": {
-              "description": "任务奖励解锁: \"非致命防御制造器\"(阶段一), \"轻型军火熔炉\"(阶段二); 等级5解锁\"伊甸荚舱\"; 等级8解锁\"重型军械库\"",
-              "default": "未解锁",
-              "type": "string"
-            },
-            "载具格纳库": {
-              "description": "等级7解锁\"先驱者制造单元\"; 阶段三任务解锁\"工业原料合成器\"",
-              "default": "未解锁",
-              "type": "string"
-            }
-          }
+          "$ref": "#/$defs/__schema8"
         }
       }
     },
@@ -130,25 +95,7 @@
             "临时客房A入住者": [],
             "临时客房B入住者": []
           },
-          "type": "object",
-          "properties": {
-            "临时客房A入住者": {
-              "description": "临时客房A入住者姓名列表",
-              "default": [],
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "临时客房B入住者": {
-              "description": "临时客房B入住者姓名列表",
-              "default": [],
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
+          "$ref": "#/$defs/__schema12"
         },
         "核心区": {
           "description": "核心区域房间状态",
@@ -156,25 +103,7 @@
             "主卧室使用者": [],
             "主浴室使用者": []
           },
-          "type": "object",
-          "properties": {
-            "主卧室使用者": {
-              "description": "主卧室使用者姓名列表",
-              "default": [],
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "主浴室使用者": {
-              "description": "主浴室使用者姓名列表",
-              "default": [],
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
+          "$ref": "#/$defs/__schema15"
         },
         "楼层房间": {
           "description": "楼层房间状态",
@@ -182,59 +111,7 @@
             "楼层20房间": {},
             "楼层19房间": {}
           },
-          "type": "object",
-          "properties": {
-            "楼层20房间": {
-              "description": "20层各房间状态，key为房间号",
-              "default": {},
-              "type": "object",
-              "propertyNames": {
-                "type": "string"
-              },
-              "additionalProperties": {
-                "default": {
-                  "入住者": []
-                },
-                "type": "object",
-                "properties": {
-                  "入住者": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "required": [
-                  "入住者"
-                ]
-              }
-            },
-            "楼层19房间": {
-              "description": "19层各房间状态，key为房间号",
-              "default": {},
-              "type": "object",
-              "propertyNames": {
-                "type": "string"
-              },
-              "additionalProperties": {
-                "default": {
-                  "入住者": []
-                },
-                "type": "object",
-                "properties": {
-                  "入住者": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "required": [
-                  "入住者"
-                ]
-              }
-            }
-          }
+          "$ref": "#/$defs/__schema18"
         }
       }
     },
@@ -270,7 +147,7 @@
         "当前阶段": {
           "description": "主线任务的当前阶段名称",
           "default": "阶段一：秩序的萌芽",
-          "type": "string"
+          "$ref": "#/$defs/__schema21"
         },
         "阶段目标": {
           "description": "当前阶段需要达成的目标列表",
@@ -291,28 +168,7 @@
               "目标值": 1
             }
           },
-          "type": "object",
-          "propertyNames": {
-            "type": "string"
-          },
-          "additionalProperties": {
-            "type": "object",
-            "properties": {
-              "描述": {
-                "type": "string"
-              },
-              "当前值": {
-                "type": "number"
-              },
-              "目标值": {
-                "default": 1,
-                "type": "number"
-              }
-            },
-            "required": [
-              "描述"
-            ]
-          }
+          "$ref": "#/$defs/__schema22"
         },
         "目标完成状态": {
           "description": "目标完成状态，key为索引字符串（0/1/2...），value为true表示完成",
@@ -321,54 +177,12 @@
             "1": false,
             "2": false
           },
-          "type": "object",
-          "propertyNames": {
-            "type": "string"
-          },
-          "additionalProperties": {
-            "type": "boolean"
-          }
+          "$ref": "#/$defs/__schema23"
         },
         "情报碎片": {
           "description": "已解锁的情报碎片",
           "default": {},
-          "type": "object",
-          "propertyNames": {
-            "type": "string"
-          },
-          "additionalProperties": {
-            "default": {
-              "编号": "",
-              "描述": "",
-              "价值": "",
-              "风险": "",
-              "状态": "未探索"
-            },
-            "type": "object",
-            "properties": {
-              "编号": {
-                "type": "string"
-              },
-              "描述": {
-                "type": "string"
-              },
-              "价值": {
-                "type": "string"
-              },
-              "风险": {
-                "type": "string"
-              },
-              "状态": {
-                "default": "未探索",
-                "type": "string",
-                "enum": [
-                  "未探索",
-                  "已探索",
-                  "已完成"
-                ]
-              }
-            }
-          }
+          "$ref": "#/$defs/__schema24"
         }
       }
     },
@@ -399,94 +213,68 @@
         "关系": {
           "description": "角色当前对{{user}}的关系档位",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema25"
         },
         "关系倾向": {
           "description": "角色关系的倾向（可理解为更偏向于哪一档）",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema26"
         },
         "秩序刻印": {
           "description": "Imp数值(0-100)，衡量关系深度。0-19拒绝, 20-39交易, 40-59顺从, 60-89忠诚, 90-100性奴",
           "default": 20,
-          "type": "number"
+          "$ref": "#/$defs/__schema27"
         },
         "秩序刻印更新原因": {
           "description": "记录秩序刻印变化的原因。格式：\"+/-X, 原因\"。无变化则为\"0, 无变化\"。",
-          "type": "string"
+          "$ref": "#/$defs/__schema28"
         },
         "健康": {
           "description": "范围0-100。记录健康数值。获得食物/温暖增加；受伤/饥饿/寒冷减少。",
           "default": 100,
-          "type": "number"
+          "$ref": "#/$defs/__schema29"
         },
         "健康更新原因": {
           "description": "记录健康值变化的原因。格式：\"+/-X, 原因\"。无变化则为\"0, 无变化\"。",
-          "type": "string"
+          "$ref": "#/$defs/__schema30"
         },
         "健康状况": {
           "description": ">=80:健康; 60-79:亚健康; 30-59:生病/受伤; <30:重病/濒死",
           "default": "健康",
-          "type": "string",
-          "enum": [
-            "健康",
-            "亚健康",
-            "生病/受伤",
-            "重病/濒死",
-            "无",
-            "死亡"
-          ]
+          "$ref": "#/$defs/__schema31"
         },
         "衣着": {
           "description": "详细描述当前的衣着状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema32"
         },
         "舌唇": {
           "description": "口腔、嘴唇的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema33"
         },
         "胸乳": {
           "description": "胸部的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema34"
         },
         "私穴": {
           "description": "私处的详细状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema35"
         },
         "神态样貌": {
           "description": "面部表情和神态",
-          "type": "string"
+          "$ref": "#/$defs/__schema36"
         },
         "动作姿势": {
           "description": "身体姿态和动作",
-          "type": "string"
+          "$ref": "#/$defs/__schema37"
         },
         "内心想法": {
           "description": "第一人称内心独白",
-          "type": "string"
+          "$ref": "#/$defs/__schema38"
         },
         "登场状态": {
           "description": "值为\"登场\"时显示在UI。角色不出现时设为\"离场\"",
           "default": "离场",
-          "type": "string",
-          "enum": [
-            "登场",
-            "离场"
-          ]
+          "$ref": "#/$defs/__schema39"
         }
       }
     },
@@ -517,94 +305,68 @@
         "关系": {
           "description": "角色当前对{{user}}的关系档位",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema40"
         },
         "关系倾向": {
           "description": "角色关系的倾向（可理解为更偏向于哪一档）",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema41"
         },
         "秩序刻印": {
           "description": "Imp数值(0-100)，衡量关系深度。0-19拒绝, 20-39交易, 40-59顺从, 60-89忠诚, 90-100性奴",
           "default": 20,
-          "type": "number"
+          "$ref": "#/$defs/__schema42"
         },
         "秩序刻印更新原因": {
           "description": "记录秩序刻印变化的原因和数值，格式示例：+3, 高级设施体验 / -5, 期望落空",
-          "type": "string"
+          "$ref": "#/$defs/__schema43"
         },
         "健康": {
           "description": "范围0-100。记录健康数值。获得食物/温暖增加；受伤/饥饿/寒冷减少。",
           "default": 100,
-          "type": "number"
+          "$ref": "#/$defs/__schema44"
         },
         "健康更新原因": {
           "description": "记录健康值变化的原因和数值，格式：+/-X, 原因描述",
-          "type": "string"
+          "$ref": "#/$defs/__schema45"
         },
         "健康状况": {
           "description": ">=80:健康; 60-79:亚健康; 30-59:生病/受伤; <30:重病/濒死",
           "default": "健康",
-          "type": "string",
-          "enum": [
-            "健康",
-            "亚健康",
-            "生病/受伤",
-            "重病/濒死",
-            "无",
-            "死亡"
-          ]
+          "$ref": "#/$defs/__schema46"
         },
         "衣着": {
           "description": "详细描述当前的衣着状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema47"
         },
         "舌唇": {
           "description": "口腔、嘴唇的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema48"
         },
         "胸乳": {
           "description": "胸部的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema49"
         },
         "私穴": {
           "description": "私处的详细状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema50"
         },
         "神态样貌": {
           "description": "面部表情和神态",
-          "type": "string"
+          "$ref": "#/$defs/__schema51"
         },
         "动作姿势": {
           "description": "身体姿态和动作",
-          "type": "string"
+          "$ref": "#/$defs/__schema52"
         },
         "内心想法": {
           "description": "第一人称内心独白",
-          "type": "string"
+          "$ref": "#/$defs/__schema53"
         },
         "登场状态": {
           "description": "值为\"登场\"时显示在UI。角色不出现时设为\"离场\"",
           "default": "离场",
-          "type": "string",
-          "enum": [
-            "登场",
-            "离场"
-          ]
+          "$ref": "#/$defs/__schema54"
         }
       }
     },
@@ -635,94 +397,68 @@
         "关系": {
           "description": "角色当前对{{user}}的关系档位",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema55"
         },
         "关系倾向": {
           "description": "角色关系的倾向（可理解为更偏向于哪一档）",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema56"
         },
         "秩序刻印": {
           "description": "Imp数值(0-100)，衡量关系深度。0-19拒绝, 20-39交易, 40-59顺从, 60-89忠诚, 90-100性奴",
           "default": 20,
-          "type": "number"
+          "$ref": "#/$defs/__schema57"
         },
         "秩序刻印更新原因": {
           "description": "记录秩序刻印变化的原因和数值，格式示例：+3, 高级设施体验 / -5, 期望落空",
-          "type": "string"
+          "$ref": "#/$defs/__schema58"
         },
         "健康": {
           "description": "范围0-100。记录健康数值。获得食物/温暖增加；受伤/饥饿/寒冷减少。",
           "default": 100,
-          "type": "number"
+          "$ref": "#/$defs/__schema59"
         },
         "健康更新原因": {
           "description": "记录健康值变化的原因和数值，格式：+/-X, 原因描述",
-          "type": "string"
+          "$ref": "#/$defs/__schema60"
         },
         "健康状况": {
           "description": ">=80:健康; 60-79:亚健康; 30-59:生病/受伤; <30:重病/濒死",
           "default": "健康",
-          "type": "string",
-          "enum": [
-            "健康",
-            "亚健康",
-            "生病/受伤",
-            "重病/濒死",
-            "无",
-            "死亡"
-          ]
+          "$ref": "#/$defs/__schema61"
         },
         "衣着": {
           "description": "详细描述当前的衣着状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema62"
         },
         "舌唇": {
           "description": "口腔、嘴唇的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema63"
         },
         "胸乳": {
           "description": "胸部的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema64"
         },
         "私穴": {
           "description": "私处的详细状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema65"
         },
         "神态样貌": {
           "description": "面部表情和神态",
-          "type": "string"
+          "$ref": "#/$defs/__schema66"
         },
         "动作姿势": {
           "description": "身体姿态和动作",
-          "type": "string"
+          "$ref": "#/$defs/__schema67"
         },
         "内心想法": {
           "description": "第一人称内心独白",
-          "type": "string"
+          "$ref": "#/$defs/__schema68"
         },
         "登场状态": {
           "description": "值为\"登场\"时显示在UI。角色不出现时设为\"离场\"",
           "default": "离场",
-          "type": "string",
-          "enum": [
-            "登场",
-            "离场"
-          ]
+          "$ref": "#/$defs/__schema69"
         }
       }
     },
@@ -753,94 +489,68 @@
         "关系": {
           "description": "角色当前对{{user}}的关系档位",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema70"
         },
         "关系倾向": {
           "description": "角色关系的倾向（可理解为更偏向于哪一档）",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema71"
         },
         "秩序刻印": {
           "description": "Imp数值(0-100)，衡量关系深度。0-19拒绝, 20-39交易, 40-59顺从, 60-89忠诚, 90-100性奴",
           "default": 20,
-          "type": "number"
+          "$ref": "#/$defs/__schema72"
         },
         "秩序刻印更新原因": {
           "description": "记录秩序刻印变化的原因和数值，格式示例：+3, 高级设施体验 / -5, 期望落空",
-          "type": "string"
+          "$ref": "#/$defs/__schema73"
         },
         "健康": {
           "description": "范围0-100。记录健康数值。获得食物/温暖增加；受伤/饥饿/寒冷减少。",
           "default": 100,
-          "type": "number"
+          "$ref": "#/$defs/__schema74"
         },
         "健康更新原因": {
           "description": "记录健康值变化的原因和数值，格式：+/-X, 原因描述",
-          "type": "string"
+          "$ref": "#/$defs/__schema75"
         },
         "健康状况": {
           "description": ">=80:健康; 60-79:亚健康; 30-59:生病/受伤; <30:重病/濒死",
           "default": "健康",
-          "type": "string",
-          "enum": [
-            "健康",
-            "亚健康",
-            "生病/受伤",
-            "重病/濒死",
-            "无",
-            "死亡"
-          ]
+          "$ref": "#/$defs/__schema76"
         },
         "衣着": {
           "description": "详细描述当前的衣着状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema77"
         },
         "舌唇": {
           "description": "口腔、嘴唇的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema78"
         },
         "胸乳": {
           "description": "胸部的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema79"
         },
         "私穴": {
           "description": "私处的详细状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema80"
         },
         "神态样貌": {
           "description": "面部表情和神态",
-          "type": "string"
+          "$ref": "#/$defs/__schema81"
         },
         "动作姿势": {
           "description": "身体姿态和动作",
-          "type": "string"
+          "$ref": "#/$defs/__schema82"
         },
         "内心想法": {
           "description": "第一人称内心独白",
-          "type": "string"
+          "$ref": "#/$defs/__schema83"
         },
         "登场状态": {
           "description": "值为\"登场\"时显示在UI。角色不出现时设为\"离场\"",
           "default": "离场",
-          "type": "string",
-          "enum": [
-            "登场",
-            "离场"
-          ]
+          "$ref": "#/$defs/__schema84"
         }
       }
     },
@@ -871,94 +581,68 @@
         "关系": {
           "description": "角色当前对{{user}}的关系档位",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema85"
         },
         "关系倾向": {
           "description": "角色关系的倾向（可理解为更偏向于哪一档）",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema86"
         },
         "秩序刻印": {
           "description": "Imp数值(0-100)，衡量关系深度。0-19拒绝, 20-39交易, 40-59顺从, 60-89忠诚, 90-100性奴",
           "default": 20,
-          "type": "number"
+          "$ref": "#/$defs/__schema87"
         },
         "秩序刻印更新原因": {
           "description": "记录秩序刻印变化的原因和数值，格式示例：+3, 高级设施体验 / -5, 期望落空",
-          "type": "string"
+          "$ref": "#/$defs/__schema88"
         },
         "健康": {
           "description": "范围0-100。记录健康数值。获得食物/温暖增加；受伤/饥饿/寒冷减少。",
           "default": 100,
-          "type": "number"
+          "$ref": "#/$defs/__schema89"
         },
         "健康更新原因": {
           "description": "记录健康值变化的原因和数值，格式：+/-X, 原因描述",
-          "type": "string"
+          "$ref": "#/$defs/__schema90"
         },
         "健康状况": {
           "description": ">=80:健康; 60-79:亚健康; 30-59:生病/受伤; <30:重病/濒死",
           "default": "健康",
-          "type": "string",
-          "enum": [
-            "健康",
-            "亚健康",
-            "生病/受伤",
-            "重病/濒死",
-            "无",
-            "死亡"
-          ]
+          "$ref": "#/$defs/__schema91"
         },
         "衣着": {
           "description": "详细描述当前的衣着状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema92"
         },
         "舌唇": {
           "description": "口腔、嘴唇的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema93"
         },
         "胸乳": {
           "description": "胸部的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema94"
         },
         "私穴": {
           "description": "私处的详细状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema95"
         },
         "神态样貌": {
           "description": "面部表情和神态",
-          "type": "string"
+          "$ref": "#/$defs/__schema96"
         },
         "动作姿势": {
           "description": "身体姿态和动作",
-          "type": "string"
+          "$ref": "#/$defs/__schema97"
         },
         "内心想法": {
           "description": "第一人称内心独白",
-          "type": "string"
+          "$ref": "#/$defs/__schema98"
         },
         "登场状态": {
           "description": "值为\"登场\"时显示在UI。角色不出现时设为\"离场\"",
           "default": "离场",
-          "type": "string",
-          "enum": [
-            "登场",
-            "离场"
-          ]
+          "$ref": "#/$defs/__schema99"
         }
       }
     },
@@ -989,94 +673,68 @@
         "关系": {
           "description": "角色当前对{{user}}的关系档位",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema100"
         },
         "关系倾向": {
           "description": "角色关系的倾向（可理解为更偏向于哪一档）",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema101"
         },
         "秩序刻印": {
           "description": "Imp数值(0-100)，衡量关系深度。0-19拒绝, 20-39交易, 40-59顺从, 60-89忠诚, 90-100性奴",
           "default": 20,
-          "type": "number"
+          "$ref": "#/$defs/__schema102"
         },
         "秩序刻印更新原因": {
           "description": "记录秩序刻印变化的原因和数值，格式示例：+3, 高级设施体验 / -5, 期望落空",
-          "type": "string"
+          "$ref": "#/$defs/__schema103"
         },
         "健康": {
           "description": "范围0-100。记录健康数值。获得食物/温暖增加；受伤/饥饿/寒冷减少。",
           "default": 100,
-          "type": "number"
+          "$ref": "#/$defs/__schema104"
         },
         "健康更新原因": {
           "description": "记录健康值变化的原因和数值，格式：+/-X, 原因描述",
-          "type": "string"
+          "$ref": "#/$defs/__schema105"
         },
         "健康状况": {
           "description": ">=80:健康; 60-79:亚健康; 30-59:生病/受伤; <30:重病/濒死",
           "default": "健康",
-          "type": "string",
-          "enum": [
-            "健康",
-            "亚健康",
-            "生病/受伤",
-            "重病/濒死",
-            "无",
-            "死亡"
-          ]
+          "$ref": "#/$defs/__schema106"
         },
         "衣着": {
           "description": "详细描述当前的衣着状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema107"
         },
         "舌唇": {
           "description": "口腔、嘴唇的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema108"
         },
         "胸乳": {
           "description": "胸部的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema109"
         },
         "私穴": {
           "description": "私处的详细状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema110"
         },
         "神态样貌": {
           "description": "面部表情和神态",
-          "type": "string"
+          "$ref": "#/$defs/__schema111"
         },
         "动作姿势": {
           "description": "身体姿态和动作",
-          "type": "string"
+          "$ref": "#/$defs/__schema112"
         },
         "内心想法": {
           "description": "第一人称内心独白",
-          "type": "string"
+          "$ref": "#/$defs/__schema113"
         },
         "登场状态": {
           "description": "值为\"登场\"时显示在UI。角色不出现时设为\"离场\"",
           "default": "离场",
-          "type": "string",
-          "enum": [
-            "登场",
-            "离场"
-          ]
+          "$ref": "#/$defs/__schema114"
         }
       }
     },
@@ -1107,94 +765,68 @@
         "关系": {
           "description": "角色当前对{{user}}的关系档位",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema115"
         },
         "关系倾向": {
           "description": "角色关系的倾向（可理解为更偏向于哪一档）",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema116"
         },
         "秩序刻印": {
           "description": "Imp数值(0-100)，衡量关系深度。0-19拒绝, 20-39交易, 40-59顺从, 60-89忠诚, 90-100性奴",
           "default": 20,
-          "type": "number"
+          "$ref": "#/$defs/__schema117"
         },
         "秩序刻印更新原因": {
           "description": "记录秩序刻印变化的原因和数值，格式示例：+3, 高级设施体验 / -5, 期望落空",
-          "type": "string"
+          "$ref": "#/$defs/__schema118"
         },
         "健康": {
           "description": "范围0-100。记录健康数值。获得食物/温暖增加；受伤/饥饿/寒冷减少。",
           "default": 100,
-          "type": "number"
+          "$ref": "#/$defs/__schema119"
         },
         "健康更新原因": {
           "description": "记录健康值变化的原因和数值，格式：+/-X, 原因描述",
-          "type": "string"
+          "$ref": "#/$defs/__schema120"
         },
         "健康状况": {
           "description": ">=80:健康; 60-79:亚健康; 30-59:生病/受伤; <30:重病/濒死",
           "default": "健康",
-          "type": "string",
-          "enum": [
-            "健康",
-            "亚健康",
-            "生病/受伤",
-            "重病/濒死",
-            "无",
-            "死亡"
-          ]
+          "$ref": "#/$defs/__schema121"
         },
         "衣着": {
           "description": "详细描述当前的衣着状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema122"
         },
         "舌唇": {
           "description": "口腔、嘴唇的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema123"
         },
         "胸乳": {
           "description": "胸部的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema124"
         },
         "私穴": {
           "description": "私处的详细状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema125"
         },
         "神态样貌": {
           "description": "面部表情和神态",
-          "type": "string"
+          "$ref": "#/$defs/__schema126"
         },
         "动作姿势": {
           "description": "身体姿态和动作",
-          "type": "string"
+          "$ref": "#/$defs/__schema127"
         },
         "内心想法": {
           "description": "第一人称内心独白",
-          "type": "string"
+          "$ref": "#/$defs/__schema128"
         },
         "登场状态": {
           "description": "值为\"登场\"时显示在UI。角色不出现时设为\"离场\"",
           "default": "离场",
-          "type": "string",
-          "enum": [
-            "登场",
-            "离场"
-          ]
+          "$ref": "#/$defs/__schema129"
         }
       }
     },
@@ -1225,94 +857,68 @@
         "关系": {
           "description": "角色当前对{{user}}的关系档位",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema130"
         },
         "关系倾向": {
           "description": "角色关系的倾向（可理解为更偏向于哪一档）",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema131"
         },
         "秩序刻印": {
           "description": "Imp数值(0-100)，衡量关系深度。0-19拒绝, 20-39交易, 40-59顺从, 60-89忠诚, 90-100性奴",
           "default": 20,
-          "type": "number"
+          "$ref": "#/$defs/__schema132"
         },
         "秩序刻印更新原因": {
           "description": "记录秩序刻印变化的原因和数值，格式示例：+3, 高级设施体验 / -5, 期望落空",
-          "type": "string"
+          "$ref": "#/$defs/__schema133"
         },
         "健康": {
           "description": "范围0-100。记录健康数值。获得食物/温暖增加；受伤/饥饿/寒冷减少。",
           "default": 100,
-          "type": "number"
+          "$ref": "#/$defs/__schema134"
         },
         "健康更新原因": {
           "description": "记录健康值变化的原因和数值，格式：+/-X, 原因描述",
-          "type": "string"
+          "$ref": "#/$defs/__schema135"
         },
         "健康状况": {
           "description": ">=80:健康; 60-79:亚健康; 30-59:生病/受伤; <30:重病/濒死",
           "default": "健康",
-          "type": "string",
-          "enum": [
-            "健康",
-            "亚健康",
-            "生病/受伤",
-            "重病/濒死",
-            "无",
-            "死亡"
-          ]
+          "$ref": "#/$defs/__schema136"
         },
         "衣着": {
           "description": "详细描述当前的衣着状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema137"
         },
         "舌唇": {
           "description": "口腔、嘴唇的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema138"
         },
         "胸乳": {
           "description": "胸部的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema139"
         },
         "私穴": {
           "description": "私处的详细状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema140"
         },
         "神态样貌": {
           "description": "面部表情和神态",
-          "type": "string"
+          "$ref": "#/$defs/__schema141"
         },
         "动作姿势": {
           "description": "身体姿态和动作",
-          "type": "string"
+          "$ref": "#/$defs/__schema142"
         },
         "内心想法": {
           "description": "第一人称内心独白",
-          "type": "string"
+          "$ref": "#/$defs/__schema143"
         },
         "登场状态": {
           "description": "值为\"登场\"时显示在UI。角色不出现时设为\"离场\"",
           "default": "离场",
-          "type": "string",
-          "enum": [
-            "登场",
-            "离场"
-          ]
+          "$ref": "#/$defs/__schema144"
         }
       }
     },
@@ -1343,94 +949,68 @@
         "关系": {
           "description": "角色当前对{{user}}的关系档位",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema145"
         },
         "关系倾向": {
           "description": "角色关系的倾向（可理解为更偏向于哪一档）",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema146"
         },
         "秩序刻印": {
           "description": "Imp数值(0-100)，衡量关系深度。0-19拒绝, 20-39交易, 40-59顺从, 60-89忠诚, 90-100性奴",
           "default": 20,
-          "type": "number"
+          "$ref": "#/$defs/__schema147"
         },
         "秩序刻印更新原因": {
           "description": "记录秩序刻印变化的原因和数值，格式示例：+3, 高级设施体验 / -5, 期望落空",
-          "type": "string"
+          "$ref": "#/$defs/__schema148"
         },
         "健康": {
           "description": "范围0-100。记录健康数值。获得食物/温暖增加；受伤/饥饿/寒冷减少。",
           "default": 100,
-          "type": "number"
+          "$ref": "#/$defs/__schema149"
         },
         "健康更新原因": {
           "description": "记录健康值变化的原因和数值，格式：+/-X, 原因描述",
-          "type": "string"
+          "$ref": "#/$defs/__schema150"
         },
         "健康状况": {
           "description": ">=80:健康; 60-79:亚健康; 30-59:生病/受伤; <30:重病/濒死",
           "default": "健康",
-          "type": "string",
-          "enum": [
-            "健康",
-            "亚健康",
-            "生病/受伤",
-            "重病/濒死",
-            "无",
-            "死亡"
-          ]
+          "$ref": "#/$defs/__schema151"
         },
         "衣着": {
           "description": "详细描述当前的衣着状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema152"
         },
         "舌唇": {
           "description": "口腔、嘴唇的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema153"
         },
         "胸乳": {
           "description": "胸部的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema154"
         },
         "私穴": {
           "description": "私处的详细状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema155"
         },
         "神态样貌": {
           "description": "面部表情和神态",
-          "type": "string"
+          "$ref": "#/$defs/__schema156"
         },
         "动作姿势": {
           "description": "身体姿态和动作",
-          "type": "string"
+          "$ref": "#/$defs/__schema157"
         },
         "内心想法": {
           "description": "第一人称内心独白",
-          "type": "string"
+          "$ref": "#/$defs/__schema158"
         },
         "登场状态": {
           "description": "值为\"登场\"时显示在UI。角色不出现时设为\"离场\"",
           "default": "离场",
-          "type": "string",
-          "enum": [
-            "登场",
-            "离场"
-          ]
+          "$ref": "#/$defs/__schema159"
         }
       }
     },
@@ -1461,94 +1041,68 @@
         "关系": {
           "description": "角色当前对{{user}}的关系档位",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema160"
         },
         "关系倾向": {
           "description": "角色关系的倾向（可理解为更偏向于哪一档）",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema161"
         },
         "秩序刻印": {
           "description": "Imp数值(0-100)，衡量关系深度。0-19拒绝, 20-39交易, 40-59顺从, 60-89忠诚, 90-100性奴",
           "default": 20,
-          "type": "number"
+          "$ref": "#/$defs/__schema162"
         },
         "秩序刻印更新原因": {
           "description": "记录秩序刻印变化的原因和数值，格式示例：+3, 高级设施体验 / -5, 期望落空",
-          "type": "string"
+          "$ref": "#/$defs/__schema163"
         },
         "健康": {
           "description": "范围0-100。记录健康数值。获得食物/温暖增加；受伤/饥饿/寒冷减少。",
           "default": 100,
-          "type": "number"
+          "$ref": "#/$defs/__schema164"
         },
         "健康更新原因": {
           "description": "记录健康值变化的原因和数值，格式：+/-X, 原因描述",
-          "type": "string"
+          "$ref": "#/$defs/__schema165"
         },
         "健康状况": {
           "description": ">=80:健康; 60-79:亚健康; 30-59:生病/受伤; <30:重病/濒死",
           "default": "健康",
-          "type": "string",
-          "enum": [
-            "健康",
-            "亚健康",
-            "生病/受伤",
-            "重病/濒死",
-            "无",
-            "死亡"
-          ]
+          "$ref": "#/$defs/__schema166"
         },
         "衣着": {
           "description": "详细描述当前的衣着状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema167"
         },
         "舌唇": {
           "description": "口腔、嘴唇的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema168"
         },
         "胸乳": {
           "description": "胸部的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema169"
         },
         "私穴": {
           "description": "私处的详细状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema170"
         },
         "神态样貌": {
           "description": "面部表情和神态",
-          "type": "string"
+          "$ref": "#/$defs/__schema171"
         },
         "动作姿势": {
           "description": "身体姿态和动作",
-          "type": "string"
+          "$ref": "#/$defs/__schema172"
         },
         "内心想法": {
           "description": "第一人称内心独白",
-          "type": "string"
+          "$ref": "#/$defs/__schema173"
         },
         "登场状态": {
           "description": "值为\"登场\"时显示在UI。角色不出现时设为\"离场\"",
           "default": "离场",
-          "type": "string",
-          "enum": [
-            "登场",
-            "离场"
-          ]
+          "$ref": "#/$defs/__schema174"
         }
       }
     },
@@ -1579,94 +1133,68 @@
         "关系": {
           "description": "角色当前对{{user}}的关系档位",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema175"
         },
         "关系倾向": {
           "description": "角色关系的倾向（可理解为更偏向于哪一档）",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema176"
         },
         "秩序刻印": {
           "description": "Imp数值(0-100)，衡量关系深度。0-19拒绝, 20-39交易, 40-59顺从, 60-89忠诚, 90-100性奴",
           "default": 20,
-          "type": "number"
+          "$ref": "#/$defs/__schema177"
         },
         "秩序刻印更新原因": {
           "description": "记录秩序刻印变化的原因和数值，格式示例：+3, 高级设施体验 / -5, 期望落空",
-          "type": "string"
+          "$ref": "#/$defs/__schema178"
         },
         "健康": {
           "description": "范围0-100。记录健康数值。获得食物/温暖增加；受伤/饥饿/寒冷减少。",
           "default": 100,
-          "type": "number"
+          "$ref": "#/$defs/__schema179"
         },
         "健康更新原因": {
           "description": "记录健康值变化的原因和数值，格式：+/-X, 原因描述",
-          "type": "string"
+          "$ref": "#/$defs/__schema180"
         },
         "健康状况": {
           "description": ">=80:健康; 60-79:亚健康; 30-59:生病/受伤; <30:重病/濒死",
           "default": "健康",
-          "type": "string",
-          "enum": [
-            "健康",
-            "亚健康",
-            "生病/受伤",
-            "重病/濒死",
-            "无",
-            "死亡"
-          ]
+          "$ref": "#/$defs/__schema181"
         },
         "衣着": {
           "description": "详细描述当前的衣着状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema182"
         },
         "舌唇": {
           "description": "口腔、嘴唇的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema183"
         },
         "胸乳": {
           "description": "胸部的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema184"
         },
         "私穴": {
           "description": "私处的详细状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema185"
         },
         "神态样貌": {
           "description": "面部表情和神态",
-          "type": "string"
+          "$ref": "#/$defs/__schema186"
         },
         "动作姿势": {
           "description": "身体姿态和动作",
-          "type": "string"
+          "$ref": "#/$defs/__schema187"
         },
         "内心想法": {
           "description": "第一人称内心独白",
-          "type": "string"
+          "$ref": "#/$defs/__schema188"
         },
         "登场状态": {
           "description": "值为\"登场\"时显示在UI。角色不出现时设为\"离场\"",
           "default": "离场",
-          "type": "string",
-          "enum": [
-            "登场",
-            "离场"
-          ]
+          "$ref": "#/$defs/__schema189"
         }
       }
     },
@@ -1697,94 +1225,68 @@
         "关系": {
           "description": "角色当前对{{user}}的关系档位",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema190"
         },
         "关系倾向": {
           "description": "角色关系的倾向（可理解为更偏向于哪一档）",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema191"
         },
         "秩序刻印": {
           "description": "Imp数值(0-100)，衡量关系深度。0-19拒绝, 20-39交易, 40-59顺从, 60-89忠诚, 90-100性奴",
           "default": 20,
-          "type": "number"
+          "$ref": "#/$defs/__schema192"
         },
         "秩序刻印更新原因": {
           "description": "记录秩序刻印变化的原因和数值，格式示例：+3, 高级设施体验 / -5, 期望落空",
-          "type": "string"
+          "$ref": "#/$defs/__schema193"
         },
         "健康": {
           "description": "范围0-100。记录健康数值。获得食物/温暖增加；受伤/饥饿/寒冷减少。",
           "default": 100,
-          "type": "number"
+          "$ref": "#/$defs/__schema194"
         },
         "健康更新原因": {
           "description": "记录健康值变化的原因和数值，格式：+/-X, 原因描述",
-          "type": "string"
+          "$ref": "#/$defs/__schema195"
         },
         "健康状况": {
           "description": ">=80:健康; 60-79:亚健康; 30-59:生病/受伤; <30:重病/濒死",
           "default": "健康",
-          "type": "string",
-          "enum": [
-            "健康",
-            "亚健康",
-            "生病/受伤",
-            "重病/濒死",
-            "无",
-            "死亡"
-          ]
+          "$ref": "#/$defs/__schema196"
         },
         "衣着": {
           "description": "详细描述当前的衣着状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema197"
         },
         "舌唇": {
           "description": "口腔、嘴唇的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema198"
         },
         "胸乳": {
           "description": "胸部的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema199"
         },
         "私穴": {
           "description": "私处的详细状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema200"
         },
         "神态样貌": {
           "description": "面部表情和神态",
-          "type": "string"
+          "$ref": "#/$defs/__schema201"
         },
         "动作姿势": {
           "description": "身体姿态和动作",
-          "type": "string"
+          "$ref": "#/$defs/__schema202"
         },
         "内心想法": {
           "description": "第一人称内心独白",
-          "type": "string"
+          "$ref": "#/$defs/__schema203"
         },
         "登场状态": {
           "description": "值为\"登场\"时显示在UI。角色不出现时设为\"离场\"",
           "default": "离场",
-          "type": "string",
-          "enum": [
-            "登场",
-            "离场"
-          ]
+          "$ref": "#/$defs/__schema204"
         }
       }
     },
@@ -1815,94 +1317,68 @@
         "关系": {
           "description": "角色当前对{{user}}的关系档位",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema205"
         },
         "关系倾向": {
           "description": "角色关系的倾向（可理解为更偏向于哪一档）",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema206"
         },
         "秩序刻印": {
           "description": "Imp数值(0-100)，衡量关系深度。0-19拒绝, 20-39交易, 40-59顺从, 60-89忠诚, 90-100性奴",
           "default": 20,
-          "type": "number"
+          "$ref": "#/$defs/__schema207"
         },
         "秩序刻印更新原因": {
           "description": "记录秩序刻印变化的原因和数值，格式示例：+3, 高级设施体验 / -5, 期望落空",
-          "type": "string"
+          "$ref": "#/$defs/__schema208"
         },
         "健康": {
           "description": "范围0-100。记录健康数值。获得食物/温暖增加；受伤/饥饿/寒冷减少。",
           "default": 100,
-          "type": "number"
+          "$ref": "#/$defs/__schema209"
         },
         "健康更新原因": {
           "description": "记录健康值变化的原因和数值，格式：+/-X, 原因描述",
-          "type": "string"
+          "$ref": "#/$defs/__schema210"
         },
         "健康状况": {
           "description": ">=80:健康; 60-79:亚健康; 30-59:生病/受伤; <30:重病/濒死",
           "default": "健康",
-          "type": "string",
-          "enum": [
-            "健康",
-            "亚健康",
-            "生病/受伤",
-            "重病/濒死",
-            "无",
-            "死亡"
-          ]
+          "$ref": "#/$defs/__schema211"
         },
         "衣着": {
           "description": "详细描述当前的衣着状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema212"
         },
         "舌唇": {
           "description": "口腔、嘴唇的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema213"
         },
         "胸乳": {
           "description": "胸部的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema214"
         },
         "私穴": {
           "description": "私处的详细状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema215"
         },
         "神态样貌": {
           "description": "面部表情和神态",
-          "type": "string"
+          "$ref": "#/$defs/__schema216"
         },
         "动作姿势": {
           "description": "身体姿态和动作",
-          "type": "string"
+          "$ref": "#/$defs/__schema217"
         },
         "内心想法": {
           "description": "第一人称内心独白",
-          "type": "string"
+          "$ref": "#/$defs/__schema218"
         },
         "登场状态": {
           "description": "值为\"登场\"时显示在UI。角色不出现时设为\"离场\"",
           "default": "离场",
-          "type": "string",
-          "enum": [
-            "登场",
-            "离场"
-          ]
+          "$ref": "#/$defs/__schema219"
         }
       }
     },
@@ -1933,94 +1409,68 @@
         "关系": {
           "description": "角色当前对{{user}}的关系档位",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema220"
         },
         "关系倾向": {
           "description": "角色关系的倾向（可理解为更偏向于哪一档）",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema221"
         },
         "秩序刻印": {
           "description": "Imp数值(0-100)，衡量关系深度。0-19拒绝, 20-39交易, 40-59顺从, 60-89忠诚, 90-100性奴",
           "default": 20,
-          "type": "number"
+          "$ref": "#/$defs/__schema222"
         },
         "秩序刻印更新原因": {
           "description": "记录秩序刻印变化的原因和数值，格式示例：+3, 高级设施体验 / -5, 期望落空",
-          "type": "string"
+          "$ref": "#/$defs/__schema223"
         },
         "健康": {
           "description": "范围0-100。记录健康数值。获得食物/温暖增加；受伤/饥饿/寒冷减少。",
           "default": 100,
-          "type": "number"
+          "$ref": "#/$defs/__schema224"
         },
         "健康更新原因": {
           "description": "记录健康值变化的原因和数值，格式：+/-X, 原因描述",
-          "type": "string"
+          "$ref": "#/$defs/__schema225"
         },
         "健康状况": {
           "description": ">=80:健康; 60-79:亚健康; 30-59:生病/受伤; <30:重病/濒死",
           "default": "健康",
-          "type": "string",
-          "enum": [
-            "健康",
-            "亚健康",
-            "生病/受伤",
-            "重病/濒死",
-            "无",
-            "死亡"
-          ]
+          "$ref": "#/$defs/__schema226"
         },
         "衣着": {
           "description": "详细描述当前的衣着状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema227"
         },
         "舌唇": {
           "description": "口腔、嘴唇的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema228"
         },
         "胸乳": {
           "description": "胸部的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema229"
         },
         "私穴": {
           "description": "私处的详细状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema230"
         },
         "神态样貌": {
           "description": "面部表情和神态",
-          "type": "string"
+          "$ref": "#/$defs/__schema231"
         },
         "动作姿势": {
           "description": "身体姿态和动作",
-          "type": "string"
+          "$ref": "#/$defs/__schema232"
         },
         "内心想法": {
           "description": "第一人称内心独白",
-          "type": "string"
+          "$ref": "#/$defs/__schema233"
         },
         "登场状态": {
           "description": "值为\"登场\"时显示在UI。角色不出现时设为\"离场\"",
           "default": "离场",
-          "type": "string",
-          "enum": [
-            "登场",
-            "离场"
-          ]
+          "$ref": "#/$defs/__schema234"
         }
       }
     },
@@ -2051,100 +1501,1422 @@
         "关系": {
           "description": "角色当前对{{user}}的关系档位",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema235"
         },
         "关系倾向": {
           "description": "角色关系的倾向（可理解为更偏向于哪一档）",
           "default": "拒绝",
-          "type": "string",
-          "enum": [
-            "拒绝",
-            "交易",
-            "顺从",
-            "忠诚",
-            "性奴"
-          ]
+          "$ref": "#/$defs/__schema236"
         },
         "秩序刻印": {
           "description": "Imp数值(0-100)，衡量关系深度。0-19拒绝, 20-39交易, 40-59顺从, 60-89忠诚, 90-100性奴",
           "default": 20,
-          "type": "number"
+          "$ref": "#/$defs/__schema237"
         },
         "秩序刻印更新原因": {
           "description": "记录秩序刻印变化的原因和数值，格式示例：+3, 高级设施体验 / -5, 期望落空",
-          "type": "string"
+          "$ref": "#/$defs/__schema238"
         },
         "健康": {
           "description": "范围0-100。记录健康数值。获得食物/温暖增加；受伤/饥饿/寒冷减少。",
           "default": 100,
-          "type": "number"
+          "$ref": "#/$defs/__schema239"
         },
         "健康更新原因": {
           "description": "记录健康值变化的原因和数值，格式：+/-X, 原因描述",
-          "type": "string"
+          "$ref": "#/$defs/__schema240"
         },
         "健康状况": {
           "description": ">=80:健康; 60-79:亚健康; 30-59:生病/受伤; <30:重病/濒死",
           "default": "健康",
-          "type": "string",
-          "enum": [
-            "健康",
-            "亚健康",
-            "生病/受伤",
-            "重病/濒死",
-            "无",
-            "死亡"
-          ]
+          "$ref": "#/$defs/__schema241"
         },
         "衣着": {
           "description": "详细描述当前的衣着状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema242"
         },
         "舌唇": {
           "description": "口腔、嘴唇的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema243"
         },
         "胸乳": {
           "description": "胸部的状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema244"
         },
         "私穴": {
           "description": "私处的详细状态",
-          "type": "string"
+          "$ref": "#/$defs/__schema245"
         },
         "神态样貌": {
           "description": "面部表情和神态",
-          "type": "string"
+          "$ref": "#/$defs/__schema246"
         },
         "动作姿势": {
           "description": "身体姿态和动作",
-          "type": "string"
+          "$ref": "#/$defs/__schema247"
         },
         "内心想法": {
           "description": "第一人称内心独白",
-          "type": "string"
+          "$ref": "#/$defs/__schema248"
         },
         "登场状态": {
           "description": "值为\"登场\"时显示在UI。角色不出现时设为\"离场\"",
           "default": "离场",
-          "type": "string",
-          "enum": [
-            "登场",
-            "离场"
-          ]
+          "$ref": "#/$defs/__schema249"
         }
       }
     },
     "临时NPC": {
       "description": "存储所有临时NPC的状态，key为NPC姓名。新NPC登场时在此处添加。",
       "default": {},
+      "$ref": "#/$defs/__schema250"
+    },
+    "楼层其他住户": {
+      "default": {
+        "言语": "",
+        "行为": ""
+      },
+      "type": "object",
+      "properties": {
+        "言语": {
+          "description": "其他幸存者的总体言语状态",
+          "$ref": "#/$defs/__schema266"
+        },
+        "行为": {
+          "description": "其他幸存者的总体行为状态",
+          "$ref": "#/$defs/__schema267"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "__schema0": {
+      "type": "string"
+    },
+    "__schema1": {
+      "type": "string"
+    },
+    "__schema2": {
+      "type": "string"
+    },
+    "__schema3": {
+      "type": "number"
+    },
+    "__schema4": {
+      "type": "number"
+    },
+    "__schema5": {
+      "type": "string"
+    },
+    "__schema6": {
+      "type": "string"
+    },
+    "__schema7": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "description": "能力名"
+      },
+      "additionalProperties": {
+        "default": {
+          "desc": ""
+        },
+        "type": "object",
+        "properties": {
+          "desc": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "desc"
+        ]
+      }
+    },
+    "__schema8": {
+      "type": "object",
+      "properties": {
+        "医疗翼": {
+          "description": "等级3:初级医疗舱; 等级6:外科手术台; 等级9:专家级自动医师",
+          "default": "未解锁",
+          "$ref": "#/$defs/__schema9"
+        },
+        "制造工坊": {
+          "description": "任务奖励解锁: \"非致命防御制造器\"(阶段一), \"轻型军火熔炉\"(阶段二); 等级5解锁\"伊甸荚舱\"; 等级8解锁\"重型军械库\"",
+          "default": "未解锁",
+          "$ref": "#/$defs/__schema10"
+        },
+        "载具格纳库": {
+          "description": "等级7解锁\"先驱者制造单元\"; 阶段三任务解锁\"工业原料合成器\"",
+          "default": "未解锁",
+          "$ref": "#/$defs/__schema11"
+        }
+      }
+    },
+    "__schema9": {
+      "type": "string"
+    },
+    "__schema10": {
+      "type": "string"
+    },
+    "__schema11": {
+      "type": "string"
+    },
+    "__schema12": {
+      "type": "object",
+      "properties": {
+        "临时客房A入住者": {
+          "description": "临时客房A入住者姓名列表",
+          "default": [],
+          "$ref": "#/$defs/__schema13"
+        },
+        "临时客房B入住者": {
+          "description": "临时客房B入住者姓名列表",
+          "default": [],
+          "$ref": "#/$defs/__schema14"
+        }
+      }
+    },
+    "__schema13": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "__schema14": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "__schema15": {
+      "type": "object",
+      "properties": {
+        "主卧室使用者": {
+          "description": "主卧室使用者姓名列表",
+          "default": [],
+          "$ref": "#/$defs/__schema16"
+        },
+        "主浴室使用者": {
+          "description": "主浴室使用者姓名列表",
+          "default": [],
+          "$ref": "#/$defs/__schema17"
+        }
+      }
+    },
+    "__schema16": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "__schema17": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "__schema18": {
+      "type": "object",
+      "properties": {
+        "楼层20房间": {
+          "description": "20层各房间状态，key为房间号",
+          "default": {},
+          "$ref": "#/$defs/__schema19"
+        },
+        "楼层19房间": {
+          "description": "19层各房间状态，key为房间号",
+          "default": {},
+          "$ref": "#/$defs/__schema20"
+        }
+      }
+    },
+    "__schema19": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "default": {
+          "入住者": []
+        },
+        "type": "object",
+        "properties": {
+          "入住者": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "入住者"
+        ]
+      }
+    },
+    "__schema20": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "default": {
+          "入住者": []
+        },
+        "type": "object",
+        "properties": {
+          "入住者": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "入住者"
+        ]
+      }
+    },
+    "__schema21": {
+      "type": "string"
+    },
+    "__schema22": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "描述": {
+            "type": "string"
+          },
+          "当前值": {
+            "type": "number"
+          },
+          "目标值": {
+            "default": 1,
+            "type": "number"
+          }
+        },
+        "required": [
+          "描述"
+        ]
+      }
+    },
+    "__schema23": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "type": "boolean"
+      }
+    },
+    "__schema24": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "default": {
+          "编号": "",
+          "描述": "",
+          "价值": "",
+          "风险": "",
+          "状态": "未探索"
+        },
+        "type": "object",
+        "properties": {
+          "编号": {
+            "type": "string"
+          },
+          "描述": {
+            "type": "string"
+          },
+          "价值": {
+            "type": "string"
+          },
+          "风险": {
+            "type": "string"
+          },
+          "状态": {
+            "default": "未探索",
+            "type": "string",
+            "enum": [
+              "未探索",
+              "已探索",
+              "已完成"
+            ]
+          }
+        }
+      }
+    },
+    "__schema25": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema26": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema27": {
+      "type": "number"
+    },
+    "__schema28": {
+      "type": "string"
+    },
+    "__schema29": {
+      "type": "number"
+    },
+    "__schema30": {
+      "type": "string"
+    },
+    "__schema31": {
+      "type": "string",
+      "enum": [
+        "健康",
+        "亚健康",
+        "生病/受伤",
+        "重病/濒死",
+        "无",
+        "死亡"
+      ]
+    },
+    "__schema32": {
+      "type": "string"
+    },
+    "__schema33": {
+      "type": "string"
+    },
+    "__schema34": {
+      "type": "string"
+    },
+    "__schema35": {
+      "type": "string"
+    },
+    "__schema36": {
+      "type": "string"
+    },
+    "__schema37": {
+      "type": "string"
+    },
+    "__schema38": {
+      "type": "string"
+    },
+    "__schema39": {
+      "type": "string",
+      "enum": [
+        "登场",
+        "离场"
+      ]
+    },
+    "__schema40": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema41": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema42": {
+      "type": "number"
+    },
+    "__schema43": {
+      "type": "string"
+    },
+    "__schema44": {
+      "type": "number"
+    },
+    "__schema45": {
+      "type": "string"
+    },
+    "__schema46": {
+      "type": "string",
+      "enum": [
+        "健康",
+        "亚健康",
+        "生病/受伤",
+        "重病/濒死",
+        "无",
+        "死亡"
+      ]
+    },
+    "__schema47": {
+      "type": "string"
+    },
+    "__schema48": {
+      "type": "string"
+    },
+    "__schema49": {
+      "type": "string"
+    },
+    "__schema50": {
+      "type": "string"
+    },
+    "__schema51": {
+      "type": "string"
+    },
+    "__schema52": {
+      "type": "string"
+    },
+    "__schema53": {
+      "type": "string"
+    },
+    "__schema54": {
+      "type": "string",
+      "enum": [
+        "登场",
+        "离场"
+      ]
+    },
+    "__schema55": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema56": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema57": {
+      "type": "number"
+    },
+    "__schema58": {
+      "type": "string"
+    },
+    "__schema59": {
+      "type": "number"
+    },
+    "__schema60": {
+      "type": "string"
+    },
+    "__schema61": {
+      "type": "string",
+      "enum": [
+        "健康",
+        "亚健康",
+        "生病/受伤",
+        "重病/濒死",
+        "无",
+        "死亡"
+      ]
+    },
+    "__schema62": {
+      "type": "string"
+    },
+    "__schema63": {
+      "type": "string"
+    },
+    "__schema64": {
+      "type": "string"
+    },
+    "__schema65": {
+      "type": "string"
+    },
+    "__schema66": {
+      "type": "string"
+    },
+    "__schema67": {
+      "type": "string"
+    },
+    "__schema68": {
+      "type": "string"
+    },
+    "__schema69": {
+      "type": "string",
+      "enum": [
+        "登场",
+        "离场"
+      ]
+    },
+    "__schema70": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema71": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema72": {
+      "type": "number"
+    },
+    "__schema73": {
+      "type": "string"
+    },
+    "__schema74": {
+      "type": "number"
+    },
+    "__schema75": {
+      "type": "string"
+    },
+    "__schema76": {
+      "type": "string",
+      "enum": [
+        "健康",
+        "亚健康",
+        "生病/受伤",
+        "重病/濒死",
+        "无",
+        "死亡"
+      ]
+    },
+    "__schema77": {
+      "type": "string"
+    },
+    "__schema78": {
+      "type": "string"
+    },
+    "__schema79": {
+      "type": "string"
+    },
+    "__schema80": {
+      "type": "string"
+    },
+    "__schema81": {
+      "type": "string"
+    },
+    "__schema82": {
+      "type": "string"
+    },
+    "__schema83": {
+      "type": "string"
+    },
+    "__schema84": {
+      "type": "string",
+      "enum": [
+        "登场",
+        "离场"
+      ]
+    },
+    "__schema85": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema86": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema87": {
+      "type": "number"
+    },
+    "__schema88": {
+      "type": "string"
+    },
+    "__schema89": {
+      "type": "number"
+    },
+    "__schema90": {
+      "type": "string"
+    },
+    "__schema91": {
+      "type": "string",
+      "enum": [
+        "健康",
+        "亚健康",
+        "生病/受伤",
+        "重病/濒死",
+        "无",
+        "死亡"
+      ]
+    },
+    "__schema92": {
+      "type": "string"
+    },
+    "__schema93": {
+      "type": "string"
+    },
+    "__schema94": {
+      "type": "string"
+    },
+    "__schema95": {
+      "type": "string"
+    },
+    "__schema96": {
+      "type": "string"
+    },
+    "__schema97": {
+      "type": "string"
+    },
+    "__schema98": {
+      "type": "string"
+    },
+    "__schema99": {
+      "type": "string",
+      "enum": [
+        "登场",
+        "离场"
+      ]
+    },
+    "__schema100": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema101": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema102": {
+      "type": "number"
+    },
+    "__schema103": {
+      "type": "string"
+    },
+    "__schema104": {
+      "type": "number"
+    },
+    "__schema105": {
+      "type": "string"
+    },
+    "__schema106": {
+      "type": "string",
+      "enum": [
+        "健康",
+        "亚健康",
+        "生病/受伤",
+        "重病/濒死",
+        "无",
+        "死亡"
+      ]
+    },
+    "__schema107": {
+      "type": "string"
+    },
+    "__schema108": {
+      "type": "string"
+    },
+    "__schema109": {
+      "type": "string"
+    },
+    "__schema110": {
+      "type": "string"
+    },
+    "__schema111": {
+      "type": "string"
+    },
+    "__schema112": {
+      "type": "string"
+    },
+    "__schema113": {
+      "type": "string"
+    },
+    "__schema114": {
+      "type": "string",
+      "enum": [
+        "登场",
+        "离场"
+      ]
+    },
+    "__schema115": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema116": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema117": {
+      "type": "number"
+    },
+    "__schema118": {
+      "type": "string"
+    },
+    "__schema119": {
+      "type": "number"
+    },
+    "__schema120": {
+      "type": "string"
+    },
+    "__schema121": {
+      "type": "string",
+      "enum": [
+        "健康",
+        "亚健康",
+        "生病/受伤",
+        "重病/濒死",
+        "无",
+        "死亡"
+      ]
+    },
+    "__schema122": {
+      "type": "string"
+    },
+    "__schema123": {
+      "type": "string"
+    },
+    "__schema124": {
+      "type": "string"
+    },
+    "__schema125": {
+      "type": "string"
+    },
+    "__schema126": {
+      "type": "string"
+    },
+    "__schema127": {
+      "type": "string"
+    },
+    "__schema128": {
+      "type": "string"
+    },
+    "__schema129": {
+      "type": "string",
+      "enum": [
+        "登场",
+        "离场"
+      ]
+    },
+    "__schema130": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema131": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema132": {
+      "type": "number"
+    },
+    "__schema133": {
+      "type": "string"
+    },
+    "__schema134": {
+      "type": "number"
+    },
+    "__schema135": {
+      "type": "string"
+    },
+    "__schema136": {
+      "type": "string",
+      "enum": [
+        "健康",
+        "亚健康",
+        "生病/受伤",
+        "重病/濒死",
+        "无",
+        "死亡"
+      ]
+    },
+    "__schema137": {
+      "type": "string"
+    },
+    "__schema138": {
+      "type": "string"
+    },
+    "__schema139": {
+      "type": "string"
+    },
+    "__schema140": {
+      "type": "string"
+    },
+    "__schema141": {
+      "type": "string"
+    },
+    "__schema142": {
+      "type": "string"
+    },
+    "__schema143": {
+      "type": "string"
+    },
+    "__schema144": {
+      "type": "string",
+      "enum": [
+        "登场",
+        "离场"
+      ]
+    },
+    "__schema145": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema146": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema147": {
+      "type": "number"
+    },
+    "__schema148": {
+      "type": "string"
+    },
+    "__schema149": {
+      "type": "number"
+    },
+    "__schema150": {
+      "type": "string"
+    },
+    "__schema151": {
+      "type": "string",
+      "enum": [
+        "健康",
+        "亚健康",
+        "生病/受伤",
+        "重病/濒死",
+        "无",
+        "死亡"
+      ]
+    },
+    "__schema152": {
+      "type": "string"
+    },
+    "__schema153": {
+      "type": "string"
+    },
+    "__schema154": {
+      "type": "string"
+    },
+    "__schema155": {
+      "type": "string"
+    },
+    "__schema156": {
+      "type": "string"
+    },
+    "__schema157": {
+      "type": "string"
+    },
+    "__schema158": {
+      "type": "string"
+    },
+    "__schema159": {
+      "type": "string",
+      "enum": [
+        "登场",
+        "离场"
+      ]
+    },
+    "__schema160": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema161": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema162": {
+      "type": "number"
+    },
+    "__schema163": {
+      "type": "string"
+    },
+    "__schema164": {
+      "type": "number"
+    },
+    "__schema165": {
+      "type": "string"
+    },
+    "__schema166": {
+      "type": "string",
+      "enum": [
+        "健康",
+        "亚健康",
+        "生病/受伤",
+        "重病/濒死",
+        "无",
+        "死亡"
+      ]
+    },
+    "__schema167": {
+      "type": "string"
+    },
+    "__schema168": {
+      "type": "string"
+    },
+    "__schema169": {
+      "type": "string"
+    },
+    "__schema170": {
+      "type": "string"
+    },
+    "__schema171": {
+      "type": "string"
+    },
+    "__schema172": {
+      "type": "string"
+    },
+    "__schema173": {
+      "type": "string"
+    },
+    "__schema174": {
+      "type": "string",
+      "enum": [
+        "登场",
+        "离场"
+      ]
+    },
+    "__schema175": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema176": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema177": {
+      "type": "number"
+    },
+    "__schema178": {
+      "type": "string"
+    },
+    "__schema179": {
+      "type": "number"
+    },
+    "__schema180": {
+      "type": "string"
+    },
+    "__schema181": {
+      "type": "string",
+      "enum": [
+        "健康",
+        "亚健康",
+        "生病/受伤",
+        "重病/濒死",
+        "无",
+        "死亡"
+      ]
+    },
+    "__schema182": {
+      "type": "string"
+    },
+    "__schema183": {
+      "type": "string"
+    },
+    "__schema184": {
+      "type": "string"
+    },
+    "__schema185": {
+      "type": "string"
+    },
+    "__schema186": {
+      "type": "string"
+    },
+    "__schema187": {
+      "type": "string"
+    },
+    "__schema188": {
+      "type": "string"
+    },
+    "__schema189": {
+      "type": "string",
+      "enum": [
+        "登场",
+        "离场"
+      ]
+    },
+    "__schema190": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema191": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema192": {
+      "type": "number"
+    },
+    "__schema193": {
+      "type": "string"
+    },
+    "__schema194": {
+      "type": "number"
+    },
+    "__schema195": {
+      "type": "string"
+    },
+    "__schema196": {
+      "type": "string",
+      "enum": [
+        "健康",
+        "亚健康",
+        "生病/受伤",
+        "重病/濒死",
+        "无",
+        "死亡"
+      ]
+    },
+    "__schema197": {
+      "type": "string"
+    },
+    "__schema198": {
+      "type": "string"
+    },
+    "__schema199": {
+      "type": "string"
+    },
+    "__schema200": {
+      "type": "string"
+    },
+    "__schema201": {
+      "type": "string"
+    },
+    "__schema202": {
+      "type": "string"
+    },
+    "__schema203": {
+      "type": "string"
+    },
+    "__schema204": {
+      "type": "string",
+      "enum": [
+        "登场",
+        "离场"
+      ]
+    },
+    "__schema205": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema206": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema207": {
+      "type": "number"
+    },
+    "__schema208": {
+      "type": "string"
+    },
+    "__schema209": {
+      "type": "number"
+    },
+    "__schema210": {
+      "type": "string"
+    },
+    "__schema211": {
+      "type": "string",
+      "enum": [
+        "健康",
+        "亚健康",
+        "生病/受伤",
+        "重病/濒死",
+        "无",
+        "死亡"
+      ]
+    },
+    "__schema212": {
+      "type": "string"
+    },
+    "__schema213": {
+      "type": "string"
+    },
+    "__schema214": {
+      "type": "string"
+    },
+    "__schema215": {
+      "type": "string"
+    },
+    "__schema216": {
+      "type": "string"
+    },
+    "__schema217": {
+      "type": "string"
+    },
+    "__schema218": {
+      "type": "string"
+    },
+    "__schema219": {
+      "type": "string",
+      "enum": [
+        "登场",
+        "离场"
+      ]
+    },
+    "__schema220": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema221": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema222": {
+      "type": "number"
+    },
+    "__schema223": {
+      "type": "string"
+    },
+    "__schema224": {
+      "type": "number"
+    },
+    "__schema225": {
+      "type": "string"
+    },
+    "__schema226": {
+      "type": "string",
+      "enum": [
+        "健康",
+        "亚健康",
+        "生病/受伤",
+        "重病/濒死",
+        "无",
+        "死亡"
+      ]
+    },
+    "__schema227": {
+      "type": "string"
+    },
+    "__schema228": {
+      "type": "string"
+    },
+    "__schema229": {
+      "type": "string"
+    },
+    "__schema230": {
+      "type": "string"
+    },
+    "__schema231": {
+      "type": "string"
+    },
+    "__schema232": {
+      "type": "string"
+    },
+    "__schema233": {
+      "type": "string"
+    },
+    "__schema234": {
+      "type": "string",
+      "enum": [
+        "登场",
+        "离场"
+      ]
+    },
+    "__schema235": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema236": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema237": {
+      "type": "number"
+    },
+    "__schema238": {
+      "type": "string"
+    },
+    "__schema239": {
+      "type": "number"
+    },
+    "__schema240": {
+      "type": "string"
+    },
+    "__schema241": {
+      "type": "string",
+      "enum": [
+        "健康",
+        "亚健康",
+        "生病/受伤",
+        "重病/濒死",
+        "无",
+        "死亡"
+      ]
+    },
+    "__schema242": {
+      "type": "string"
+    },
+    "__schema243": {
+      "type": "string"
+    },
+    "__schema244": {
+      "type": "string"
+    },
+    "__schema245": {
+      "type": "string"
+    },
+    "__schema246": {
+      "type": "string"
+    },
+    "__schema247": {
+      "type": "string"
+    },
+    "__schema248": {
+      "type": "string"
+    },
+    "__schema249": {
+      "type": "string",
+      "enum": [
+        "登场",
+        "离场"
+      ]
+    },
+    "__schema250": {
       "type": "object",
       "propertyNames": {
         "type": "string"
@@ -2176,114 +2948,148 @@
           "关系": {
             "description": "角色当前对{{user}}的关系档位",
             "default": "拒绝",
-            "type": "string",
-            "enum": [
-              "拒绝",
-              "交易",
-              "顺从",
-              "忠诚",
-              "性奴"
-            ]
+            "$ref": "#/$defs/__schema251"
           },
           "关系倾向": {
             "description": "角色关系的倾向（可理解为更偏向于哪一档）",
             "default": "拒绝",
-            "type": "string",
-            "enum": [
-              "拒绝",
-              "交易",
-              "顺从",
-              "忠诚",
-              "性奴"
-            ]
+            "$ref": "#/$defs/__schema252"
           },
           "秩序刻印": {
             "description": "Imp数值(0-100)，衡量关系深度。0-19拒绝, 20-39交易, 40-59顺从, 60-89忠诚, 90-100性奴",
             "default": 20,
-            "type": "number"
+            "$ref": "#/$defs/__schema253"
           },
           "秩序刻印更新原因": {
             "description": "记录秩序刻印变化的原因。格式：\"+/-X, 原因\"。无变化则为\"0, 无变化\"。",
-            "type": "string"
+            "$ref": "#/$defs/__schema254"
           },
           "健康": {
             "description": "范围0-100。记录健康数值。获得食物/温暖增加；受伤/饥饿/寒冷减少。",
             "default": 100,
-            "type": "number"
+            "$ref": "#/$defs/__schema255"
           },
           "健康更新原因": {
             "description": "记录健康值变化的原因。格式：\"+/-X, 原因\"。无变化则为\"0, 无变化\"。",
-            "type": "string"
+            "$ref": "#/$defs/__schema256"
           },
           "健康状况": {
             "description": ">=80:健康; 60-79:亚健康; 30-59:生病/受伤; <30:重病/濒死",
             "default": "健康",
-            "type": "string",
-            "enum": [
-              "健康",
-              "亚健康",
-              "生病/受伤",
-              "重病/濒死",
-              "无",
-              "死亡"
-            ]
+            "$ref": "#/$defs/__schema257"
           },
           "衣着": {
             "description": "详细描述当前的衣着状态",
-            "type": "string"
+            "$ref": "#/$defs/__schema258"
           },
           "舌唇": {
             "description": "口腔、嘴唇的状态",
-            "type": "string"
+            "$ref": "#/$defs/__schema259"
           },
           "胸乳": {
             "description": "胸部的状态",
-            "type": "string"
+            "$ref": "#/$defs/__schema260"
           },
           "私穴": {
             "description": "私处的详细状态",
-            "type": "string"
+            "$ref": "#/$defs/__schema261"
           },
           "神态样貌": {
             "description": "面部表情和神态",
-            "type": "string"
+            "$ref": "#/$defs/__schema262"
           },
           "动作姿势": {
             "description": "身体姿态和动作",
-            "type": "string"
+            "$ref": "#/$defs/__schema263"
           },
           "内心想法": {
             "description": "第一人称内心独白",
-            "type": "string"
+            "$ref": "#/$defs/__schema264"
           },
           "登场状态": {
             "description": "值为\"登场\"时显示在UI。角色不出现时设为\"离场\"",
             "default": "离场",
-            "type": "string",
-            "enum": [
-              "登场",
-              "离场"
-            ]
+            "$ref": "#/$defs/__schema265"
           }
         }
       }
     },
-    "楼层其他住户": {
-      "default": {
-        "言语": "",
-        "行为": ""
-      },
-      "type": "object",
-      "properties": {
-        "言语": {
-          "description": "其他幸存者的总体言语状态",
-          "type": "string"
-        },
-        "行为": {
-          "description": "其他幸存者的总体行为状态",
-          "type": "string"
-        }
-      }
+    "__schema251": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema252": {
+      "type": "string",
+      "enum": [
+        "拒绝",
+        "交易",
+        "顺从",
+        "忠诚",
+        "性奴"
+      ]
+    },
+    "__schema253": {
+      "type": "number"
+    },
+    "__schema254": {
+      "type": "string"
+    },
+    "__schema255": {
+      "type": "number"
+    },
+    "__schema256": {
+      "type": "string"
+    },
+    "__schema257": {
+      "type": "string",
+      "enum": [
+        "健康",
+        "亚健康",
+        "生病/受伤",
+        "重病/濒死",
+        "无",
+        "死亡"
+      ]
+    },
+    "__schema258": {
+      "type": "string"
+    },
+    "__schema259": {
+      "type": "string"
+    },
+    "__schema260": {
+      "type": "string"
+    },
+    "__schema261": {
+      "type": "string"
+    },
+    "__schema262": {
+      "type": "string"
+    },
+    "__schema263": {
+      "type": "string"
+    },
+    "__schema264": {
+      "type": "string"
+    },
+    "__schema265": {
+      "type": "string",
+      "enum": [
+        "登场",
+        "离场"
+      ]
+    },
+    "__schema266": {
+      "type": "string"
+    },
+    "__schema267": {
+      "type": "string"
     }
   }
 }
