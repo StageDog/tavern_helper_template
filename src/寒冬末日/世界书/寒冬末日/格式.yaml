@@ -18,9 +18,9 @@
 [遵循"快速剧情"选项生成协议的三个剧情选项，只能有一组<option>标签，每个选项单独一行，确保3个选项放在同一个<option>标签内]
 </option>
 <UpdateVariable>
-<UpdateAnalysis>
+<Analysis>
 ……
-</UpdateAnalysis>
+</Analysis>
 <JSONPatch>
 ……
 </JSONPatch>
