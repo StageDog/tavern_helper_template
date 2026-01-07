@@ -60,6 +60,8 @@
 </template>
 
 <script setup lang="ts">
+import { CHAT_VAR_KEYS, sendToChat } from '../../outbound';
+
 const props = defineProps<{
   options: string[];
 }>();
@@ -68,11 +70,10 @@ const palette_open = ref(false);
 const theme = useLocalStorage<string>('eden_theme', 'apocalypse_tech');
 const font_key = useLocalStorage<string>('eden_font_key', 'yahei');
 const font_size = useLocalStorage<string>('eden_font_size_key', '16');
-const SETTINGS_PATH = 'ui_settings';
 
 function loadPersistedSettings() {
   const vars = getVariables({ type: 'chat' }) ?? {};
-  const saved = _.get(vars, SETTINGS_PATH, {}) as Record<string, string>;
+  const saved = _.get(vars, CHAT_VAR_KEYS.UI_SETTINGS, {}) as Record<string, string>;
   if (typeof saved.theme === 'string') theme.value = saved.theme;
   if (typeof saved.font_key === 'string') font_key.value = saved.font_key;
   if (typeof saved.font_size === 'string') font_size.value = saved.font_size;
@@ -83,7 +84,7 @@ watch(
   ([t, f, s]) => {
     updateVariablesWith(
       vars => {
-        _.set(vars, SETTINGS_PATH, { theme: t, font_key: f, font_size: s });
+        _.set(vars, CHAT_VAR_KEYS.UI_SETTINGS, { theme: t, font_key: f, font_size: s });
         return vars;
       },
       { type: 'chat' },
@@ -139,17 +140,16 @@ watch(
 );
 
 function handleChoiceClick(text: string) {
-  if (typeof triggerSlash === 'function') {
-    try {
-      triggerSlash(`/send ${text} | /trigger await=true`);
-      return;
-    } catch {
-      alert(`指令发送失败: ${text}`);
-      return;
-    }
-  }
+  const res = sendToChat(text, {
+    toast: true,
+    successMessage: '已发送',
+    failureMessage: `指令发送失败：${text}`,
+    unavailableMessage: `无法自动发送：${text}`,
+  });
 
-  alert(`无法自动发送: ${text}`);
+  if (!res.ok && !(toastr as any)?.error) {
+    alert(`${res.reason}: ${res.sentText}`);
+  }
 }
 
 function onDocumentClick(ev: MouseEvent) {

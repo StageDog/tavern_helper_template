@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "寒冬末日 initvar wrapper",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "stat_data": {
+      "$ref": "../../schema.json"
+    }
+  },
+  "required": ["stat_data"]
+}
+

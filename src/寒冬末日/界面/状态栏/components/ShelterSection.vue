@@ -165,10 +165,16 @@
         </div>
 
         <!-- 庇护范围快速设置：不依赖地图点选，避免“选完还要滚动找按钮” -->
-        <div v-if="isScopeEditorOpen" class="scope-modal-mask" @click.self="closeScopeEditor">
-          <div class="scope-modal" role="dialog" aria-modal="true">
+        <Teleport to="body">
+          <div
+            v-if="isScopeEditorOpen"
+            class="scope-modal-mask"
+            :style="scopeModalMaskStyle"
+            @click.self="closeScopeEditor"
+          >
+            <div class="scope-modal" role="dialog" aria-modal="true">     
             <div class="scope-modal-header">
-              <div class="scope-modal-title">🛡️ 设置生存庇护范围</div>
+              <div class="scope-modal-title">🛡️ 设置生存庇护范围</div>    
               <button class="scope-icon-btn" type="button" @click="closeScopeEditor" aria-label="关闭">✕</button>
             </div>
 
@@ -260,8 +266,9 @@
                 确定并发送
               </button>
             </div>
+            </div>
           </div>
-        </div>
+        </Teleport>
       </div>
 
       <!-- 庇护所能力列表（可折叠） -->
@@ -285,10 +292,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch, onUnmounted } from 'vue';
 import { useDataStore } from '../../store';
 import { useShelterScopeStore } from '../../shelterScopeStore';
 import { floorRoomCapacity, isRoomSheltered } from '../../../util/shelter_scope';
+import { copyText, sendToChat } from '../../outbound';
 
 const store = useDataStore();
 const scopeStore = useShelterScopeStore();
@@ -296,6 +304,75 @@ const scopeStore = useShelterScopeStore();
 const isMapExpanded = ref(false);
 const isAbilityExpanded = ref(false);
 const isScopeEditorOpen = ref(false);
+const scopeModalViewportTop = ref(0);
+const scopeModalViewportHeight = ref(0);
+let parentScrollTarget: HTMLElement | Window | null = null;
+
+const scopeModalMaskStyle = computed(() => ({
+  top: `${scopeModalViewportTop.value}px`,
+  height: `${scopeModalViewportHeight.value}px`,
+}));
+
+function getParentScrollContainer(frameEl: HTMLElement): HTMLElement | Window {
+  try {
+    const doc = frameEl.ownerDocument;
+    const win = doc.defaultView ?? window.parent;
+    let cur: HTMLElement | null = frameEl.parentElement;
+    while (cur) {
+      const style = win.getComputedStyle(cur);
+      const overflowY = style.overflowY;
+      if ((overflowY === 'auto' || overflowY === 'scroll') && cur.scrollHeight > cur.clientHeight + 1) {
+        return cur;
+      }
+      cur = cur.parentElement;
+    }
+    return win;
+  } catch {
+    return window.parent;
+  }
+}
+
+function updateScopeModalViewport() {
+  const frameEl = window.frameElement as HTMLElement | null;
+  if (!frameEl) return;
+  const parentWin = window.parent as Window | null;
+  if (!parentWin) return;
+
+  // 关键：消息 iframe 本身通常“没有内部滚动”，外层滚动发生在父级容器。
+  // 固定定位会锚定到 iframe 顶部，导致用户在长正文中点开弹窗时“弹窗跑到很远”。
+  // 因此我们把 mask 放到文档的“当前可见区域对应的 y 坐标”上（绝对定位）。
+  const rect = frameEl.getBoundingClientRect(); // 相对父窗口 viewport
+  const topInIframeDoc = Math.max(0, -rect.top);
+  scopeModalViewportTop.value = topInIframeDoc;
+  scopeModalViewportHeight.value = Math.max(0, parentWin.innerHeight);
+}
+
+function bindParentScrollSync() {
+  const frameEl = window.frameElement as HTMLElement | null;
+  if (!frameEl) return;
+  parentScrollTarget = getParentScrollContainer(frameEl);
+  const handler = updateScopeModalViewport;
+
+  if (parentScrollTarget instanceof Window) {
+    parentScrollTarget.addEventListener('scroll', handler, { passive: true });
+    parentScrollTarget.addEventListener('resize', handler, { passive: true });
+  } else {
+    parentScrollTarget.addEventListener('scroll', handler, { passive: true });
+    window.parent?.addEventListener?.('resize', handler, { passive: true });
+  }
+}
+
+function unbindParentScrollSync() {
+  const handler = updateScopeModalViewport;
+  if (parentScrollTarget instanceof Window) {
+    parentScrollTarget.removeEventListener('scroll', handler as any);
+    parentScrollTarget.removeEventListener('resize', handler as any);
+  } else if (parentScrollTarget) {
+    parentScrollTarget.removeEventListener('scroll', handler as any);
+    window.parent?.removeEventListener?.('resize', handler as any);
+  }
+  parentScrollTarget = null;
+}
 
 const shelterLevel = computed(() => {
   const lv = Number(store.data.庇护所.庇护所等级);
@@ -382,6 +459,19 @@ function closeScopeEditor() {
   isScopeEditorOpen.value = false;
 }
 
+watch(isScopeEditorOpen, open => {
+  if (open) {
+    updateScopeModalViewport();
+    bindParentScrollSync();
+    return;
+  }
+  unbindParentScrollSync();
+});
+
+onUnmounted(() => {
+  unbindParentScrollSync();
+});
+
 function clearScopeSelection() {
   const ok = window.confirm('确定清空已选择的庇护房间？');
   if (!ok) return;
@@ -421,54 +511,16 @@ function onFloorRoomClick(floor: '20' | '19', roomNumber: string) {
 }
 
 async function copyScopeInstruction() {
-  const text = scopeInstructionText.value;
-  if (!text) {
-    toastr.warning('尚未选择任何房间');
-    return;
-  }
-
-  try {
-    await navigator.clipboard.writeText(text);
-    toastr.success('已复制');
-    return;
-  } catch {
-    // ignore
-  }
-
-  try {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.position = 'fixed';
-    ta.style.left = '-9999px';
-    ta.style.top = '0';
-    document.body.appendChild(ta);
-    ta.focus();
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    toastr.success('已复制');
-  } catch {
-    toastr.error('复制失败，请手动复制');
-  }
+  await copyText(scopeInstructionText.value, { toast: true });
 }
 
 function sendScopeInstruction() {
-  const text = scopeInstructionText.value;
-  if (!text) {
-    toastr.warning('尚未选择任何房间');
-    return;
-  }
-  if (typeof triggerSlash !== 'function') {
-    toastr.error('无法发送：triggerSlash 不可用');
-    return;
-  }
-
-  try {
-    triggerSlash(`/send ${text} | /trigger await=true`);
-    toastr.info('已发送');
-  } catch {
-    toastr.error('发送失败，请复制后手动发送');
-  }
+  sendToChat(scopeInstructionText.value, {
+    toast: true,
+    successMessage: '已发送',
+    failureMessage: '发送失败，请复制后手动发送',
+    unavailableMessage: '无法发送：triggerSlash 不可用',
+  });
 }
 
 function confirmAndSendScope() {
@@ -478,20 +530,19 @@ function confirmAndSendScope() {
     return;
   }
 
-  if (typeof triggerSlash === 'function') {
-    try {
-      triggerSlash(`/send ${text} | /trigger await=true`);
-      toastr.success('已发送到聊天');
-      closeScopeEditor();
-      return;
-    } catch {
-      // fallthrough
-    }
+  const res = sendToChat(text, {
+    toast: true,
+    successMessage: '已发送到聊天',
+    failureMessage: '发送失败，已尝试复制，请手动发送',
+    unavailableMessage: '无法直接发送，已尝试复制，请手动发送',
+  });
+
+  if (res.ok) {
+    closeScopeEditor();
+    return;
   }
 
-  // 兜底：无法发送时，复制并提示
-  copyScopeInstruction();
-  toastr.warning('无法直接发送，已尝试复制，请手动发送');
+  void copyText(text, { toast: false });
 }
 
 // 玄关区域计算属性
@@ -594,11 +645,15 @@ function getFloorRoomNames(floor: string, room: string): string {
 
 /* --- 庇护范围：快速设置弹窗 --- */
 .scope-modal-mask {
-  position: fixed;
-  inset: 0;
+  position: absolute;
+  left: 0;
+  right: 0;
   z-index: 50;
   background: rgba(0, 0, 0, 0.55);
-  padding: 12px;
+  padding-top: calc(12px + env(safe-area-inset-top));
+  padding-right: calc(12px + env(safe-area-inset-right));
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  padding-left: calc(12px + env(safe-area-inset-left));
   display: flex;
   align-items: center;
   justify-content: center;

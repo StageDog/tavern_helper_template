@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../schema.json
+# yaml-language-server: $schema=./initvar.schema.json
 
 stat_data:
   世界:

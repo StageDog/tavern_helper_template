@@ -281,8 +281,8 @@
       "default": {},
       "type": "object",
       "propertyNames": {
-        "type": "string",
-        "description": "订单ID"
+        "description": "订单ID",
+        "type": "string"
       },
       "additionalProperties": {
         "type": "object",
@@ -688,11 +688,69 @@
             }
           },
           "packages": {
+            "description": "套餐列表",
             "type": "array",
             "items": {
-              "$ref": "#/$defs/__schema0"
-            },
-            "description": "套餐列表"
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "price": {
+                  "type": "number"
+                },
+                "stars": {
+                  "type": "number"
+                },
+                "icon": {
+                  "type": "string"
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "image1": {
+                  "type": "string"
+                },
+                "image2": {
+                  "type": "string"
+                },
+                "image3": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "content": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "reviews": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "name",
+                "price",
+                "stars",
+                "icon",
+                "tags",
+                "image1",
+                "image2",
+                "image3",
+                "description",
+                "content",
+                "reviews"
+              ],
+              "additionalProperties": false
+            }
           }
         },
         "required": [
@@ -709,68 +767,5 @@
     "经济",
     "订单模板",
     "系统状态"
-  ],
-  "$defs": {
-    "__schema0": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "price": {
-          "type": "number"
-        },
-        "stars": {
-          "type": "number"
-        },
-        "icon": {
-          "type": "string"
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "image1": {
-          "type": "string"
-        },
-        "image2": {
-          "type": "string"
-        },
-        "image3": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "content": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "reviews": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "name",
-        "price",
-        "stars",
-        "icon",
-        "tags",
-        "image1",
-        "image2",
-        "image3",
-        "description",
-        "content",
-        "reviews"
-      ],
-      "additionalProperties": false
-    }
-  }
+  ]
 }

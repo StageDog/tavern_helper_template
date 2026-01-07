@@ -24,6 +24,39 @@ type RoleTouched = {
   imprintReason: boolean;
 };
 
+function parseTimeStrToMinutes(timeStr: string): number | null {
+  const m = (timeStr ?? '').match(/(\d{1,2}):(\d{2})/);
+  if (!m) return null;
+  const hour = Number(m[1]);
+  const minute = Number(m[2]);
+  if (!Number.isFinite(hour) || !Number.isFinite(minute)) return null;
+  if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+  return hour * 60 + minute;
+}
+
+function parseDateStr(dateStr: string): { year: number; month: number; day: number } | null {
+  const m = (dateStr ?? '').match(/(\d{1,4})年(\d{1,2})月(\d{1,2})日/);
+  if (!m) return null;
+  const year = Number(m[1]);
+  const month = Number(m[2]);
+  const day = Number(m[3]);
+  if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) return null;
+  return { year, month, day };
+}
+
+function formatDateStr(date: Date): string {
+  return `末日纪元，${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+}
+
+function readDebugFlagsFromChat(): { dateLogic: boolean; offstageHealth: boolean } {
+  const vars = getVariables({ type: 'chat' }) ?? {};
+  const debug = _.get(vars, 'eden.debug', {}) ?? {};
+  return {
+    dateLogic: _.get(debug, 'date_logic', false) === true,
+    offstageHealth: _.get(debug, 'offstage_health', false) === true,
+  };
+}
+
 function relationStageFromImprint(mark: number): '拒绝' | '交易' | '顺从' | '忠诚' | '性奴' {
   const v = _.clamp(Number(mark) || 0, 0, 100);
   if (v < 20) return '拒绝';
@@ -97,6 +130,7 @@ function applyOffstageRoleHealthIfNeeded(
   deltaHours: number | null,
   scope: ShelterScopeByFloor,
   rules: HealthRules,
+  debug?: { offstageHealth: boolean },
 ) {
   if (newRole.登场状态 !== '离场') return;
   if (!oldRole) return;
@@ -104,12 +138,26 @@ function applyOffstageRoleHealthIfNeeded(
 
   // 规则：只要 AI 本轮对“健康/健康更新原因”有指令，就认为是剧情介入，脚本不做基础结算
   const touched = diffRoleTouched(oldRole, newRole);
-  if (touched.health || touched.healthReason) return;
+  if (touched.health || touched.healthReason) {
+    if (debug?.offstageHealth) {
+      console.log(
+        `[OffstageHealth] skip(${roleName}): touched by AI (health=${touched.health}, reason=${touched.healthReason})`,
+      );
+    }
+    return;
+  }
 
   const currentHealth = clampHealth(Number(newRole.健康) || 0);
   const sheltered = isShelteredForRole(stat_data, roleName, scope);
   const computed = computeOffstageHealthDelta(deltaHours, sheltered, rules);
-  if (!computed.delta) return;
+  if (!computed.delta) {
+    if (debug?.offstageHealth) {
+      console.log(
+        `[OffstageHealth] no-op(${roleName}): dh=${deltaHours.toFixed(2)}, sheltered=${sheltered}`,
+      );
+    }
+    return;
+  }
 
   const nextHealth = clampHealth(currentHealth + computed.delta);
   const actualDelta = nextHealth - currentHealth;
@@ -149,9 +197,71 @@ $(async () => {
   await waitGlobalInitialized('Mvu');
 
   eventOn(Mvu.events.VARIABLE_UPDATE_ENDED, (new_variables, old_variables) => {
+    const debug = readDebugFlagsFromChat();
     const oldWorld = _.get(old_variables, 'stat_data.世界', {});
+
+    // 跨午夜自动补日期：避免 AI 把时间从 23:xx 推进到 01:xx 但忘记 日期/末日天数 +1，导致 diffWorldHours 判定“时间未前进”
+    // 注意：若同时部署了 `src/寒冬末日/脚本/日期逻辑/index.ts`，请二选一，避免重复 +1
+    {
+      const oldTimeStr = _.get(old_variables, 'stat_data.世界.时间', '');
+      const newTimeStr = _.get(new_variables, 'stat_data.世界.时间', '');
+      if (oldTimeStr !== newTimeStr) {
+        const oldMinutes = parseTimeStrToMinutes(oldTimeStr);
+        const newMinutes = parseTimeStrToMinutes(newTimeStr);
+        if (oldMinutes !== null && newMinutes !== null && oldMinutes > newMinutes) {
+          console.log(`[DateLogic] Detected midnight crossing: ${oldTimeStr} -> ${newTimeStr}`);
+          const oldDateStr = _.get(old_variables, 'stat_data.世界.日期', '');
+          const newDateStr = _.get(new_variables, 'stat_data.世界.日期', '');
+          if (oldDateStr === newDateStr) {
+            console.log('[DateLogic] AI did not update date, patching date/day...');
+            const parsed = parseDateStr(oldDateStr);
+            if (parsed) {
+              const dateObj = new Date(parsed.year, parsed.month - 1, parsed.day);
+              if (!Number.isNaN(dateObj.getTime())) {
+                dateObj.setDate(dateObj.getDate() + 1);
+                const patched = formatDateStr(dateObj);
+                _.set(new_variables, 'stat_data.世界.日期', patched);
+
+                const oldDays = _.get(new_variables, 'stat_data.世界.末日天数');
+                if (typeof oldDays === 'number') {
+                  _.set(new_variables, 'stat_data.世界.末日天数', oldDays + 1);
+                }
+                const daysAfter = _.get(new_variables, 'stat_data.世界.末日天数');
+                console.log(
+                  `[DateLogic] patched date: ${oldDateStr} -> ${patched}; days: ${oldDays} -> ${daysAfter}`,
+                );
+              } else if (debug.dateLogic) {
+                console.log(`[DateLogic] cannot parse date to Date(): ${oldDateStr}`);
+              }
+            } else if (debug.dateLogic) {
+              console.log(`[DateLogic] cannot parse date string: ${oldDateStr}`);
+            }
+          } else if (debug.dateLogic) {
+            console.log(`[DateLogic] date already updated by AI: ${oldDateStr} -> ${newDateStr}`);
+          }
+        } else if (debug.dateLogic) {
+          console.log(
+            `[DateLogic] time changed but not crossing: ${oldTimeStr} -> ${newTimeStr} (oldMin=${oldMinutes}, newMin=${newMinutes})`,
+          );
+        }
+      } else if (debug.dateLogic) {
+        console.log('[DateLogic] time unchanged; no date check.');
+      }
+    }
+
     const newWorld = _.get(new_variables, 'stat_data.世界', {});
     const deltaHours = diffWorldHours(oldWorld, newWorld);
+    if (deltaHours === null) {
+      const oldTimeStr = _.get(old_variables, 'stat_data.世界.时间', '');
+      const newTimeStr = _.get(new_variables, 'stat_data.世界.时间', '');
+      if (oldTimeStr !== newTimeStr) {
+        console.log('[DateLogic] diffWorldHours=null', { oldWorld, newWorld });
+      } else if (debug.dateLogic) {
+        console.log('[DateLogic] diffWorldHours=null (time unchanged)', { oldWorld, newWorld });
+      }
+    } else if (debug.dateLogic) {
+      console.log(`[DateLogic] diffWorldHours=${deltaHours.toFixed(2)}`);
+    }
 
     const stat_data = _.get(new_variables, 'stat_data', {});
     const old_stat_data = _.get(old_variables, 'stat_data', {});
@@ -166,7 +276,7 @@ $(async () => {
       if (!isRoleLike(val)) continue;
 
       const oldRole = _.get(old_stat_data, key, null) as any as RoleLike | null;
-      applyOffstageRoleHealthIfNeeded(key, key, oldRole, val as any, stat_data, deltaHours, scope, rules);
+      applyOffstageRoleHealthIfNeeded(key, key, oldRole, val as any, stat_data, deltaHours, scope, rules, debug);
       applyDerivedHealthStatus(key, val as any, stat_data);
       applyDerivedRelationStage(key, oldRole, val as any, stat_data);
     }
@@ -187,6 +297,7 @@ $(async () => {
           deltaHours,
           scope,
           rules,
+          debug,
         );
         applyDerivedHealthStatus(`临时NPC.${name}`, val as any, stat_data);
         applyDerivedRelationStage(`临时NPC.${name}`, oldRole, val as any, stat_data);

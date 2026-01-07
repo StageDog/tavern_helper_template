@@ -2,26 +2,22 @@
 rule:
   - You MUST output the `<UpdateVariable>` block at the end of your reply.
   - The block MUST contain `<Analysis>` and `<JSONPatch>` sections.
-  - 'The update commands works like the **JSON Patch (RFC 6902)** standard, must be a valid JSON array containing operation objects, but supports the following operations instead:'
-  - '  - `replace`: replace the value of existing paths'
-  - '  - `delta`: update the value of existing number paths by a delta value (positive or negative)'
-  - '  - `insert`: insert new items into an object or array'
-  - '  - `remove`: delete path'
+  - "The update commands works like the **JSON Patch (RFC 6902)** standard, must be a valid JSON array containing operation objects, but supports the following operations instead:"
+  - "  - `replace`: replace the value of existing paths"
+  - "  - `delta`: update the value of existing number paths by a delta value (positive or negative)"
+  - "  - `insert`: insert new items into an object or array"
+  - "  - `remove`: delete path"
   - Path MUST start with `/stat_data/`.
   - DO NOT update field names starts with `_` as they are readonly, such as `_变量`.
 
 format: |-
   <UpdateVariable>
   <Analysis>
-  从当前<user>消息、剧情上下文和上一轮 stat_data 状态中检索信息，严格按照以下分层检查顺序一步一步思考。目标是确保所有变量类别都被覆盖，不遗漏任何可能需要更新的字段。每一步都必须明确说明"已检查，无变化"或"需更新，理由+新值"。
-
-  自动化说明（脚本/前端已托管，AI 无需更新）：
-  - 离场角色（登场状态="离场"）的 `健康` / `健康更新原因` / `健康状况` 由脚本自动结算并写回；AI 默认不更新（若要剧情性介入，请先把其 `登场状态` 改为 "登场" 再修改健康）。
-  - “生存庇护范围”由前端界面写入聊天变量（chat variable，`eden.shelter_scope`）维护，AI 不需要也不应在 stat_data 中创建/更新对应字段；叙事上可将其视为已接入伊甸供暖/通风系统的房间。
-
-  前置步骤：文明阶段与整体剧情判断（可选但推荐）
-  - 快速判断当前末日天数所属文明阶段（第一阶段：1-10天、第二阶段：11-20天、第三阶段：20-30天、第四阶段：30+）。
-  - 已检查：□（记录是否影响角色行为或交易逻辑）
+  从当前<user>消息、剧情上下文和上一轮 stat_data 状态中检索信息，严格按照以下分层检查顺序一步一步思考。
+  前置步骤：清除本轮未提及的角色
+  - 快速检查当前登场角色列表，本轮哪位已登场角色未提及？→角色离场。
+  - **特别不能遗漏** → 使用replace将登场状态设置为："离场"；
+  - 结果：需变更登场状态的离场角色：____。已检查：□（记录接下来的更新对象）
 
   步骤 1：世界变量 & 楼层氛围（最高优先级）
   - 时间：
@@ -53,53 +49,55 @@ format: |-
 
    步骤 3：所有角色变量
   - 逐个列出当前所有登场角色（主角色 + 已登场过的离场角色 + 临时NPC）：
-    - 角色列表：【浅见亚美】【相田哲也】【星野琉璃】【早川遥】【早川舞】【藤井雪乃】【中村惠子】【王静】【康绮月】【薛萍】【小泽花】【爱宫心爱】【爱宫铃】【桃乐丝?泽巴哈】【何铃】【临时NPC】。
+    - 角色列表：【浅见亚美】【相田哲也】【星野琉璃】【早川遥】【早川舞】【藤井雪乃】【中村惠子】【王静】【康绮月】【薛萍】【小泽花】【爱宫心爱】【爱宫铃】【桃乐丝・泽巴哈】【何铃】【临时NPC】。
   - 对每个角色逐一检查：
-    a. 登场状态：
-       - 进入场景 → "登场"；离开或长时间未提**特别不能遗漏** → "离场"；死亡 → 触发死亡压缩。
-       - 结果：需更新？是/否。新值：____。已检查：□
+    a. 登场状态：**这是一个重要剧情开关**
+       - 进入场景 → "登场"；
+       - 本轮不提及 →"离场"
+       - 死亡 → 触发死亡压缩。
+       - 结果：新登场角色____，新值：____。已离场角色：____，新值：____。需更新？是/否。新值：____。已检查：□
     b. 健康（数值，0-100）：
        - 登场角色：每轮强制结算（剧情性变化用 `delta`）。
-          - 庇护所内角色（玄关临时客房、核心区主卧/主浴）：通常无变化（0）。
+          - 庇护所内角色（玄关临时客房、核心区主卧/主浴）：通常无变化（0），或轻微恢复（0~+2）。
           - 楼层房间内角色：
-            - 若该房间被设为“生存庇护范围”→ 视为受庇护（更倾向稳定或缓慢恢复，代表伊甸为其同步供暖/通风/电力等基础维持）。
-            - 若未纳入庇护范围 → 视为未受庇护（更倾向被动扣减）。
+            - 若该房间被设为“生存庇护范围”→ 视为受庇护（缓慢恢复，代表伊甸为其同步供暖/通风/电力等基础维持）。
+            - 若未纳入庇护范围 → 视为未受庇护（按规则被动扣减）。
             - 注意：以上仅是“环境基础倾向”，【登场】角色本轮仍必须由你根据剧情事实决定 `delta`（食物/治疗/受伤/战斗等）。
           - 受伤/饥饿/战斗等剧情因素：按情节额外扣减或恢复（±1~10）。
-        - 离场角色：是否有“剧情介入/远程投喂/治疗/受伤”等情况。
+        - 离场角色：默认不更新（健康/原因由脚本按“剧情时间 + 房间入住 + 庇护范围”自动结算）。仅在“剧情介入/远程投喂/治疗/受伤”等情况下才由 AI 明确增减（建议先把其登场状态改为"登场"以明确交由 AI 处理）。
         - 操作: 使用 `delta` 计算新数值（如 85 -> 83）。
         - 结果：需更新？是/否。新值：____。已检查：□
     c. 健康更新原因
-        - 登场角色：必须与健康数值进行同步更新。
+        - 必须与健康数值进行同步更新。
             - 有变化: `+/-X, 原因` (如 `-2, 寒冷饥饿`)
             - 无变化: `0, 无变化`
         - 结果：需更新？是/否。新值：____。已检查：□
     d. 纯文本描述字段（衣着、舌唇、胸乳、私穴、神态样貌、动作姿势）：
-       - 仅登场角色进行推演描述。
-       - 结果：需更新，推演字段：____。新值：____。已检查：□
+       - 剧情是否提及？ 有 → 更新描述以反映当前状态。
+       - 剧情未提及，每位登场角色均需进行推演。
+       - 结果：需更新____，推演字段：____。新值：____。已检查：□
     e. 内心想法（强制，第一人称）：
+       - 本次哪几位角色与{{user}}进行了互动？
        - 每次互动后必须更新，反映真实心声。
-       - 离场角色可跳过（节省上下文），但回归时必须补上。
+       - 离场角色可跳过，但回归时必须补上。
        - 结果：需更新？是/否。新值：____。已检查：□
      g. 秩序刻印 (Imp) & 更新原因（**登场角色强制同步**）：
-        - 计算变动：基于生存供给(+1)、设施体验(+3~5)或互动(+2~4)计算增减。
-        - 检查锁死：若数值触及当前关系区间上限（19/39/59/89）且无升级事件，强制锁死。
-        - 检查跃迁：若发生关系升级，直接跃迁至新区间起始值。
+        - 计算变动：基于生存供给(+1)、设施体验(+3~5)或感情、性爱互动(+2~6)计算增减。
+        - 检查跃迁：本轮是否有完成任务等奖励内容直接涉及关系升级，如果有直接使用replace更新秩序刻印至新等级。
         - 重要：如果你在 JSONPatch 中对该角色执行了 `delta/replace` 更新 `秩序刻印`，必须在 JSONPatch 中同时写入：
           - `replace /stat_data/<角色>/秩序刻印更新原因`（`+/-X, 原因`；无变化：`0, 无变化`）
         - 结果：Imp 变动 ____ (原因)。当前状态：____。已检查：□
 
 
   步骤 4：临时NPC专用处理
-  - 若新NPC登场且临时NPC槽为空/离场 → 使用 `insert` 创建完整新对象（初始化所有字段）。
-  - 若已有临时NPC → 复用或替换。
-  - 若离开/死亡 → 使用 `remove` 删除对应路径。
+  - 本轮是否有新npc登场？ → 参照核心角色的完整字段，使用 `insert` 创建完整新对象（初始化所有字段）。
+  - 若已有临时NPC → 参考登场角色进行各字段更新。
+  - 若死亡 → 使用 `remove` 删除对应路径。
   - 结果：需创建/更新/移除？是/否。已检查：□
 
   步骤 5：楼层其他住户
   - 言语 & 行为：
-    - 检查是否有群体骚乱、砸门、求救等事件 → 更新描述以反映绝望/暴力。
-    - 若无 → 可保持或轻微变化。
+    - 日期是否变更？ 有 → 更新描述以反映新一天的氛围。
     - 结果：需更新？是/否。新值：____。已检查：□
 
   步骤 6：房间状态（强制，禁止遗漏）
@@ -112,17 +110,20 @@ format: |-
   步骤 7：主线任务
   - 当前阶段 & 阶段目标（进度追踪）：
     - 检查剧情中是否有事件推动了任务进度（如清除了1层敌人，庇护了1个家庭）。
-    - 若有，计算新的进度数值，使用 `replace` 更新对应目标对象的 `当前值` 字段。
+    - 若有，计算本轮增量，使用 `delta` 累加对应目标对象的 `当前值` 字段。
     - 若 `当前值` 达到 `目标值`，则判定该子目标完成。
     - 若所有目标均完成，则判定阶段完成，发放奖励并刷新下一阶段目标。
     - 结果：需更新进度？是/否。新值：____。已检查：□
   - 任务奖励检查：
     - 检查是否触发奖励条件 → 若是，使用 `insert` 添加能力并更新对应区域。
     - 结果：触发奖励？是/否。操作：____。已检查：□
+  - 发放新任务阶段（若适用）：
+    - 若当前阶段完成 → 使用 `insert` 创建<主线任务-星穹秩序>新阶段对象，初始化目标和状态。
+    - 结果：已完成任务进度：____，已完成阶段任务：____，综合奖励____。需发放新阶段任务？是/否。已检查：□
   - 情报碎片：
     - "伊甸"AI 新汇报 → 使用 `insert` 添加新对象。
     - 玩家完成探索 → 使用 `replace` 修改对应碎片状态为"已完成"。
-    - 结果：需 insert/replace？是/否。已检查：□
+    - 结果：根据<主线任务-星穹秩序> 或玩家探索发现，进行insert/replace？是/否。已检查：□
 
   步骤 8：变量操作规划（总结）
   - 汇总所有需要更新的路径和操作（replace/delta/insert/remove）。
@@ -158,8 +159,8 @@ format: |-
   </UpdateVariable>
 
 requirements:
-  - 'Allowed operations: replace, delta, insert, remove.'
+  - "Allowed operations: replace, delta, insert, remove."
   - Path MUST be a valid JSON Pointer absolute path.
   - DO NOT `replace` on non-existent paths (use `insert`).
-  - 'Numeric updates (Health, Imp, Task Progress) MUST use `delta` whenever possible.'
-  - 'Arrays: Use `replace` with the full new list for Room/User lists; use `insert` with `/-` for Appending to Capability/Log arrays.'
+  - "Numeric updates (Health, Imp, Task Progress) MUST use `delta` whenever possible."
+  - "Arrays: Use `replace` with the full new list for Room/User lists; use `insert` with `/-` for Appending to Capability/Log arrays."

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { HealthRules } from '../util/health';
 import { floorRoomCapacity, normalizeScope, ShelterScopeByFloor } from '../util/shelter_scope';
+import { buildShelterScopeInstructionText, CHAT_VAR_KEYS } from './outbound';
 
 const ScopeSchema = z.record(z.string(), z.array(z.string())).prefault({});
 
@@ -20,14 +21,14 @@ const HealthRulesSchema = z
 
 function readScopeFromChat(): ShelterScopeByFloor {
   const vars = getVariables({ type: 'chat' }) ?? {};
-  const parsed = ScopeSchema.safeParse(_.get(vars, 'eden.shelter_scope', {}));
+  const parsed = ScopeSchema.safeParse(_.get(vars, CHAT_VAR_KEYS.EDEN_SHELTER_SCOPE, {}));
   if (!parsed.success) return {};
   return normalizeScope(parsed.data);
 }
 
 function readHealthRulesFromChat(): HealthRules {
   const vars = getVariables({ type: 'chat' }) ?? {};
-  const parsed = HealthRulesSchema.safeParse(_.get(vars, 'eden.rules.health', {}));
+  const parsed = HealthRulesSchema.safeParse(_.get(vars, CHAT_VAR_KEYS.EDEN_RULES_HEALTH, {}));
   if (!parsed.success) return HealthRulesSchema.parse({});
 
   return sanitizeHealthRules(parsed.data);
@@ -43,7 +44,7 @@ function sanitizeHealthRules(rules: HealthRules): HealthRules {
 }
 
 export const useShelterScopeStore = defineStore(
-  'eden.shelter_scope',
+  CHAT_VAR_KEYS.EDEN_SHELTER_SCOPE,
   errorCatched(() => {
     const scope = ref<ShelterScopeByFloor>(readScopeFromChat());
     const healthRules = ref<HealthRules>(readHealthRulesFromChat());
@@ -53,8 +54,8 @@ export const useShelterScopeStore = defineStore(
       () => {
         updateVariablesWith(
           vars => {
-            _.set(vars, 'eden.shelter_scope', normalizeScope(scope.value));
-            _.set(vars, 'eden.rules.health', sanitizeHealthRules(healthRules.value));
+            _.set(vars, CHAT_VAR_KEYS.EDEN_SHELTER_SCOPE, normalizeScope(scope.value));
+            _.set(vars, CHAT_VAR_KEYS.EDEN_RULES_HEALTH, sanitizeHealthRules(healthRules.value));
             return vars;
           },
           { type: 'chat' },
@@ -118,14 +119,7 @@ export const useShelterScopeStore = defineStore(
     }
 
     function buildInstructionText(): string {
-      const floors = (['20', '19'] as const)
-        .map(floor => ({ floor, rooms: scope.value[floor] ?? [] }))
-        .filter(x => x.rooms.length > 0);
-
-      if (floors.length === 0) return '';
-
-      const parts = floors.map(({ floor, rooms }) => `楼层${floor}的${rooms.join('、')}房间`);
-      return `{{user}}指令伊甸将${parts.join('、以及')}，设为其生存庇护范围，这些房间的通风系统、供暖系统将与伊甸同步：进入该房间的角色将不再因恶劣天气扣减健康值。`;
+      return buildShelterScopeInstructionText(scope.value);
     }
 
     return { scope, healthRules, toggleRoom, clearAll, buildInstructionText, canEditFloor };
