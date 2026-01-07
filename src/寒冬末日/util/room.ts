@@ -40,4 +40,3 @@ export function findRoleLocation(rooms: RoomsStatData, roleName: string): RoomLo
 
   return { kind: 'none' };
 }
-

@@ -43,4 +43,3 @@ export function computeOffstageHealthDelta(
   if (!delta) return { delta: 0, reason: '0, 无变化' };
   return { delta, reason: `${delta}, 离场未受庇护自然衰减` };
 }
-

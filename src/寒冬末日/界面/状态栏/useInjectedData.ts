@@ -73,10 +73,13 @@ function fetchFromCurrentMessage(isDebug: boolean): InjectedData | null {
     // 常见误用：只输出了 <option> 没有 <content>，正文可能为空或显示不完整
     if (!rawHasContent && rawHasOption && !__edenInjectedDataWarnOnce.has(messageId)) {
       __edenInjectedDataWarnOnce.add(messageId);
-      console.warn('[状态栏][InjectedData] 未检测到 <content>/<game>，仅检测到 <option>；建议将正文包在 <content>/<game> 以确保正文显示稳定。', {
-        messageId,
-        optionsCount: parsed.options.length,
-      });
+      console.warn(
+        '[状态栏][InjectedData] 未检测到 <content>/<game>，仅检测到 <option>；建议将正文包在 <content>/<game> 以确保正文显示稳定。',
+        {
+          messageId,
+          optionsCount: parsed.options.length,
+        },
+      );
     }
 
     if (!parsed.raw.trim() && parsed.options.length === 0) return null;

@@ -42,7 +42,8 @@
         <button class="map-toggle-btn" :disabled="!canOpenScopeEditor" @click="toggleScopeEditor">
           <span class="toggle-icon">{{ isScopeEditorOpen ? '✕' : '➕' }}</span>
           <span class="toggle-text">
-            🛡️ 设置庇护范围（20层 {{ scope20Count }}/{{ scope20Max }}，19层 {{ scope19Max ? `${scope19Count}/${scope19Max}` : '未解锁' }}）
+            🛡️ 设置庇护范围（20层 {{ scope20Count }}/{{ scope20Max }}，19层
+            {{ scope19Max ? `${scope19Count}/${scope19Max}` : '未解锁' }}）
           </span>
         </button>
         <div v-if="canOpenScopeEditor && !isScopeEditorOpen" class="scope-hint">
@@ -147,7 +148,11 @@
                 }"
                 @click="onFloorRoomClick('19', room.number)"
               >
-                <div v-if="isScopeEditorOpen && canEditFloor('19')" class="scope-badge" :class="{ on: isFloorRoomSheltered('19', room.number) }">
+                <div
+                  v-if="isScopeEditorOpen && canEditFloor('19')"
+                  class="scope-badge"
+                  :class="{ on: isFloorRoomSheltered('19', room.number) }"
+                >
                   🛡️
                 </div>
                 <div class="room-number">{{ room.number }}</div>
@@ -203,7 +208,9 @@
                         {{ isFloorRoomSheltered('20', room.number) ? '✓' : '+' }}
                       </span>
                     </div>
-                    <div class="chip-sub">{{ room.number === '2001' ? '庇护所本体' : getFloorRoomStatus('20', room.number) }}</div>
+                    <div class="chip-sub">
+                      {{ room.number === '2001' ? '庇护所本体' : getFloorRoomStatus('20', room.number) }}
+                    </div>
                   </button>
                 </div>
               </div>
@@ -249,7 +256,9 @@
               </div>
               <div class="scope-footer-spacer"></div>
               <button class="scope-btn" type="button" @click="closeScopeEditor">关闭</button>
-              <button class="scope-btn scope-btn--primary" type="button" @click="confirmAndSendScope">确定并发送</button>
+              <button class="scope-btn scope-btn--primary" type="button" @click="confirmAndSendScope">
+                确定并发送
+              </button>
             </div>
           </div>
         </div>
@@ -742,7 +751,12 @@ function getFloorRoomNames(floor: string, room: string): string {
 
 .scope-room-chip.selected {
   border-color: rgba(241, 250, 140, 0.6);
-  background: radial-gradient(circle at 30% 20%, rgba(241, 250, 140, 0.18), rgba(241, 250, 140, 0.06) 55%, rgba(255, 255, 255, 0.04));
+  background: radial-gradient(
+    circle at 30% 20%,
+    rgba(241, 250, 140, 0.18),
+    rgba(241, 250, 140, 0.06) 55%,
+    rgba(255, 255, 255, 0.04)
+  );
 }
 
 .scope-room-chip.selected .chip-mark {
@@ -835,11 +849,12 @@ function getFloorRoomNames(floor: string, room: string): string {
     0 0 24px rgba(255, 140, 0, 0.4),
     0 0 48px rgba(255, 100, 0, 0.2),
     inset 0 0 30px rgba(255, 200, 100, 0.15);
-  background:
-    radial-gradient(ellipse at center,
-      rgba(255, 200, 100, 0.25) 0%,
-      rgba(255, 180, 80, 0.15) 40%,
-      transparent 70%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 200, 100, 0.25) 0%,
+    rgba(255, 180, 80, 0.15) 40%,
+    transparent 70%
+  );
 }
 
 .room-cell.sheltered .room-number {
@@ -865,7 +880,8 @@ function getFloorRoomNames(floor: string, room: string): string {
 }
 
 @keyframes edenShelterWarmGlow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow:
       0 0 0 1px rgba(255, 180, 80, 0.3),
       0 0 24px rgba(255, 140, 0, 0.4),

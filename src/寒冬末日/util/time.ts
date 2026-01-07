@@ -48,4 +48,3 @@ export function diffWorldHours(
   if (diffMinutes <= 0) return null;
   return diffMinutes / 60;
 }
-

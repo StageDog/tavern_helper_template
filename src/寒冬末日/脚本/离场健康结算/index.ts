@@ -69,7 +69,14 @@ function isRoleLike(val: any): val is RoleLike {
 
 function diffRoleTouched(oldRole: RoleLike | null, newRole: RoleLike): RoleTouched {
   if (!oldRole) {
-    return { health: false, healthReason: false, relation: false, relationTendency: false, imprint: false, imprintReason: false };
+    return {
+      health: false,
+      healthReason: false,
+      relation: false,
+      relationTendency: false,
+      imprint: false,
+      imprintReason: false,
+    };
   }
   return {
     health: !_.isEqual(oldRole.健康, newRole.健康),
@@ -107,10 +114,9 @@ function applyOffstageRoleHealthIfNeeded(
   const nextHealth = clampHealth(currentHealth + computed.delta);
   const actualDelta = nextHealth - currentHealth;
 
-  const label = computed.reason.split(',').slice(1).join(',').trim() || (sheltered ? '离场受庇护休整' : '离场未受庇护自然衰减');
-  const reasonText = actualDelta
-    ? `${actualDelta > 0 ? `+${actualDelta}` : `${actualDelta}`}, ${label}`
-    : '0, 无变化';
+  const label =
+    computed.reason.split(',').slice(1).join(',').trim() || (sheltered ? '离场受庇护休整' : '离场未受庇护自然衰减');
+  const reasonText = actualDelta ? `${actualDelta > 0 ? `+${actualDelta}` : `${actualDelta}`}, ${label}` : '0, 无变化';
 
   _.set(stat_data, `${rolePath}.健康`, nextHealth);
   _.set(stat_data, `${rolePath}.健康更新原因`, reasonText);
@@ -159,7 +165,7 @@ $(async () => {
       if (typeof key !== 'string' || key.startsWith('_')) continue;
       if (!isRoleLike(val)) continue;
 
-      const oldRole = (_.get(old_stat_data, key, null) as any) as RoleLike | null;
+      const oldRole = _.get(old_stat_data, key, null) as any as RoleLike | null;
       applyOffstageRoleHealthIfNeeded(key, key, oldRole, val as any, stat_data, deltaHours, scope, rules);
       applyDerivedHealthStatus(key, val as any, stat_data);
       applyDerivedRelationStage(key, oldRole, val as any, stat_data);
@@ -171,8 +177,17 @@ $(async () => {
         if (typeof name !== 'string' || !name) continue;
         if (!isRoleLike(val)) continue;
 
-        const oldRole = (_.get(old_stat_data, `临时NPC.${name}`, null) as any) as RoleLike | null;
-        applyOffstageRoleHealthIfNeeded(`临时NPC.${name}`, name, oldRole, val as any, stat_data, deltaHours, scope, rules);
+        const oldRole = _.get(old_stat_data, `临时NPC.${name}`, null) as any as RoleLike | null;
+        applyOffstageRoleHealthIfNeeded(
+          `临时NPC.${name}`,
+          name,
+          oldRole,
+          val as any,
+          stat_data,
+          deltaHours,
+          scope,
+          rules,
+        );
         applyDerivedHealthStatus(`临时NPC.${name}`, val as any, stat_data);
         applyDerivedRelationStage(`临时NPC.${name}`, oldRole, val as any, stat_data);
       }

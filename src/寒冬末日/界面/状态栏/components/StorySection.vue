@@ -102,7 +102,7 @@ function findTagBlocks(raw: string): TagBlock[] {
     const start = m.index ?? 0;
     const end = start + full.length;
     const openEnd = start + (full.indexOf('>') + 1);
-    const closeStart = end - (`</${tagName}>`.length);
+    const closeStart = end - `</${tagName}>`.length;
     blocks.push({ start, end, openEnd, closeStart, tagName, inner });
   }
   return blocks;
