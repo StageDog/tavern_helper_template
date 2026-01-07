@@ -172,100 +172,100 @@
             :style="scopeModalMaskStyle"
             @click.self="closeScopeEditor"
           >
-            <div class="scope-modal" role="dialog" aria-modal="true">     
-            <div class="scope-modal-header">
-              <div class="scope-modal-title">🛡️ 设置生存庇护范围</div>    
-              <button class="scope-icon-btn" type="button" @click="closeScopeEditor" aria-label="关闭">✕</button>
-            </div>
-
-            <div class="scope-modal-subtitle">
-              点击房间卡片即可添加/移除；设置完成后点击“确定并发送”即可同步给伊甸。
-            </div>
-
-            <div class="scope-modal-stats">
-              <div class="stat">
-                20层：<span class="stat-strong">{{ scope20Count }}/{{ scope20Max }}</span>
+            <div class="scope-modal" role="dialog" aria-modal="true">
+              <div class="scope-modal-header">
+                <div class="scope-modal-title">🛡️ 设置生存庇护范围</div>
+                <button class="scope-icon-btn" type="button" @click="closeScopeEditor" aria-label="关闭">✕</button>
               </div>
-              <div class="stat">
-                19层：<span class="stat-strong">{{ scope19Max ? `${scope19Count}/${scope19Max}` : '未解锁' }}</span>
-              </div>
-              <button class="scope-link-btn" type="button" @click="clearScopeSelection">清空选择</button>
-            </div>
 
-            <div class="scope-modal-body">
-              <div class="scope-floor">
-                <div class="scope-floor-title">20层（公寓走廊）</div>
-                <div class="scope-room-grid">
-                  <button
-                    v-for="room in floor20Rooms"
-                    :key="`s20-${room.number}`"
-                    type="button"
-                    class="scope-room-chip"
-                    :class="{
-                      selected: isFloorRoomSheltered('20', room.number),
-                      disabled: !!getToggleRoomDisabledReason('20', room.number),
-                      core: room.number === '2001',
-                    }"
-                    @click="toggleRoomFromSelector('20', room.number)"
-                  >
-                    <div class="chip-top">
-                      <span class="chip-number">{{ room.number }}</span>
-                      <span class="chip-mark">
-                        {{ isFloorRoomSheltered('20', room.number) ? '✓' : '+' }}
-                      </span>
-                    </div>
-                    <div class="chip-sub">
-                      {{ room.number === '2001' ? '庇护所本体' : getFloorRoomStatus('20', room.number) }}
-                    </div>
-                  </button>
+              <div class="scope-modal-subtitle">
+                点击房间卡片即可添加/移除；设置完成后点击“确定并发送”即可同步给伊甸。
+              </div>
+
+              <div class="scope-modal-stats">
+                <div class="stat">
+                  20层：<span class="stat-strong">{{ scope20Count }}/{{ scope20Max }}</span>
                 </div>
-              </div>
-
-              <div class="scope-floor" :class="{ locked: !scope19Max }">
-                <div class="scope-floor-title">19层（公寓走廊）</div>
-                <div v-if="!scope19Max" class="scope-locked-hint">庇护所等级 6 解锁</div>
-                <div class="scope-room-grid" :class="{ disabled: !scope19Max }">
-                  <button
-                    v-for="room in floor19Rooms"
-                    :key="`s19-${room.number}`"
-                    type="button"
-                    class="scope-room-chip"
-                    :class="{
-                      selected: isFloorRoomSheltered('19', room.number),
-                      disabled: !!getToggleRoomDisabledReason('19', room.number),
-                    }"
-                    @click="toggleRoomFromSelector('19', room.number)"
-                  >
-                    <div class="chip-top">
-                      <span class="chip-number">{{ room.number }}</span>
-                      <span class="chip-mark">
-                        {{ isFloorRoomSheltered('19', room.number) ? '✓' : '+' }}
-                      </span>
-                    </div>
-                    <div class="chip-sub">{{ getFloorRoomStatus('19', room.number) }}</div>
-                  </button>
+                <div class="stat">
+                  19层：<span class="stat-strong">{{ scope19Max ? `${scope19Count}/${scope19Max}` : '未解锁' }}</span>
                 </div>
+                <button class="scope-link-btn" type="button" @click="clearScopeSelection">清空选择</button>
               </div>
 
-              <details class="scope-details">
-                <summary>预览发送文本（调试用）</summary>
-                <div v-if="scopeInstructionText" class="scope-preview">
-                  {{ scopeInstructionText }}
+              <div class="scope-modal-body">
+                <div class="scope-floor">
+                  <div class="scope-floor-title">20层（公寓走廊）</div>
+                  <div class="scope-room-grid">
+                    <button
+                      v-for="room in floor20Rooms"
+                      :key="`s20-${room.number}`"
+                      type="button"
+                      class="scope-room-chip"
+                      :class="{
+                        selected: isFloorRoomSheltered('20', room.number),
+                        disabled: !!getToggleRoomDisabledReason('20', room.number),
+                        core: room.number === '2001',
+                      }"
+                      @click="toggleRoomFromSelector('20', room.number)"
+                    >
+                      <div class="chip-top">
+                        <span class="chip-number">{{ room.number }}</span>
+                        <span class="chip-mark">
+                          {{ isFloorRoomSheltered('20', room.number) ? '✓' : '+' }}
+                        </span>
+                      </div>
+                      <div class="chip-sub">
+                        {{ room.number === '2001' ? '庇护所本体' : getFloorRoomStatus('20', room.number) }}
+                      </div>
+                    </button>
+                  </div>
                 </div>
-                <div v-else class="scope-preview">(尚未选择任何房间)</div>
-              </details>
-            </div>
 
-            <div class="scope-modal-footer">
-              <div class="scope-footer-hint">
-                点击"确定并发送"后，AI正文会识别房间的庇护效果；若只勾选"恢复健康"，则仅单纯恢复健康值。
+                <div class="scope-floor" :class="{ locked: !scope19Max }">
+                  <div class="scope-floor-title">19层（公寓走廊）</div>
+                  <div v-if="!scope19Max" class="scope-locked-hint">庇护所等级 6 解锁</div>
+                  <div class="scope-room-grid" :class="{ disabled: !scope19Max }">
+                    <button
+                      v-for="room in floor19Rooms"
+                      :key="`s19-${room.number}`"
+                      type="button"
+                      class="scope-room-chip"
+                      :class="{
+                        selected: isFloorRoomSheltered('19', room.number),
+                        disabled: !!getToggleRoomDisabledReason('19', room.number),
+                      }"
+                      @click="toggleRoomFromSelector('19', room.number)"
+                    >
+                      <div class="chip-top">
+                        <span class="chip-number">{{ room.number }}</span>
+                        <span class="chip-mark">
+                          {{ isFloorRoomSheltered('19', room.number) ? '✓' : '+' }}
+                        </span>
+                      </div>
+                      <div class="chip-sub">{{ getFloorRoomStatus('19', room.number) }}</div>
+                    </button>
+                  </div>
+                </div>
+
+                <details class="scope-details">
+                  <summary>预览发送文本（调试用）</summary>
+                  <div v-if="scopeInstructionText" class="scope-preview">
+                    {{ scopeInstructionText }}
+                  </div>
+                  <div v-else class="scope-preview">(尚未选择任何房间)</div>
+                </details>
               </div>
-              <div class="scope-footer-spacer"></div>
-              <button class="scope-btn" type="button" @click="closeScopeEditor">关闭</button>
-              <button class="scope-btn scope-btn--primary" type="button" @click="confirmAndSendScope">
-                确定并发送
-              </button>
-            </div>
+
+              <div class="scope-modal-footer">
+                <div class="scope-footer-hint">
+                  点击"确定并发送"后，AI正文会识别房间的庇护效果；若只勾选"恢复健康"，则仅单纯恢复健康值。
+                </div>
+                <div class="scope-footer-spacer"></div>
+                <button class="scope-btn" type="button" @click="closeScopeEditor">关闭</button>
+                <button class="scope-btn scope-btn--primary" type="button" @click="confirmAndSendScope">
+                  确定并发送
+                </button>
+              </div>
             </div>
           </div>
         </Teleport>

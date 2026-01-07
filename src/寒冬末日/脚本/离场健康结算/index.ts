@@ -152,9 +152,7 @@ function applyOffstageRoleHealthIfNeeded(
   const computed = computeOffstageHealthDelta(deltaHours, sheltered, rules);
   if (!computed.delta) {
     if (debug?.offstageHealth) {
-      console.log(
-        `[OffstageHealth] no-op(${roleName}): dh=${deltaHours.toFixed(2)}, sheltered=${sheltered}`,
-      );
+      console.log(`[OffstageHealth] no-op(${roleName}): dh=${deltaHours.toFixed(2)}, sheltered=${sheltered}`);
     }
     return;
   }
@@ -227,9 +225,7 @@ $(async () => {
                   _.set(new_variables, 'stat_data.世界.末日天数', oldDays + 1);
                 }
                 const daysAfter = _.get(new_variables, 'stat_data.世界.末日天数');
-                console.log(
-                  `[DateLogic] patched date: ${oldDateStr} -> ${patched}; days: ${oldDays} -> ${daysAfter}`,
-                );
+                console.log(`[DateLogic] patched date: ${oldDateStr} -> ${patched}; days: ${oldDays} -> ${daysAfter}`);
               } else if (debug.dateLogic) {
                 console.log(`[DateLogic] cannot parse date to Date(): ${oldDateStr}`);
               }

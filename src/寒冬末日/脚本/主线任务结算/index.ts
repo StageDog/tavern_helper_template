@@ -231,7 +231,8 @@ function applyMissionGoalCompletion(stat_data: any, debug: boolean) {
   _.set(stat_data, '主线任务.目标完成状态', nextStatus);
   if (debug) {
     console.log(`[MissionLogic] goal completion: ${doneCount}/${stageGoals.length}`);
-    if (changedIndexes.length > 0) console.log(`[MissionLogic] updated 目标完成状态 indexes: ${changedIndexes.join(', ')}`);
+    if (changedIndexes.length > 0)
+      console.log(`[MissionLogic] updated 目标完成状态 indexes: ${changedIndexes.join(', ')}`);
   }
 }
 
