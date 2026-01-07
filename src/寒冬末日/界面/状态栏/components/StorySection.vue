@@ -49,46 +49,16 @@ type Segment = {
 };
 
 const props = defineProps<{
-  content: string;
+  raw: string;
 }>();
 
 const segments = computed<Segment[]>(() => {
-  const rawText = props.content ?? '';
-
-  // 抽取 <content>/<game> 内正文；同时收集这些块外的 image###...### 备用
-  const contentBlocks = [...rawText.matchAll(/<content[^>]*>([\s\S]*?)<\/content>/gi)];
-  const gameBlocks = [...rawText.matchAll(/<game[^>]*>([\s\S]*?)<\/game>/gi)];
-  const mergedBlocks = [...contentBlocks, ...gameBlocks].sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
-
-  const mainText = mergedBlocks.length ? mergedBlocks.map(m => m[1] ?? '').join('\n') : rawText;
-
-  const contentRanges = mergedBlocks.map(m => ({
-    start: m.index ?? 0,
-    end: (m.index ?? 0) + (m[0]?.length ?? 0),
-  }));
-
-  const outsideImagePrompts: string[] = [];
-  for (const m of rawText.matchAll(/image###([\s\S]*?)###/g)) {
-    const pos = m.index ?? -1;
-    const inContent = contentRanges.some(r => pos >= r.start && pos < r.end);
-    if (!inContent) outsideImagePrompts.push(m[0]);
-  }
-
+  const normalizedRaw = normalizeInjectedRaw(props.raw ?? '');
+  const mainText = extractMainStoryText(normalizedRaw);
   const text = normalizeStoryText(mainText);
-  if (!text.trim() && outsideImagePrompts.length === 0) {
-    return [{ key: 'empty', text: '(暂无正文)' }];
-  }
 
+  if (!text.trim()) return [{ key: 'empty', text: '(暂无正文)' }];
   const segs = buildSegments(text);
-  // 未包裹在 <content>/<game> 的 image###...### 追加到末尾展示
-  outsideImagePrompts.forEach((raw, idx) => {
-    segs.push({
-      key: `imgprompt_extra${segs.length + idx}`,
-      className: 'image-prompt',
-      text: raw,
-    });
-  });
-
   return segs.length ? segs : [{ key: 'empty', text: '(暂无正文)' }];
 });
 
@@ -111,6 +81,127 @@ function normalizeStoryText(raw: string): string {
     .replace(/<imgthink>[\s\S]*?<\/imgthink>/gi, '')
     .replace(/<\/?image(?:\s[^>]*)?>/gi, '')
     .replace(/\n{3,}/g, '\n\n');
+}
+
+type TagBlock = {
+  start: number;
+  end: number;
+  openEnd: number;
+  closeStart: number;
+  tagName: 'content' | 'game';
+  inner: string;
+};
+
+function findTagBlocks(raw: string): TagBlock[] {
+  const re = /<(content|game)(?:\s[^>]*)?>([\s\S]*?)<\/\1>/gi;
+  const blocks: TagBlock[] = [];
+  for (const m of raw.matchAll(re)) {
+    const tagName = (m[1]?.toLowerCase() as 'content' | 'game') ?? 'content';
+    const full = m[0] ?? '';
+    const inner = m[2] ?? '';
+    const start = m.index ?? 0;
+    const end = start + full.length;
+    const openEnd = start + (full.indexOf('>') + 1);
+    const closeStart = end - (`</${tagName}>`.length);
+    blocks.push({ start, end, openEnd, closeStart, tagName, inner });
+  }
+  return blocks;
+}
+
+function isInAnyRange(pos: number, ranges: Array<{ start: number; end: number }>): boolean {
+  return ranges.some(r => pos >= r.start && pos < r.end);
+}
+
+function removeSpans(raw: string, spans: Array<{ start: number; end: number }>): string {
+  if (spans.length === 0) return raw;
+  const sorted = spans
+    .slice()
+    .filter(s => s.end > s.start)
+    .sort((a, b) => a.start - b.start);
+
+  let out = '';
+  let cursor = 0;
+  for (const s of sorted) {
+    if (s.start < cursor) continue;
+    out += raw.slice(cursor, s.start);
+    cursor = s.end;
+  }
+  out += raw.slice(cursor);
+  return out;
+}
+
+function extractOptionBlock(raw: string): string {
+  const m = raw.match(/<option(?:\s[^>]*)?>[\s\S]*?<\/option>/i);
+  return m?.[0] ?? '';
+}
+
+function stripOptionBlock(raw: string): string {
+  return raw.replace(/<option(?:\s[^>]*)?>[\s\S]*?<\/option>/gi, '');
+}
+
+function normalizeInjectedRaw(raw: string): string {
+  const input = raw ?? '';
+  if (!input.trim()) return '';
+
+  const blocks = findTagBlocks(input);
+  const ranges = blocks.map(b => ({ start: b.start, end: b.end }));
+
+  // 收集已在 <content>/<game> 内的 image###...###，用于去重
+  const promptsInBlocks = new Set<string>();
+  for (const b of blocks) {
+    for (const m of b.inner.matchAll(/image###([\s\S]*?)###/g)) promptsInBlocks.add(m[0]);
+  }
+
+  // 收集“块外”的 image###...###，并去重
+  const outsideSpans: Array<{ start: number; end: number; raw: string }> = [];
+  const outsidePrompts: string[] = [];
+  for (const m of input.matchAll(/image###([\s\S]*?)###/g)) {
+    const start = m.index ?? -1;
+    if (start < 0) continue;
+    const end = start + (m[0]?.length ?? 0);
+    const inBlock = isInAnyRange(start, ranges);
+    if (inBlock) continue;
+
+    const rawPrompt = m[0] ?? '';
+    if (!rawPrompt) continue;
+    if (promptsInBlocks.has(rawPrompt)) continue;
+    if (outsidePrompts.includes(rawPrompt)) continue;
+
+    outsidePrompts.push(rawPrompt);
+    outsideSpans.push({ start, end, raw: rawPrompt });
+  }
+
+  if (outsidePrompts.length === 0) return input;
+
+  const removedOutside = removeSpans(input, outsideSpans);
+  const optionBlock = extractOptionBlock(removedOutside);
+
+  // 重新查找块（因为 removeSpans 会改变索引）
+  const blocksAfter = findTagBlocks(removedOutside);
+  const lastBlock = blocksAfter.length ? blocksAfter[blocksAfter.length - 1] : null;
+
+  if (lastBlock) {
+    const beforeClose = removedOutside.slice(0, lastBlock.closeStart);
+    const afterClose = removedOutside.slice(lastBlock.closeStart);
+    const injected = `\n\n${outsidePrompts.join('\n')}\n`;
+    return `${beforeClose}${injected}${afterClose}`;
+  }
+
+  // 无 <content>/<game>：创建合成 <content>，并把 option 块保留在 raw 里供选项解析
+  const bodyWithoutOption = stripOptionBlock(removedOutside).trim();
+  const synthesized =
+    `<content>\n` +
+    `${bodyWithoutOption}\n\n` +
+    `${outsidePrompts.join('\n')}\n` +
+    `</content>\n` +
+    `${optionBlock ? `\n${optionBlock}\n` : ''}`;
+  return synthesized;
+}
+
+function extractMainStoryText(raw: string): string {
+  const blocks = findTagBlocks(raw);
+  if (blocks.length) return blocks.map(b => b.inner ?? '').join('\n');
+  return stripOptionBlock(raw);
 }
 
 type TableBlock = {

@@ -1,5 +1,5 @@
 type InjectedData = {
-  content: string;
+  raw: string;
   options: string[];
 };
 
@@ -26,29 +26,7 @@ function stripHiddenBlocks(raw: string): string {
 function parseInjectedText(raw: string): InjectedData {
   const cleaned = stripHiddenBlocks(raw);
 
-  // 定位正文块范围，便于识别正文外的 image###...###
-  const contentMatch = cleaned.match(
-    /(<(?:content|game)(?:\s[^>]*)?>(?![\s\S]*?<(?:content|game)(?:\s[^>]*)?>)[\s\S]*?(?:<\/(?:content|game)>|<\/option>|$))/i,
-  );
-
-  const contentRanges = contentMatch
-    ? [
-        {
-          start: contentMatch.index ?? 0,
-          end: (contentMatch.index ?? 0) + (contentMatch[0]?.length ?? 0),
-        },
-      ]
-    : [];
-
   const optionMatch = cleaned.match(/(<option(?:\s[^>]*)?>(?![\s\S]*?<option(?:\s[^>]*)?>)[\s\S]*?(?:<\/option>|$))/i);
-
-  const contentBody = contentMatch
-    ? contentMatch[1]
-        .replace(/^<(?:content|game)(?:\s[^>]*)?>/i, '')
-        .replace(/<\/(?:content|game)>\s*$/i, '')
-        .replace(/<\/option>\s*$/i, '')
-        .trim()
-    : '';
 
   const optionsRaw = optionMatch
     ? optionMatch[1]
@@ -64,53 +42,7 @@ function parseInjectedText(raw: string): InjectedData {
         .filter(Boolean)
     : [];
 
-  // 收集正文内已出现的 image### 以便去重
-  const promptsInContent = new Set([...contentBody.matchAll(/image###([\s\S]*?)###/g)].map(m => m[0]));
-
-  // 捕获正文块之外的 image###...###，并去重
-  const outsideImagePrompts: string[] = [];
-  for (const m of cleaned.matchAll(/image###([\s\S]*?)###/g)) {
-    const pos = m.index ?? -1;
-    const inContent = contentRanges.some(r => pos >= r.start && pos < r.end);
-    if (!inContent) {
-      const rawPrompt = m[0];
-      if (!promptsInContent.has(rawPrompt) && !outsideImagePrompts.includes(rawPrompt)) {
-        outsideImagePrompts.push(rawPrompt);
-      }
-    }
-  }
-
-  const mergedContent = [contentBody, outsideImagePrompts.join('\n')].filter(Boolean).join('\n\n');
-
-  // 去重：同一 image### 或 <image> 块只保留首次出现，防止双倍渲染
-  const dedupedContent = mergedContent
-    // 处理 image###...###
-    .replace(
-      /image###([\s\S]*?)###/g,
-      (() => {
-        const seen = new Set<string>();
-        return (m: string) => {
-          if (seen.has(m)) return '';
-          seen.add(m);
-          return m;
-        };
-      })(),
-    )
-    // 处理 <image>...</image>
-    .replace(
-      /<image[^>]*>([\s\S]*?)<\/image>/gi,
-      (() => {
-        const seen = new Set<string>();
-        return (m: string, inner: string) => {
-          const key = inner.trim();
-          if (seen.has(key)) return '';
-          seen.add(key);
-          return m;
-        };
-      })(),
-    );
-
-  return { content: dedupedContent, options };
+  return { raw, options };
 }
 
 function fetchFromCurrentMessage(isDebug: boolean): InjectedData | null {
@@ -133,22 +65,21 @@ function fetchFromCurrentMessage(isDebug: boolean): InjectedData | null {
         rawLen: raw.length,
         rawHasContent,
         rawHasOption,
-        contentLen: parsed.content.length,
         optionsCount: parsed.options.length,
         optionsPreview: parsed.options.slice(0, 3),
       });
     }
 
-    // 常见误用：只输出了 <option> 没有 <content>，会导致“正文剧情”显示 (暂无正文)
+    // 常见误用：只输出了 <option> 没有 <content>，正文可能为空或显示不完整
     if (!rawHasContent && rawHasOption && !__edenInjectedDataWarnOnce.has(messageId)) {
       __edenInjectedDataWarnOnce.add(messageId);
-      console.warn('[状态栏][InjectedData] 未检测到 <content>/<game>，仅检测到 <option>；因此正文会显示为空。', {
+      console.warn('[状态栏][InjectedData] 未检测到 <content>/<game>，仅检测到 <option>；建议将正文包在 <content>/<game> 以确保正文显示稳定。', {
         messageId,
         optionsCount: parsed.options.length,
       });
     }
 
-    if (!parsed.content && parsed.options.length === 0) return null;
+    if (!parsed.raw.trim() && parsed.options.length === 0) return null;
     return parsed;
   } catch (e) {
     console.error('[InjectedData] 错误:', e);
@@ -158,24 +89,26 @@ function fetchFromCurrentMessage(isDebug: boolean): InjectedData | null {
 
 function getMockData(): InjectedData {
   return {
-    content: `
-
-<p><p>
+    raw: `
+<content>
+<p>
   <strong>【当前剧情】</strong>
   你和幸存者们正在探索一栋废弃医院的二楼，寻找可用的医疗物资。空气中弥漫着消毒水和腐朽混合的怪异气味，寂静得令人不安。
 </p>
 <p>
   <em>"小心点，这里可能还有"那些东西"。"</em> 浅见亚美紧握着手中的消防斧，低声提醒道。
 </p>
+<p>
   突然，一声刺耳的尖叫从走廊尽头传来，打破了沉寂。
 </p>
+</content>
 `,
     options: ['前往尖叫声传来的方向查看', '立刻寻找房间躲避', '呼叫其他幸存者支援'],
   };
 }
 
 export function useInjectedData() {
-  const content = ref<string>('');
+  const raw = ref<string>('');
   const options = ref<string[]>([]);
 
   // 开发模式检测 (通过 URL 查询参数)
@@ -186,14 +119,14 @@ export function useInjectedData() {
   const refresh = () => {
     if (isDevMode) {
       const mockData = getMockData();
-      content.value = mockData.content;
+      raw.value = mockData.raw;
       options.value = mockData.options;
       return;
     }
 
     const fromMsg = fetchFromCurrentMessage(isDebug); // 同步调用
     if (fromMsg) {
-      content.value = fromMsg.content;
+      raw.value = fromMsg.raw;
       options.value = fromMsg.options;
       return;
     }
@@ -203,5 +136,5 @@ export function useInjectedData() {
     refresh();
   });
 
-  return { content, options, refresh };
+  return { raw, options, refresh };
 }

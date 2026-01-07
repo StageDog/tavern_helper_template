@@ -1,7 +1,7 @@
 <template>
   <main id="eden-main-container">
     <WorldSection />
-    <StorySection :content="content" />
+    <StorySection :raw="raw" />
     <ShelterSection />
     <MissionSection />
     <CharactersSection />
@@ -20,10 +20,10 @@ import StorySection from './components/StorySection.vue';
 import WorldSection from './components/WorldSection.vue';
 import { useInjectedData } from './useInjectedData';
 
-const { content, options } = useInjectedData();
+const { raw, options } = useInjectedData();
 
 watchDebounced(
-  () => [content.value, options.value.join('\n')],
+  () => [raw.value, options.value.join('\n')],
   () => {
     window.dispatchEvent(new Event('resize'));
   },
