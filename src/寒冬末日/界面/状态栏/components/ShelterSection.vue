@@ -39,6 +39,17 @@
           <span class="toggle-icon">{{ isMapExpanded ? '▼' : '▶' }}</span>
           <span class="toggle-text">{{ isMapExpanded ? '收起地图' : '展开地图' }}</span>
         </button>
+        <button class="map-toggle-btn" :disabled="!canOpenScopeEditor" @click="toggleScopeEditor">
+          <span class="toggle-icon">{{ isScopeEditorOpen ? '✕' : '➕' }}</span>
+          <span class="toggle-text">
+            🛡️ 设置庇护范围（20层 {{ scope20Count }}/{{ scope20Max }}，19层
+            {{ scope19Max ? `${scope19Count}/${scope19Max}` : '未解锁' }}）
+          </span>
+        </button>
+        <div v-if="canOpenScopeEditor && !isScopeEditorOpen" class="scope-hint">
+          当前等级获得升级庇护范围权限，点击查看
+        </div>
+
         <div v-show="isMapExpanded" class="map-container">
           <!-- 玄关区域 -->
           <div class="map-zone">
@@ -92,14 +103,28 @@
           <!-- 20层走廊 -->
           <div class="map-zone">
             <div class="zone-label">🏢 20层 - 公寓走廊</div>
+            <div class="zone-scope-hint">{{ scope20Hint }}</div>
             <div class="floor-indicator">↓ 通往外部楼梯</div>
             <div class="room-grid floor-grid">
               <div
                 v-for="room in floor20Rooms"
                 :key="room.number"
                 class="room-cell"
-                :class="{ 'user-room': room.number === '2001', occupied: hasFloorResident('20', room.number) }"
+                :class="{
+                  'user-room': room.number === '2001',
+                  occupied: hasFloorResident('20', room.number),
+                  sheltered: isFloorRoomSheltered('20', room.number),
+                  'scope-editable': isScopeEditorOpen && canEditFloor('20') && room.number !== '2001',
+                }"
+                @click="onFloorRoomClick('20', room.number)"
               >
+                <div
+                  v-if="isScopeEditorOpen && canEditFloor('20') && room.number !== '2001'"
+                  class="scope-badge"
+                  :class="{ on: isFloorRoomSheltered('20', room.number) }"
+                >
+                  🛡️
+                </div>
                 <div class="room-number">{{ room.number }}</div>
                 <div class="room-value">{{ getFloorRoomStatus('20', room.number) }}</div>
                 <div class="room-resident">{{ getFloorRoomNames('20', room.number) }}</div>
@@ -110,19 +135,131 @@
           <!-- 19层走廊 -->
           <div class="map-zone">
             <div class="zone-label">🏢 19层 - 公寓走廊</div>
+            <div class="zone-scope-hint">{{ scope19Hint }}</div>
             <div class="room-grid floor-grid">
               <div
                 v-for="room in floor19Rooms"
                 :key="room.number"
                 class="room-cell"
-                :class="{ occupied: hasFloorResident('19', room.number) }"
+                :class="{
+                  occupied: hasFloorResident('19', room.number),
+                  sheltered: isFloorRoomSheltered('19', room.number),
+                  'scope-editable': isScopeEditorOpen && canEditFloor('19'),
+                }"
+                @click="onFloorRoomClick('19', room.number)"
               >
+                <div
+                  v-if="isScopeEditorOpen && canEditFloor('19')"
+                  class="scope-badge"
+                  :class="{ on: isFloorRoomSheltered('19', room.number) }"
+                >
+                  🛡️
+                </div>
                 <div class="room-number">{{ room.number }}</div>
                 <div class="room-value">{{ getFloorRoomStatus('19', room.number) }}</div>
                 <div class="room-resident">{{ getFloorRoomNames('19', room.number) }}</div>
               </div>
             </div>
             <div class="floor-indicator">↓ 通往18层</div>
+          </div>
+        </div>
+
+        <!-- 庇护范围快速设置：不依赖地图点选，避免“选完还要滚动找按钮” -->
+        <div v-if="isScopeEditorOpen" class="scope-modal-mask" @click.self="closeScopeEditor">
+          <div class="scope-modal" role="dialog" aria-modal="true">
+            <div class="scope-modal-header">
+              <div class="scope-modal-title">🛡️ 设置生存庇护范围</div>
+              <button class="scope-icon-btn" type="button" @click="closeScopeEditor" aria-label="关闭">✕</button>
+            </div>
+
+            <div class="scope-modal-subtitle">
+              点击房间卡片即可添加/移除；设置完成后点击“确定并发送”即可同步给伊甸。
+            </div>
+
+            <div class="scope-modal-stats">
+              <div class="stat">
+                20层：<span class="stat-strong">{{ scope20Count }}/{{ scope20Max }}</span>
+              </div>
+              <div class="stat">
+                19层：<span class="stat-strong">{{ scope19Max ? `${scope19Count}/${scope19Max}` : '未解锁' }}</span>
+              </div>
+              <button class="scope-link-btn" type="button" @click="clearScopeSelection">清空选择</button>
+            </div>
+
+            <div class="scope-modal-body">
+              <div class="scope-floor">
+                <div class="scope-floor-title">20层（公寓走廊）</div>
+                <div class="scope-room-grid">
+                  <button
+                    v-for="room in floor20Rooms"
+                    :key="`s20-${room.number}`"
+                    type="button"
+                    class="scope-room-chip"
+                    :class="{
+                      selected: isFloorRoomSheltered('20', room.number),
+                      disabled: !!getToggleRoomDisabledReason('20', room.number),
+                      core: room.number === '2001',
+                    }"
+                    @click="toggleRoomFromSelector('20', room.number)"
+                  >
+                    <div class="chip-top">
+                      <span class="chip-number">{{ room.number }}</span>
+                      <span class="chip-mark">
+                        {{ isFloorRoomSheltered('20', room.number) ? '✓' : '+' }}
+                      </span>
+                    </div>
+                    <div class="chip-sub">
+                      {{ room.number === '2001' ? '庇护所本体' : getFloorRoomStatus('20', room.number) }}
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              <div class="scope-floor" :class="{ locked: !scope19Max }">
+                <div class="scope-floor-title">19层（公寓走廊）</div>
+                <div v-if="!scope19Max" class="scope-locked-hint">庇护所等级 6 解锁</div>
+                <div class="scope-room-grid" :class="{ disabled: !scope19Max }">
+                  <button
+                    v-for="room in floor19Rooms"
+                    :key="`s19-${room.number}`"
+                    type="button"
+                    class="scope-room-chip"
+                    :class="{
+                      selected: isFloorRoomSheltered('19', room.number),
+                      disabled: !!getToggleRoomDisabledReason('19', room.number),
+                    }"
+                    @click="toggleRoomFromSelector('19', room.number)"
+                  >
+                    <div class="chip-top">
+                      <span class="chip-number">{{ room.number }}</span>
+                      <span class="chip-mark">
+                        {{ isFloorRoomSheltered('19', room.number) ? '✓' : '+' }}
+                      </span>
+                    </div>
+                    <div class="chip-sub">{{ getFloorRoomStatus('19', room.number) }}</div>
+                  </button>
+                </div>
+              </div>
+
+              <details class="scope-details">
+                <summary>预览发送文本（调试用）</summary>
+                <div v-if="scopeInstructionText" class="scope-preview">
+                  {{ scopeInstructionText }}
+                </div>
+                <div v-else class="scope-preview">(尚未选择任何房间)</div>
+              </details>
+            </div>
+
+            <div class="scope-modal-footer">
+              <div class="scope-footer-hint">
+                点击"确定并发送"后，AI正文会识别房间的庇护效果；若只勾选"恢复健康"，则仅单纯恢复健康值。
+              </div>
+              <div class="scope-footer-spacer"></div>
+              <button class="scope-btn" type="button" @click="closeScopeEditor">关闭</button>
+              <button class="scope-btn scope-btn--primary" type="button" @click="confirmAndSendScope">
+                确定并发送
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -150,11 +287,38 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useDataStore } from '../../store';
+import { useShelterScopeStore } from '../../shelterScopeStore';
+import { floorRoomCapacity, isRoomSheltered } from '../../../util/shelter_scope';
 
 const store = useDataStore();
+const scopeStore = useShelterScopeStore();
 // 默认折叠，保持原有交互
 const isMapExpanded = ref(false);
 const isAbilityExpanded = ref(false);
+const isScopeEditorOpen = ref(false);
+
+const shelterLevel = computed(() => {
+  const lv = Number(store.data.庇护所.庇护所等级);
+  return Number.isFinite(lv) ? lv : 1;
+});
+
+const canOpenScopeEditor = computed(() => shelterLevel.value >= 3);
+
+const scope20Max = computed(() => floorRoomCapacity(shelterLevel.value, '20'));
+const scope19Max = computed(() => floorRoomCapacity(shelterLevel.value, '19'));
+const scope20Count = computed(() => (scopeStore.scope['20'] ?? []).length);
+const scope19Count = computed(() => (scopeStore.scope['19'] ?? []).length);
+
+const scopeInstructionText = computed(() => scopeStore.buildInstructionText());
+
+function buildFloorScopeHint(rooms: string[], max: number, unlockLevel: number): string {
+  if (!max) return `庇护范围未解锁（庇护所等级${unlockLevel}解锁）。当前可用庇护 0/0。`;
+  const list = rooms.length ? rooms.join('、') : '无';
+  return `伊甸已庇护${list}。当前可用庇护 ${rooms.length}/${max}。`;
+}
+
+const scope20Hint = computed(() => buildFloorScopeHint(scopeStore.scope['20'] ?? [], scope20Max.value, 3));
+const scope19Hint = computed(() => buildFloorScopeHint(scopeStore.scope['19'] ?? [], scope19Max.value, 6));
 
 const abilities = computed(() => {
   const raw = store.data.庇护所.庇护所能力 as any;
@@ -196,6 +360,139 @@ const floor19Rooms = [
   { number: '1911' },
   { number: '1912' },
 ];
+
+function canEditFloor(floor: '20' | '19'): boolean {
+  return scopeStore.canEditFloor(floor, shelterLevel.value);
+}
+
+function isFloorRoomSheltered(floor: '20' | '19', roomNumber: string): boolean {
+  if (floor === '20' && roomNumber === '2001') return false;
+  return isRoomSheltered(scopeStore.scope, floor, roomNumber);
+}
+
+function toggleScopeEditor() {
+  if (!canOpenScopeEditor.value) {
+    toastr.warning('庇护范围功能在庇护所等级 3 解锁');
+    return;
+  }
+  isScopeEditorOpen.value = !isScopeEditorOpen.value;
+}
+
+function closeScopeEditor() {
+  isScopeEditorOpen.value = false;
+}
+
+function clearScopeSelection() {
+  const ok = window.confirm('确定清空已选择的庇护房间？');
+  if (!ok) return;
+  scopeStore.clearAll();
+  toastr.info('已清空');
+}
+
+function getToggleRoomDisabledReason(floor: '20' | '19', roomNumber: string): string | null {
+  if (floor === '20' && roomNumber === '2001') return '2001 为庇护所本体，无需设置庇护';
+  if (!canEditFloor(floor)) return `当前等级未解锁${floor}层庇护范围`;
+
+  const max = floor === '20' ? scope20Max.value : scope19Max.value;
+  const count = floor === '20' ? scope20Count.value : scope19Count.value;
+  const selected = isFloorRoomSheltered(floor, roomNumber);
+  if (!selected && max > 0 && count >= max) return `该楼层庇护范围已达上限（${max} 间）`;
+  return null;
+}
+
+function toggleRoomFromSelector(floor: '20' | '19', roomNumber: string) {
+  const reason = getToggleRoomDisabledReason(floor, roomNumber);
+  if (reason) {
+    toastr.warning(reason);
+    return;
+  }
+  const res = scopeStore.toggleRoom(floor, roomNumber, shelterLevel.value);
+  if (!res.ok) toastr.warning(res.reason ?? '无法修改庇护范围');
+}
+
+function onFloorRoomClick(floor: '20' | '19', roomNumber: string) {
+  if (!isScopeEditorOpen.value) return;
+  if (floor === '20' && roomNumber === '2001') {
+    toastr.info('2001 为庇护所本体，无需设置庇护');
+    return;
+  }
+  const res = scopeStore.toggleRoom(floor, roomNumber, shelterLevel.value);
+  if (!res.ok) toastr.warning(res.reason ?? '无法修改庇护范围');
+}
+
+async function copyScopeInstruction() {
+  const text = scopeInstructionText.value;
+  if (!text) {
+    toastr.warning('尚未选择任何房间');
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(text);
+    toastr.success('已复制');
+    return;
+  } catch {
+    // ignore
+  }
+
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    ta.style.top = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    toastr.success('已复制');
+  } catch {
+    toastr.error('复制失败，请手动复制');
+  }
+}
+
+function sendScopeInstruction() {
+  const text = scopeInstructionText.value;
+  if (!text) {
+    toastr.warning('尚未选择任何房间');
+    return;
+  }
+  if (typeof triggerSlash !== 'function') {
+    toastr.error('无法发送：triggerSlash 不可用');
+    return;
+  }
+
+  try {
+    triggerSlash(`/send ${text} | /trigger await=true`);
+    toastr.info('已发送');
+  } catch {
+    toastr.error('发送失败，请复制后手动发送');
+  }
+}
+
+function confirmAndSendScope() {
+  const text = scopeInstructionText.value;
+  if (!text) {
+    toastr.warning('请先选择要庇护的房间');
+    return;
+  }
+
+  if (typeof triggerSlash === 'function') {
+    try {
+      triggerSlash(`/send ${text} | /trigger await=true`);
+      toastr.success('已发送到聊天');
+      closeScopeEditor();
+      return;
+    } catch {
+      // fallthrough
+    }
+  }
+
+  // 兜底：无法发送时，复制并提示
+  copyScopeInstruction();
+  toastr.warning('无法直接发送，已尝试复制，请手动发送');
+}
 
 // 玄关区域计算属性
 const hasTempGuestA = computed(() => store.data.房间.玄关.临时客房A入住者.length > 0);
@@ -254,3 +551,368 @@ function getFloorRoomNames(floor: string, room: string): string {
   return data.入住者.join('、');
 }
 </script>
+
+<style scoped>
+.scope-hint {
+  margin: 2px 0 10px;
+  font-size: 0.85em;
+  color: var(--accent-cyan, #00b4d8);
+  opacity: 0.9;
+}
+
+.scope-btn {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background-color: rgba(255, 255, 255, 0.06);
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+.scope-btn--primary {
+  border-color: rgba(0, 180, 216, 0.55);
+  background-color: rgba(0, 180, 216, 0.18);
+  color: #e8fbff;
+  font-weight: 600;
+}
+
+.scope-btn--ghost {
+  background-color: transparent;
+}
+
+.scope-preview {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.25);
+  color: var(--text-color);
+  font-size: 0.9em;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+/* --- 庇护范围：快速设置弹窗 --- */
+.scope-modal-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.55);
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scope-modal {
+  width: min(560px, calc(100% - 8px));
+  max-height: calc(100% - 8px);
+  background: rgba(25, 28, 35, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+}
+
+.scope-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 12px 8px;
+}
+
+.scope-modal-title {
+  font-weight: 700;
+  color: var(--text-strong, #f1fa8c);
+}
+
+.scope-icon-btn {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-color);
+  border-radius: 10px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.scope-modal-subtitle {
+  padding: 0 12px 8px;
+  font-size: 0.9em;
+  opacity: 0.92;
+}
+
+.scope-modal-stats {
+  display: flex;
+  gap: 10px;
+  padding: 0 12px 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.scope-modal-stats .stat {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.85em;
+}
+
+.stat-strong {
+  color: var(--accent-cyan, #00b4d8);
+  font-weight: 700;
+}
+
+.scope-link-btn {
+  margin-left: auto;
+  border: none;
+  background: transparent;
+  color: var(--accent-cyan, #00b4d8);
+  font-size: 0.85em;
+  cursor: pointer;
+  padding: 6px 8px;
+  opacity: 0.95;
+}
+
+.scope-link-btn:hover {
+  opacity: 1;
+}
+
+.scope-modal-body {
+  padding: 0 12px 12px;
+  overflow-y: auto;
+}
+
+.scope-floor + .scope-floor {
+  margin-top: 14px;
+}
+
+.scope-floor-title {
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.scope-locked-hint {
+  font-size: 0.85em;
+  opacity: 0.8;
+  margin: -4px 0 8px;
+}
+
+.scope-room-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.scope-room-grid.disabled {
+  opacity: 0.55;
+}
+
+.scope-room-chip {
+  text-align: left;
+  border-radius: 12px;
+  padding: 10px 10px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-color);
+  cursor: pointer;
+  min-height: 56px;
+}
+
+.scope-room-chip .chip-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.scope-room-chip .chip-number {
+  font-weight: 800;
+}
+
+.scope-room-chip .chip-mark {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-weight: 800;
+  opacity: 0.85;
+}
+
+.scope-room-chip .chip-sub {
+  margin-top: 6px;
+  font-size: 0.8em;
+  opacity: 0.9;
+}
+
+.scope-room-chip.selected {
+  border-color: rgba(241, 250, 140, 0.6);
+  background: radial-gradient(
+    circle at 30% 20%,
+    rgba(241, 250, 140, 0.18),
+    rgba(241, 250, 140, 0.06) 55%,
+    rgba(255, 255, 255, 0.04)
+  );
+}
+
+.scope-room-chip.selected .chip-mark {
+  background: rgba(241, 250, 140, 0.18);
+  border-color: rgba(241, 250, 140, 0.6);
+}
+
+.scope-room-chip.core {
+  border-color: rgba(241, 250, 140, 0.35);
+  background: rgba(241, 250, 140, 0.06);
+}
+
+.scope-room-chip.disabled {
+  opacity: 0.55;
+}
+
+.zone-scope-hint {
+  margin: 6px 0 10px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(241, 250, 140, 0.18);
+  background: rgba(241, 250, 140, 0.05);
+  color: rgba(241, 250, 140, 0.92);
+  font-size: 0.8em;
+  line-height: 1.3;
+}
+
+.scope-details {
+  margin-top: 14px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.12);
+  padding-top: 10px;
+}
+
+.scope-details summary {
+  cursor: pointer;
+  opacity: 0.9;
+}
+
+.scope-modal-footer {
+  padding: 10px 12px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.scope-footer-hint {
+  flex: 1 1 100%;
+  order: -1;
+  margin-bottom: 4px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, rgba(255, 180, 80, 0.12), rgba(255, 140, 0, 0.08));
+  border: 1px solid rgba(255, 180, 80, 0.25);
+  font-size: 0.8em;
+  color: rgba(255, 220, 150, 0.95);
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.scope-footer-hint::before {
+  content: '💡';
+  font-size: 1.1em;
+}
+
+.scope-footer-spacer {
+  flex: 1;
+}
+
+.room-cell {
+  position: relative;
+  /* 普通状态：冷色调，暗示未受庇护 */
+  border: 1px solid rgba(100, 120, 100, 0.3);
+}
+
+.room-cell.scope-editable {
+  cursor: pointer;
+}
+
+/* 受庇护状态：橙色/金色渐变，暗示温暖安全 */
+.room-cell.sheltered {
+  border: none;
+  outline: 3px solid rgba(255, 160, 60, 0.9);
+  outline-offset: 1px;
+  box-shadow:
+    0 0 0 1px rgba(255, 180, 80, 0.3),
+    0 0 24px rgba(255, 140, 0, 0.4),
+    0 0 48px rgba(255, 100, 0, 0.2),
+    inset 0 0 30px rgba(255, 200, 100, 0.15);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 200, 100, 0.25) 0%,
+    rgba(255, 180, 80, 0.15) 40%,
+    transparent 70%
+  );
+}
+
+.room-cell.sheltered .room-number {
+  color: #ffb347;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(255, 180, 80, 0.6);
+}
+
+.room-cell.sheltered .room-number::after {
+  content: ' 🛡️';
+  font-size: 0.85em;
+  filter: drop-shadow(0 0 4px rgba(255, 200, 100, 0.8));
+}
+
+.room-cell.sheltered .room-occupants {
+  color: rgba(255, 220, 150, 0.9);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .room-cell.sheltered {
+    animation: edenShelterWarmGlow 3s ease-in-out infinite;
+  }
+}
+
+@keyframes edenShelterWarmGlow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(255, 180, 80, 0.3),
+      0 0 24px rgba(255, 140, 0, 0.4),
+      0 0 48px rgba(255, 100, 0, 0.2),
+      inset 0 0 30px rgba(255, 200, 100, 0.15);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(255, 180, 80, 0.4),
+      0 0 36px rgba(255, 160, 0, 0.5),
+      0 0 60px rgba(255, 120, 0, 0.25),
+      inset 0 0 40px rgba(255, 220, 120, 0.2);
+  }
+}
+
+.scope-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 0.9em;
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+.scope-badge.on {
+  opacity: 1;
+}
+
+@media (max-width: 520px) {
+  .scope-room-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+</style>
