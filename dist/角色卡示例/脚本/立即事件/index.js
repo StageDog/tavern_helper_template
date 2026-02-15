@@ -1,2 +1,0 @@
-$(async()=>{injectPrompts([{id:'冲动啊，请平息吧',position:'none',depth:0,role:'system',content:'【【冲动啊，请平息吧】】',filter:()=>0===_.get(getAllVariables(),'stat_data.白娅.依存度'),should_scan:!0},{id:'理智啊，请不要冻结',position:'none',depth:0,role:'system',content:'【【理智啊，请不要冻结】】',filter:()=>100===_.get(getAllVariables(),'stat_data.白娅.依存度'),should_scan:!0}])});
-//# sourceMappingURL=index.js.map
