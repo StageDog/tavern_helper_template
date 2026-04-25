@@ -9,11 +9,9 @@ player:
   is_original: true
 agents:
   list: []
-favorability:     # 只保留这一个
-  妮可: 30        # 注意缩进，必须是2个或4个空格
+  present: []     # 当前在场角色
 narrative:
-  mode: 未选择
-  main_progress: 生意×怪事×正义
-  current_task: 无
+  active_event: 无
+  current_task: 自由探索
 inventory:
   丁尼: 5000

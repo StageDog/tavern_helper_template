@@ -1,0 +1,1248 @@
+```html
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>绝区零风格开场终端</title>
+
+  <style>
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+      min-height: 100% !important;
+      overflow-x: hidden !important;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-main: radial-gradient(circle at top, #1c2230 0%, #0b0f17 55%, #05070b 100%);
+      --phone-bg: linear-gradient(180deg, rgba(17,21,29,0.96) 0%, rgba(11,14,20,0.98) 100%);
+      --phone-border: rgba(255,255,255,0.08);
+      --screen-border: rgba(255,255,255,0.06);
+      --card-bg: rgba(255,255,255,0.04);
+      --text-main: #f3f6fb;
+      --text-sub: #aeb8c8;
+      --text-dim: #7f8a9d;
+      --accent: #f5c84c;
+      --accent-2: #00d0ff;
+      --line: rgba(255,255,255,0.08);
+      --input-bg: rgba(255,255,255,0.05);
+      --input-border: rgba(255,255,255,0.08);
+      --input-focus: rgba(0,208,255,0.55);
+      --shadow: 0 25px 80px rgba(0,0,0,0.45);
+      --radius-xl: 30px;
+      --radius-lg: 20px;
+      --select-bg: #161b24;
+      --select-text: #f3f6fb;
+      --select-option-bg: #161b24;
+      --select-option-text: #f3f6fb;
+      --select-option-selected-bg: #2a3342;
+      --select-option-selected-text: #f5c84c;
+    }
+
+    body {
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 24px 12px 40px;
+    }
+
+    .phone-shell {
+      width: 100%;
+      max-width: 430px;
+      background: linear-gradient(180deg, #1b1e26 0%, #11141c 100%);
+      border-radius: 38px;
+      padding: 10px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--phone-border);
+      position: relative;
+    }
+
+    .phone-notch {
+      width: 135px;
+      height: 28px;
+      border-radius: 0 0 18px 18px;
+      background: #07090d;
+      margin: 0 auto;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 10px;
+      z-index: 3;
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .screen {
+      min-height: 860px;
+      border-radius: 30px;
+      background:
+        linear-gradient(180deg, rgba(0,208,255,0.06) 0%, rgba(245,200,76,0.03) 100%),
+        var(--phone-bg);
+      border: 1px solid var(--screen-border);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .screen::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 24px 24px;
+      pointer-events: none;
+      opacity: 0.25;
+    }
+
+    .inner {
+      position: relative;
+      z-index: 1;
+      padding: 44px 16px 20px;
+    }
+
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-sub);
+      font-size: 12px;
+      margin-bottom: 14px;
+      padding: 0 4px;
+    }
+
+    .status-icons {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .signal-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-2);
+      box-shadow: 0 0 10px rgba(0,208,255,0.7);
+    }
+
+    .battery {
+      width: 22px;
+      height: 12px;
+      border: 1.5px solid var(--text-sub);
+      border-radius: 3px;
+      position: relative;
+    }
+
+    .battery::before {
+      content: "";
+      position: absolute;
+      right: -4px;
+      top: 3px;
+      width: 2px;
+      height: 4px;
+      border-radius: 1px;
+      background: var(--text-sub);
+    }
+
+    .battery::after {
+      content: "";
+      position: absolute;
+      inset: 2px;
+      background: linear-gradient(90deg, var(--accent) 0%, #fff07d 100%);
+      border-radius: 1px;
+    }
+
+    .hero-panel {
+      background:
+        linear-gradient(135deg, rgba(0,208,255,0.10) 0%, rgba(255,255,255,0.03) 40%, rgba(245,200,76,0.08) 100%);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      padding: 16px;
+      margin-bottom: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-panel::after {
+      content: "New Eridu Terminal";
+      position: absolute;
+      right: 14px;
+      top: 12px;
+      font-size: 11px;
+      letter-spacing: 1px;
+      color: rgba(255,255,255,0.18);
+      text-transform: uppercase;
+    }
+
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .hero-title h1 {
+      font-size: 30px;
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+
+    .hero-title h1 span {
+      color: var(--accent);
+    }
+
+    .hero-title p {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--text-sub);
+      line-height: 1.5;
+    }
+
+    .badge {
+      flex-shrink: 0;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(245,200,76,0.12);
+      border: 1px solid rgba(245,200,76,0.3);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .mini-info {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .mini-box {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px;
+    }
+
+    .mini-box b {
+      display: block;
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .mini-box span {
+      font-size: 13px;
+      color: var(--text-main);
+      font-weight: 700;
+    }
+
+    .section-card {
+      background: var(--card-bg);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      margin-bottom: 14px;
+      backdrop-filter: blur(10px);
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .section-title h2 {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .section-title small {
+      color: var(--text-dim);
+      font-size: 11px;
+    }
+
+    .character-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .char-option {
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      cursor: pointer;
+      overflow: hidden;
+      transition: 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .char-option:hover {
+      transform: translateY(-2px);
+      border-color: rgba(0,208,255,0.35);
+    }
+
+    .char-option.selected {
+      border-color: var(--accent-2);
+      box-shadow: 0 0 0 2px rgba(0,208,255,0.15) inset;
+      background: rgba(0,208,255,0.08);
+    }
+
+    .char-image {
+      width: 100%;
+      height: 210px;
+      background-size: contain;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-color: rgba(255,255,255,0.04);
+      display: block;
+      flex-shrink: 0;
+    }
+
+    .char-name {
+      min-height: 44px;
+      padding: 10px 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #zhe-img {
+      background-image: url('https://files.catbox.moe/2l4n7n.png');
+      background-size: contain;
+      background-position: center center;
+      background-repeat: no-repeat;
+    }
+
+    #ling-img {
+      background-image: url('https://files.catbox.moe/n8v5u4.png');
+      background-size: contain;
+      background-position: center center;
+      background-repeat: no-repeat;
+    }
+
+    #oc-img {
+      background-image: url('https://files.catbox.moe/m670zu.jpg');
+      background-size: contain;
+      background-position: center center;
+      background-repeat: no-repeat;
+      filter: none;
+    }
+
+    .mode-switch {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .mode-btn {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      color: var(--text-main);
+      border-radius: 16px;
+      padding: 12px;
+      text-align: left;
+      cursor: pointer;
+      transition: 0.25s ease;
+    }
+
+    .mode-btn b {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .mode-btn span {
+      display: block;
+      font-size: 12px;
+      color: var(--text-sub);
+      line-height: 1.45;
+    }
+
+    .mode-btn.active {
+      border-color: var(--accent);
+      background: rgba(245,200,76,0.08);
+      box-shadow: 0 0 0 2px rgba(245,200,76,0.08) inset;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-bottom: 7px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    input[type="text"],
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text-main);
+      border-radius: 14px;
+      padding: 12px 13px;
+      font-size: 14px;
+      outline: none;
+      transition: 0.25s ease;
+    }
+
+    input[type="text"]:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--input-focus);
+      box-shadow: 0 0 0 3px rgba(0,208,255,0.12);
+    }
+
+    input[readonly] {
+      opacity: 0.88;
+      cursor: not-allowed;
+    }
+
+    textarea {
+      min-height: 92px;
+      resize: vertical;
+    }
+
+    select {
+      background-color: var(--select-bg);
+      color: var(--select-text);
+      -webkit-appearance: none;
+      appearance: none;
+      color-scheme: dark;
+    }
+
+    select option {
+      background-color: var(--select-option-bg);
+      color: var(--select-option-text);
+    }
+
+    select option:checked {
+      background: var(--select-option-selected-bg);
+      color: var(--select-option-selected-text);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .hint {
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .action-bar {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .action-bar button {
+      border: none;
+      border-radius: 16px;
+      padding: 14px 12px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 800;
+      transition: 0.25s ease;
+    }
+
+    .secondary-btn {
+      background: rgba(255,255,255,0.08);
+      color: var(--text-main);
+      border: 1px solid var(--line);
+    }
+
+    .secondary-btn:hover {
+      transform: translateY(-2px);
+      background: rgba(255,255,255,0.12);
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, var(--accent) 0%, #ffdf7b 100%);
+      color: #121212;
+    }
+
+    .primary-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(245,200,76,0.18);
+    }
+
+    .footer-note {
+      margin-top: 12px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .bottom-nav {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .nav-item {
+      text-align: center;
+      padding: 10px 6px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      color: var(--text-sub);
+      font-size: 12px;
+    }
+
+    .nav-item.active {
+      color: var(--accent);
+      border-color: rgba(245,200,76,0.28);
+      background: rgba(245,200,76,0.06);
+    }
+  </style>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+</head>
+
+<body>
+  <div class="phone-shell">
+    <div class="phone-notch"></div>
+    <div class="screen">
+      <div class="inner">
+        <div class="status-bar">
+          <div id="current-time">09:41</div>
+          <div class="status-icons">
+            <div class="signal-dot"></div>
+            <div class="signal-dot" style="opacity:.65;"></div>
+            <div class="battery"></div>
+          </div>
+        </div>
+
+        <div class="hero-panel">
+          <div class="hero-top">
+            <div class="hero-title">
+              <h1>绝区<span>零</span></h1>
+              <p>欢迎接入新艾利都代理人终端<br>请选择主角与行动模式，开始本次记录</p>
+            </div>
+            <div class="badge">启动中</div>
+          </div>
+
+          <div class="mini-info">
+            <div class="mini-box">
+              <b>城市</b>
+              <span>新艾利都</span>
+            </div>
+            <div class="mini-box">
+              <b>系统</b>
+              <span>代理档案</span>
+            </div>
+            <div class="mini-box">
+              <b>终端</b>
+              <span>手机界面</span>
+            </div>
+          </div>
+        </div>
+
+        <form id="prompt-form">
+          <div class="section-card">
+            <div class="section-title">
+              <h2>主角选择</h2>
+              <small>点击后自动填入对应示例</small>
+            </div>
+            <div class="character-grid">
+              <div class="char-option" data-protagonist="哲">
+                <input type="radio" name="protagonist" value="哲" style="display:none;">
+                <div class="char-image" id="zhe-img"></div>
+                <div class="char-name">哲</div>
+              </div>
+              <div class="char-option" data-protagonist="铃">
+                <input type="radio" name="protagonist" value="铃" style="display:none;">
+                <div class="char-image" id="ling-img"></div>
+                <div class="char-name">铃</div>
+              </div>
+              <div class="char-option" data-protagonist="原创主角">
+                <input type="radio" name="protagonist" value="原创主角" style="display:none;">
+                <div class="char-image" id="oc-img"></div>
+                <div class="char-name">原创主角</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-title">
+              <h2>模式选择</h2>
+              <small>剧情推进 / 自由定制</small>
+            </div>
+            <div class="mode-switch">
+              <button type="button" class="mode-btn active" data-mode="剧情模式">
+                <b>剧情模式</b>
+                <span>用于推进主线、间章、活动与代理人秘闻</span>
+              </button>
+              <button type="button" class="mode-btn" data-mode="私人圣所模式">
+                <b>私人圣所模式</b>
+                <span>自由指定角色与事件，生成私人互动剧情</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="section-card" id="story-mode-panel">
+            <div class="section-title">
+              <h2>剧情模式设定</h2>
+              <small>默认第一章节已修正</small>
+            </div>
+
+            <div class="form-group">
+              <label for="chapter-select">选择章节</label>
+              <select id="chapter-select">
+                <option value="">请选择章节</option>
+                <option>生意×怪事×正义</option>
+                <option>猫的失物 上</option>
+                <option>猫的失物 下</option>
+                <option>第一章 幕间：绳匠的日常与暗流</option>
+                <option>代理人秘闻「贼猫御鼠」</option>
+                <option>空洞的「心」声（上）</option>
+                <option>空洞的「心」声（下）</option>
+                <option>代理人秘闻：满级小学生</option>
+                <option>代理人秘聞：鋼鐵的女巫</option>
+                <option>零号空洞的资格认证</option>
+                <option>直到苍白荒秽之地</option>
+                <option>间章：非常任务</option>
+                <option>代理人秘闻「洞中谍」</option>
+                <option>电子战场乱斗</option>
+                <option>危楼夜寻踪</option>
+                <option>代理人秘聞「而英雄總是歸於幕後」</option>
+                <option>代理人秘闻：直到您彻底遗忘</option>
+                <option>代理人秘聞：朋友的秘密與女僕的偽裝</option>
+                <option>沙罗黄金周：从淘金美梦到假日保卫战</option>
+                <option>卧底蓝调</option>
+                <option>第一幕，第一镜！</option>
+                <option>141友情联络</option>
+                <option>切勿独行</option>
+                <option>代理人秘闻「失蹤邦口」</option>
+                <option>虚拟杀机</option>
+                <option>断层之谜与双重背叛</option>
+                <option>地狱巡游</option>
+                <option>代理人秘闻「幸運當頭」</option>
+                <option>代理人秘聞「無人喝彩之冠」</option>
+                <option>霸主的歡宴</option>
+                <option>波可娜的考察期</option>
+                <option>漫行于以太虚境</option>
+                <option>赠尔・丽都</option>
+                <option>星流霆击</option>
+                <option>與星星的連線</option>
+                <option>寻踪觅迹</option>
+                <option>代理人秘聞·「此地長眠者」</option>
+                <option>鏖战高塔</option>
+                <option>当三明治来敲门</option>
+                <option>焦急的邦布调查员</option>
+                <option>作战影像回顾</option>
+                <option>协作设计师</option>
+                <option>「嗯呢」助教计划</option>
+                <option>美梦如约而至</option>
+                <option>小邦布大战坏以骸</option>
+                <option>星芒闪耀之处</option>
+                <option>愿我亦是天琴之星</option>
+                <option>悠然插曲·金翅雀逃跑计画</option>
+                <option>闪耀的此刻</option>
+                <option>协律共契</option>
+                <option>决战「金手指」之巅</option>
+                <option>咔嚓咔嚓空洞记者</option>
+                <option>厄匹斯极钓大师赛</option>
+                <option>银心锡兵之歌</option>
+                <option>白银的复苏</option>
+                <option>虚界热战风云</option>
+                <option>战斗吧！三尺英雄</option>
+                <option>小小骑士大冲锋</option>
+                <option>零号空洞：掠影摧锋</option>
+                <option>悬丝索引</option>
+                <option>如愿璀璨之日</option>
+                <option>將眼淚與過往一同埋葬（上）</option>
+                <option>将眼泪与过往一同埋葬 (下)</option>
+                <option>邦邦冲冲冲</option>
+                <option>朝露・初识花信</option>
+                <option>朝露・既闻花名</option>
+                <option>朝露・解语之时</option>
+                <option>特聘花艺师营业时间</option>
+                <option>美味食光全城热配</option>
+                <option>悠然插曲・游方闲客</option>
+                <option>扳机代理人秘闻「目不可及」</option>
+                <option>乘上春日的影像</option>
+                <option>云霞同归处</option>
+                <option>凋荣十载随便一观</option>
+                <option>缘于引力的邂逅</option>
+                <option>钢魂：黄金之绊</option>
+                <option>代理人秘闻「《猛虎伏魔传！》」</option>
+                <option>厄影弥途</option>
+                <option>预言之下</option>
+                <option>美味大作战</option>
+                <option>虎啸有风生</option>
+                <option>全息强袭战域</option>
+                <option>迟吟的浪涌</option>
+                <option>绮梦之夏：复兴与反击</option>
+                <option>乘风破浪：心之洄游</option>
+                <option>人鱼之梦：追寻幻影</option>
+                <option>最靓鱼档传说</option>
+                <option>乔乔的太空探秘</option>
+                <option>幽灵船大冒险</option>
+                <option>拼出澄辉夏日！</option>
+                <option>不要温和地走入那良夜</option>
+                <option>花之谷的芙罗拉</option>
+                <option>「嗯呢」大寻宝</option>
+                <option>小邦布勇任防卫军</option>
+                <option>问题士兵补习班</option>
+                <option>激战聚光决胜</option>
+                <option>寻梦瓶游记</option>
+                <option>可曾記得夢</option>
+                <option>代理人秘闻「失梦者奇谭」</option>
+                <option>咔嚓！闪耀大进击</option>
+                <option>残梦未尽之时</option>
+                <option>解忧轶事录</option>
+                <option>将临未抵的深渊</option>
+                <option>「嗯呢」棋侠传</option>
+                <option>兔子小姐百分百</option>
+                <option>流光札记</option>
+                <option>新黄金魔神战士</option>
+                <option>拟境序列对决</option>
+                <option>微光引灯时</option>
+                <option>天使与缪斯妄想</option>
+                <option>妄想天使训练中</option>
+                <option>连携调查：神之迷宫</option>
+                <option>潜影暗流交锋</option>
+                <option>空明寻剑录</option>
+                <option>心愿代投站</option>
+                <option>旧梦的安可曲</option>
+                <option>妄想协鸣于此刻</option>
+                <option>引力映叙时光</option>
+                <option>满分集卡专家</option>
+                <option>咔嚓！虚境大作战</option>
+                <option>「福」至沓来</option>
+                <option>三契密约</option>
+                <option>英雄不死於往昔</option>
+              </select>
+              <div class="hint">剧情模式会根据你选择的章节生成对应的开场引导</div>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label for="story-start-point">剧情起始点</label>
+                <input type="text" id="story-start-point" placeholder="例如：章节开场前夜">
+              </div>
+              <div class="form-group">
+                <label for="story-location">当前地点</label>
+                <input type="text" id="story-location" placeholder="例如：录像店二楼">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="story-extra">补充要求</label>
+              <textarea id="story-extra" placeholder="例如：希望开场先从终端收到一条消息开始"></textarea>
+            </div>
+          </div>
+
+          <div class="section-card hidden" id="sanctum-mode-panel">
+            <div class="section-title">
+              <h2>私人圣所模式设定</h2>
+              <small>自由剧情入口</small>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label for="sanctum-target">指定人物</label>
+                <input type="text" id="sanctum-target" placeholder="例如：艾莲 / 妮可 / 自定义角色">
+              </div>
+              <div class="form-group">
+                <label for="sanctum-location">发生地点</label>
+                <input type="text" id="sanctum-location" placeholder="例如：六分街 / 家中">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="sanctum-event">想要进行的事情</label>
+              <input type="text" id="sanctum-event" placeholder="例如：一起吃夜宵、私下谈心">
+            </div>
+
+            <div class="form-group">
+              <label for="sanctum-detail">情境描述</label>
+              <textarea id="sanctum-detail" placeholder="定义互动气氛、关系前提、想要的剧情方向"></textarea>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-title">
+              <h2>主角信息</h2>
+              <small>哲 / 铃 / 原创主角统一资料区</small>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label for="character-name">主角名称</label>
+                <input type="text" id="character-name" placeholder="会根据主角选择自动填入">
+              </div>
+              <div class="form-group">
+                <label for="character-age">年龄</label>
+                <input type="text" id="character-age" placeholder="例如：20">
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label for="character-gender">性别</label>
+                <input type="text" id="character-gender" placeholder="例如：男 / 女">
+              </div>
+              <div class="form-group">
+                <label for="character-ability">能力或特长</label>
+                <input type="text" id="character-ability" placeholder="例如：情报分析、快速应变">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="character-identity">身份设定</label>
+              <input type="text" id="character-identity" placeholder="例如：法厄同一员 / 外来者 / 原创身份">
+            </div>
+
+            <div class="form-group">
+              <label for="character-summary">角色补充描述</label>
+              <textarea id="character-summary" placeholder="描述当前处境、性格状态、背景补充与剧情进入方式"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="outgoing-dialogue">发送出去的对话</label>
+              <textarea id="outgoing-dialogue" placeholder="例如：我这边已经到了，不过情况和预想的不太一样。你现在方便吗？"></textarea>
+            </div>
+          </div>
+
+          <div class="action-bar">
+            <button type="button" id="fill-example-btn" class="secondary-btn">填充当前角色示例</button>
+            <button type="submit" id="start-btn" class="primary-btn">接入终端并开始</button>
+          </div>
+
+          <div class="footer-note">
+            点击主角卡会自动填入示例<br>
+            点击开始后会写入聊天输入框，供你手动发送
+          </div>
+        </form>
+
+        <div class="bottom-nav">
+          <div class="nav-item active">首页</div>
+          <div class="nav-item">委托</div>
+          <div class="nav-item">档案</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    $(function() {
+      const storageKey = 'zzz_phone_opening_data_v5';
+
+      function updateClock() {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        $('#current-time').text(hh + ':' + mm);
+      }
+
+      function getSTDocument() {
+        if (window.parent && window.parent.document) return window.parent.document;
+        return document;
+      }
+
+      function getChatInput() {
+        const doc = getSTDocument();
+        return doc.querySelector('#send_textarea') || doc.querySelector('textarea');
+      }
+
+      function refreshModePanels() {
+        const mode = $('.mode-btn.active').data('mode');
+        if (mode === '剧情模式') {
+          $('#story-mode-panel').removeClass('hidden');
+          $('#sanctum-mode-panel').addClass('hidden');
+        } else {
+          $('#story-mode-panel').addClass('hidden');
+          $('#sanctum-mode-panel').removeClass('hidden');
+        }
+      }
+
+      function applyReadonlyByRole(protagonist) {
+        const $name = $('#character-name');
+
+        if (protagonist === '哲' || protagonist === '铃') {
+          $name.prop('readonly', true);
+        } else {
+          $name.prop('readonly', false);
+        }
+      }
+
+      function getExampleData(protagonist) {
+        if (protagonist === '哲') {
+          return {
+            protagonist: '哲',
+            mode: '剧情模式',
+            chapter: '生意×怪事×正义',
+            storyStartPoint: '委托开始前的日常时段',
+            storyLocation: '录像店二楼',
+            storyExtra: '希望从哲的冷静视角切入，先有城市日常氛围，再自然进入事件',
+            sanctumTarget: '',
+            sanctumLocation: '',
+            sanctumEvent: '',
+            sanctumDetail: '',
+            characterName: '哲',
+            characterAge: '20',
+            characterGender: '男',
+            characterIdentity: '法厄同一员，录像店店员与幕后绳匠之一',
+            characterAbility: '情报分析、远程统筹、冷静判断',
+            characterSummary: '正在处理日常事务，同时留意新的委托与街区动向',
+            outgoingDialogue: '我这边收到一点新情况，你要现在过来看看吗？'
+          };
+        }
+
+        if (protagonist === '铃') {
+          return {
+            protagonist: '铃',
+            mode: '剧情模式',
+            chapter: '生意×怪事×正义',
+            storyStartPoint: '刚结束一段忙碌后的空档',
+            storyLocation: '录像店二楼',
+            storyExtra: '希望从铃更活泼自然的视角切入，带一点日常聊天感',
+            sanctumTarget: '',
+            sanctumLocation: '',
+            sanctumEvent: '',
+            sanctumDetail: '',
+            characterName: '铃',
+            characterAge: '19',
+            characterGender: '女',
+            characterIdentity: '法厄同一员，录像店店员与幕后绳匠之一',
+            characterAbility: '快速应变、联络统筹、社交直觉',
+            characterSummary: '正一边整理店内事务，一边和熟人联络，准备处理新的状况',
+            outgoingDialogue: '你现在有空吗？我这边好像遇到点有意思的事。'
+          };
+        }
+
+        return {
+          protagonist: '原创主角',
+          mode: '剧情模式',
+          chapter: '生意×怪事×正义',
+          storyStartPoint: '刚接触这座城市不久的阶段',
+          storyLocation: '六分街附近',
+          storyExtra: '希望原创主角以较强的陌生感切入，对新艾利都保持警惕和好奇',
+          sanctumTarget: '',
+          sanctumLocation: '',
+          sanctumEvent: '',
+          sanctumDetail: '',
+          characterName: '{{user}}',
+          characterAge: '20',
+          characterGender: '男',
+          characterIdentity: '初到新艾利都并试图站稳脚跟的外来者',
+          characterAbility: '观察力、记忆力、局势判断',
+          characterSummary: '黑发，习惯独自行走街区边缘，擅长收集消息与观察局势变化，刚刚进入更复杂的街区关系网，对录像店、委托与空洞世界保持谨慎探索',
+          outgoingDialogue: '我已经到附近了，不过这里的情况比我想的复杂。'
+        };
+      }
+
+      function getFormData() {
+        return {
+          protagonist: $('input[name="protagonist"]:checked').val() || '',
+          mode: $('.mode-btn.active').data('mode') || '剧情模式',
+
+          chapter: $('#chapter-select').val(),
+          storyStartPoint: $('#story-start-point').val(),
+          storyLocation: $('#story-location').val(),
+          storyExtra: $('#story-extra').val(),
+
+          sanctumTarget: $('#sanctum-target').val(),
+          sanctumLocation: $('#sanctum-location').val(),
+          sanctumEvent: $('#sanctum-event').val(),
+          sanctumDetail: $('#sanctum-detail').val(),
+
+          characterName: $('#character-name').val(),
+          characterAge: $('#character-age').val(),
+          characterGender: $('#character-gender').val(),
+          characterIdentity: $('#character-identity').val(),
+          characterAbility: $('#character-ability').val(),
+          characterSummary: $('#character-summary').val(),
+          outgoingDialogue: $('#outgoing-dialogue').val()
+        };
+      }
+
+      function saveData() {
+        localStorage.setItem(storageKey, JSON.stringify(getFormData()));
+      }
+
+      function applyDataToForm(data, preserveSelectedRole = false) {
+        if (!data) return;
+
+        if (!preserveSelectedRole && data.protagonist) {
+          $('.char-option').removeClass('selected').find('input[type="radio"]').prop('checked', false);
+          $(`.char-option[data-protagonist="${data.protagonist}"]`)
+            .addClass('selected')
+            .find('input[type="radio"]').prop('checked', true);
+        }
+
+        $('#chapter-select').val(data.chapter || '生意×怪事×正义');
+        $('#story-start-point').val(data.storyStartPoint || '');
+        $('#story-location').val(data.storyLocation || '');
+        $('#story-extra').val(data.storyExtra || '');
+
+        $('#sanctum-target').val(data.sanctumTarget || '');
+        $('#sanctum-location').val(data.sanctumLocation || '');
+        $('#sanctum-event').val(data.sanctumEvent || '');
+        $('#sanctum-detail').val(data.sanctumDetail || '');
+
+        $('#character-name').val(data.characterName || '');
+        $('#character-age').val(data.characterAge || '');
+        $('#character-gender').val(data.characterGender || '');
+        $('#character-identity').val(data.characterIdentity || '');
+        $('#character-ability').val(data.characterAbility || '');
+        $('#character-summary').val(data.characterSummary || '');
+        $('#outgoing-dialogue').val(data.outgoingDialogue || '');
+
+        if (data.mode) {
+          $('.mode-btn').removeClass('active');
+          $(`.mode-btn[data-mode="${data.mode}"]`).addClass('active');
+        }
+
+        applyReadonlyByRole(data.protagonist || $('input[name="protagonist"]:checked').val() || '');
+        refreshModePanels();
+      }
+
+      function loadData() {
+        const stored = localStorage.getItem(storageKey);
+        if (!stored) return;
+        try {
+          const data = JSON.parse(stored);
+          applyDataToForm(data);
+        } catch (e) {
+          console.warn(e);
+        }
+      }
+
+      function fillExampleByCurrentRole() {
+        const protagonist = $('input[name="protagonist"]:checked').val();
+        if (!protagonist) {
+          toastr.warning('请选择主角');
+          return;
+        }
+        const example = getExampleData(protagonist);
+        applyDataToForm(example, true);
+        applyReadonlyByRole(protagonist);
+        saveData();
+        toastr.success('已填入对应示例');
+      }
+
+      updateClock();
+      setInterval(updateClock, 60000);
+
+      $('.char-option').on('click', function() {
+        $('.char-option').removeClass('selected');
+        $(this).addClass('selected');
+        $(this).find('input[type="radio"]').prop('checked', true);
+
+        const protagonist = $(this).data('protagonist');
+        const example = getExampleData(protagonist);
+        applyDataToForm(example, true);
+        applyReadonlyByRole(protagonist);
+        saveData();
+        toastr.success('已自动填入该角色示例');
+      });
+
+      $('.mode-btn').on('click', function() {
+        $('.mode-btn').removeClass('active');
+        $(this).addClass('active');
+        refreshModePanels();
+        saveData();
+      });
+
+      $('#prompt-form input, #prompt-form textarea, #prompt-form select').on('change input', function() {
+        saveData();
+      });
+
+      $('#fill-example-btn').on('click', function() {
+        fillExampleByCurrentRole();
+      });
+
+      $('#prompt-form').on('submit', function(e) {
+        e.preventDefault();
+
+        const data = getFormData();
+
+        if (!data.protagonist) {
+          toastr.warning('请选择主角');
+          return;
+        }
+
+        if (!data.characterName) {
+          toastr.warning('请填写主角名称');
+          return;
+        }
+
+        if (!data.characterIdentity || !data.characterSummary) {
+          toastr.warning('请填写身份设定与角色补充描述');
+          return;
+        }
+
+        if (data.mode === '剧情模式' && !data.chapter) {
+          toastr.warning('剧情模式需要选择章节');
+          return;
+        }
+
+        if (data.mode === '私人圣所模式' && (!data.sanctumTarget || !data.sanctumEvent)) {
+          toastr.warning('私人圣所模式需要填写指定人物与想要进行的事情');
+          return;
+        }
+
+        let protagonistBlock = [];
+
+        if (data.protagonist === '哲') {
+          protagonistBlock = [
+            '主角信息',
+            '主角类型：官方主角',
+            '主角名称：哲',
+            '主角性别：男',
+            '主角年龄：' + (data.characterAge || '20'),
+            '主角身份：' + data.characterIdentity,
+            '主角能力：' + (data.characterAbility || '无'),
+            '主角补充描述：' + data.characterSummary,
+            '主角图片：https://files.catbox.moe/2l4n7n.png'
+          ];
+        } else if (data.protagonist === '铃') {
+          protagonistBlock = [
+            '主角信息',
+            '主角类型：官方主角',
+            '主角名称：铃',
+            '主角性别：女',
+            '主角年龄：' + (data.characterAge || '19'),
+            '主角身份：' + data.characterIdentity,
+            '主角能力：' + (data.characterAbility || '无'),
+            '主角补充描述：' + data.characterSummary,
+            '主角图片：https://files.catbox.moe/n8v5u4.png'
+          ];
+        } else {
+          protagonistBlock = [
+            '主角信息',
+            '主角类型：原创主角',
+            '主角名称：' + data.characterName,
+            '主角性别：' + (data.characterGender || '未设定'),
+            '主角年龄：' + (data.characterAge || '未设定'),
+            '主角身份：' + data.characterIdentity,
+            '主角能力：' + (data.characterAbility || '无'),
+            '主角补充描述：' + data.characterSummary,
+            '主角图片：https://files.catbox.moe/m670zu.jpg'
+          ];
+        }
+
+        const modeBlock = data.mode === '剧情模式'
+          ? [
+              '模式：剧情模式',
+              '章节名称：' + data.chapter,
+              '剧情起始点：' + (data.storyStartPoint || '默认开场'),
+              '当前地点：' + (data.storyLocation || '未设定'),
+              '补充要求：' + (data.storyExtra || '无')
+            ]
+          : [
+              '模式：私人圣所模式',
+              '指定人物：' + data.sanctumTarget,
+              '发生地点：' + (data.sanctumLocation || '未设定'),
+              '想进行的事情：' + data.sanctumEvent,
+              '情境描述：' + (data.sanctumDetail || '无')
+            ];
+
+        let finalPrompt =
+          '<status>\n' +
+          '[系统指令：生成绝区零风格开场]\n' +
+          protagonistBlock.join('\n') + '\n\n' +
+          modeBlock.join('\n') + '\n\n' +
+          '生成要求：\n' +
+          '1. 开场采用绝区零式都市感、终端感与日常质感\n' +
+          '2. 优先根据主角身份与模式内容组织开局\n' +
+          '3. 若主角为哲或铃，则保持其官方角色气质与说话方式\n' +
+          '4. 若主角为原创主角，则严格依据已提供的人物信息塑造\n' +
+          '5. 若存在发送出去的对话，则将其视为剧情开始前已发出的消息\n' +
+          '</status>';
+
+        if (data.outgoingDialogue && data.outgoingDialogue.trim()) {
+          finalPrompt += '\n\n已发送的对话：\n' + data.outgoingDialogue.trim();
+        }
+
+        const chatInput = getChatInput();
+        if (!chatInput) {
+          toastr.error('未找到聊天输入框');
+          return;
+        }
+
+        const oldValue = chatInput.value.trim();
+        chatInput.value = oldValue ? oldValue + '\n\n' + finalPrompt : finalPrompt;
+        chatInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+        toastr.success('内容已写入对话框，请手动发送');
+      });
+
+      toastr.options = {
+        closeButton: true,
+        positionClass: 'toast-bottom-right',
+        timeOut: 2600
+      };
+
+      refreshModePanels();
+      loadData();
+
+      if (!localStorage.getItem(storageKey)) {
+        const defaultData = getExampleData('哲');
+        applyDataToForm(defaultData);
+        $('.char-option[data-protagonist="哲"]')
+          .addClass('selected')
+          .find('input[type="radio"]').prop('checked', true);
+        applyReadonlyByRole('哲');
+        refreshModePanels();
+        saveData();
+      } else {
+        const protagonist = $('input[name="protagonist"]:checked').val() || '哲';
+        applyReadonlyByRole(protagonist);
+      }
+    });
+  </script>
+</body>
+</html>
+```

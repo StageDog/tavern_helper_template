@@ -3,7 +3,7 @@
   rule:
     - you should output the update analysis and the actual update commands in the end of the next reply
     - the update commands must strictly follow the **JSON Patch (RFC 6902)** standard
-    - **CRITICAL MATH RULE**: For `number` type fields (e.g., Favorability, Money/Denny), the "add" operation in JSON Patch DOES NOT perform arithmetic addition. It performs a replacement.
+    - **CRITICAL MATH RULE**: For `number` type fields (e.g., Money/Denny), the "add" operation in JSON Patch DOES NOT perform arithmetic addition. It performs a replacement.
     - **HOW TO UPDATE NUMBERS**: You MUST read the current value from the context, calculate the new total internally (Current + Delta), and use the `replace` operation with the **NEW TOTAL**.
     - Example: If Denny is 5000 and you want to add 1000, DO NOT output {op:add, value:1000}. YOU MUST OUTPUT: { "op": "replace", "path": "/inventory/丁尼", "value": 6000 }
   format: |-

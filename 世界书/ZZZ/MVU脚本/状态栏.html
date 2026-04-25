@@ -1,0 +1,295 @@
+<head>
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Jura:wght@600&family=Noto+Sans+SC:wght@500;700&display=swap');
+
+    .zzz-phone-root {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        margin: 10px 0;
+    }
+
+    .zzz-phone-container {
+        width: 320px !important;
+        height: 600px !important;
+        min-height: 600px !important;
+        background-color: #0d0d0d;
+        border-radius: 36px;
+        border: 6px solid #1a1a1a;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 0 10px rgba(0,0,0,0.8);
+        overflow: hidden;
+        font-family: 'Jura', 'Noto Sans SC', sans-serif;
+        position: relative;
+        color: #f0f0f0;
+        box-sizing: border-box;
+        z-index: 1;
+    }
+
+    .zzz-screen {
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at 50% 30%, #222 0%, #000 90%);
+        position: relative;
+        overflow-y: hidden;
+        background-size: 100% 4px;
+        background-image: linear-gradient(rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.4) 50%);
+    }
+
+    /* --- 修复截断的核心 CSS --- */
+    .zzz-status-bar {
+        height: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 18px; /* 稍微减少内边距 */
+        font-size: 11px;
+        font-weight: bold;
+        color: #ccff00;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(2px);
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0; /* 使用 left+right 代替 width:100% 以更安全地适配盒模型 */
+        width: auto;
+        box-sizing: border-box;
+        z-index: 20;
+        white-space: nowrap; /* 防止换行 */
+    }
+
+    .sb-loc-text {
+        max-width: 120px; /* 限制最大宽度 */
+        overflow: hidden;
+        text-overflow: ellipsis; /* 超出显示省略号 */
+        text-align: right;
+    }
+
+    /* 页面通用样式 */
+    .zzz-page {
+        display: none;
+        position: absolute;
+        top: 30px;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 20px;
+        box-sizing: border-box;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #444 transparent;
+    }
+    .zzz-page.active {
+        display: block;
+        animation: slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    /* 组件样式 */
+    .home-header { margin-top: 40px; margin-bottom: 30px; text-align: center; }
+    .home-title { font-size: 32px; font-weight: 900; font-style: italic; color: #fff; text-shadow: 3px 3px 0px #ccff00, -1px -1px 0 #333; transform: skewX(-10deg); }
+    .home-subtitle { font-size: 10px; color: #666; letter-spacing: 2px; margin-top: 5px; }
+
+    .zzz-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px 10px; padding: 0 10px; }
+
+    .zzz-app-btn { display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: transform 0.1s; }
+    .zzz-app-btn:active { transform: scale(0.95); }
+
+    .app-icon-box { width: 58px; height: 58px; background: #1a1a1a; border: 2px solid #ddd; border-radius: 14px; display: flex; justify-content: center; align-items: center; font-size: 24px; margin-bottom: 6px; box-shadow: 0 4px 0 rgba(255,255,255,0.1); }
+
+    /* 风格配色 */
+    .style-stat .app-icon-box { border-color: #ccff00; color: #ccff00; background: #000; }
+    .style-contact .app-icon-box { border-color: #ff0055; color: #ff0055; background: #000; }
+    .style-squad .app-icon-box { border-color: #fff; color: #000; background: #fff; }
+    .style-hdd .app-icon-box { border-color: #00ccff; color: #00ccff; background: #000; }
+    .style-inv .app-icon-box { border-color: #FFA500; color: #FFA500; background: #000; }
+
+    .app-name { font-size: 10px; color: #aaa; font-weight: bold; }
+
+    /* 详情页组件 */
+    .page-header { display: flex; align-items: center; border-bottom: 3px solid #ccff00; padding-bottom: 10px; margin-bottom: 20px; }
+    .zzz-back-btn { width: 32px; height: 32px; border-radius: 50%; background: #333; color: #ccff00; display: flex; justify-content: center; align-items: center; font-weight: bold; margin-right: 15px; cursor: pointer; border: 2px solid rgba(255,255,255,0.1); }
+    .page-title { font-size: 20px; font-weight: 900; font-style: italic; transform: skewX(-10deg); }
+
+    .zzz-list-item { background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0) 100%); border-left: 4px solid #444; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+    .zzz-list-item.highlight { border-left-color: #ccff00; background: linear-gradient(90deg, rgba(204, 255, 0, 0.1) 0%, rgba(0,0,0,0) 100%); }
+
+    .fav-track { width: 70px; height: 6px; background: #333; margin-top: 4px; border-radius: 2px; }
+    .fav-fill { height: 100%; background: #ff0055; border-radius: 2px; }
+    .denny-display { background: #ccff00; color: #000; padding: 15px; width: 100%; text-align: center; font-weight: 900; font-size: 20px; margin-bottom: 20px; transform: skewX(-5deg); }
+
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+
+    <script type="module">
+    const runPhoneUI = async () => {
+        // ... (保持原有 JS 逻辑不变) ...
+        // 为了节省篇幅，这里复用上述 JS 逻辑即可，
+        // 主要是 CSS 部分修改了 .zzz-status-bar
+
+        await new Promise(r => setTimeout(r, 500));
+        let stat = {};
+        try {
+            if (typeof getAllVariables === 'function') {
+                const vars = getAllVariables();
+                stat = vars.stat_data || {};
+            }
+        } catch(e) { console.error("[Nova UI] Error", e); }
+
+        const _safe = (typeof _ !== 'undefined') ? _ : {
+            get: (obj, path, def) => {
+                if(!obj) return def;
+                const keys = path.split('.');
+                let res = obj;
+                for(let k of keys) { res = res[k]; if(res === undefined) return def; }
+                return res;
+            },
+            forOwn: (obj, cb) => { if(obj) Object.keys(obj).forEach(k => cb(obj[k], k)); },
+            isEmpty: (obj) => { return !obj || Object.keys(obj).length === 0; }
+        };
+
+        $(document).off('click.zzzui_app').on('click.zzzui_app', '.zzz-app-btn', function() {
+            const targetId = $(this).data('target');
+            const $phone = $(this).closest('.zzz-phone-container');
+            $phone.find('.zzz-page').removeClass('active');
+            $phone.find('#' + targetId).addClass('active');
+        });
+
+        $(document).off('click.zzzui_back').on('click.zzzui_back', '.zzz-back-btn', function() {
+            const $phone = $(this).closest('.zzz-phone-container');
+            $phone.find('.zzz-page').removeClass('active');
+            $phone.find('#zzz-page-home').addClass('active');
+        });
+
+        // 渲染逻辑
+        const time = _safe.get(stat, 'world.time', 'System');
+        const loc = _safe.get(stat, 'world.location', 'Connecting...');
+        $('.sb-time-text').text(time);
+        $('.sb-loc-text').text(loc); // 移除不必要的substring，交给CSS处理
+
+        $('#val-name').text(_safe.get(stat, 'player.name') || '绳匠');
+        $('#val-role').text(_safe.get(stat, 'player.role', 'Phaethon'));
+        $('#val-status').text(_safe.get(stat, 'player.status', 'Normal'));
+
+        const agents = _safe.get(stat, 'agents.list', []);
+        const $agentList = $('#list-squad');
+        $agentList.empty();
+        if(agents.length === 0) $agentList.append('<div class="zzz-list-item">数据同步中...</div>');
+        else agents.forEach(name => $agentList.append(`<div class="zzz-list-item highlight"><b>${name}</b></div>`));
+
+        const present = _safe.get(stat, 'agents.present', []);
+        const $presentList = $('#list-present');
+        $presentList.empty();
+        if (_safe.isEmpty(present)) {
+            $presentList.append('<div class="zzz-list-item">当前无人在场</div>');
+        } else {
+            present.forEach(name => $presentList.append(`<div class="zzz-list-item highlight"><b>${name}</b></div>`));
+        }
+
+        $('#val-main-prog').text(_safe.get(stat, 'narrative.active_event', '无'));
+        $('#val-cur-task').text(_safe.get(stat, 'narrative.current_task', '...'));
+
+        const inv = _safe.get(stat, 'inventory', {});
+        const denny = inv['丁尼'] || 0;
+        $('#val-denny').text(`₯ ${Number(denny).toLocaleString()}`);
+
+        const $invList = $('#list-inventory');
+        $invList.empty();
+        _safe.forOwn(inv, (qty, name) => {
+            if(name !== '丁尼') $invList.append(`<div class="zzz-list-item"><span>${name}</span><span style="color:#00ccff">x${qty}</span></div>`);
+        });
+    };
+
+    $(document).ready(() => {
+        try {
+            if(typeof errorCatched === 'function') errorCatched(runPhoneUI)();
+            else runPhoneUI();
+        } catch(e) { console.error(e); }
+    });
+    </script>
+</head>
+
+<body>
+    <div class="zzz-phone-root">
+        <div class="zzz-phone-container">
+            <!-- 状态栏: CSS 已修复溢出问题 -->
+            <div class="zzz-status-bar">
+                <span class="sb-time-text">--:--</span>
+                <span style="letter-spacing:2px">5G ///</span>
+                <span class="sb-loc-text">Signal..</span>
+            </div>
+
+            <div class="zzz-screen">
+                <!-- 保持原有的页面结构不变 -->
+                <div id="zzz-page-home" class="zzz-page active">
+                    <div class="home-header">
+                        <div class="home-title">NEW ERIDU</div>
+                        <div class="home-subtitle">INTER-KNOT OS v4.0</div>
+                    </div>
+                    <div class="zzz-grid">
+                        <div class="zzz-app-btn style-stat" data-target="zzz-page-profile">
+                            <div class="app-icon-box">ID</div><div class="app-name">Inter-Knot</div>
+                        </div>
+                        <div class="zzz-app-btn style-contact" data-target="zzz-page-present">
+                            <div class="app-icon-box">📍</div><div class="app-name">Radar</div>
+                        </div>
+                        <div class="zzz-app-btn style-squad" data-target="zzz-page-squad">
+                            <div class="app-icon-box">★</div><div class="app-name">Partners</div>
+                        </div>
+                        <div class="zzz-app-btn style-hdd" data-target="zzz-page-hdd">
+                            <div class="app-icon-box">HDD</div><div class="app-name">System</div>
+                        </div>
+                        <div class="zzz-app-btn style-inv" data-target="zzz-page-inventory">
+                            <div class="app-icon-box">Box</div><div class="app-name">Storage</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="zzz-page-profile" class="zzz-page">
+                    <div class="page-header" style="border-color:#ccff00">
+                        <div class="zzz-back-btn">&lt;</div><div class="page-title">CITIZEN ID</div>
+                    </div>
+                    <div class="zzz-list-item highlight"><span>姓名</span><span id="val-name" style="color:#fff; font-weight:bold">--</span></div>
+                    <div class="zzz-list-item"><span>注册身份</span><span id="val-role">--</span></div>
+                    <div class="zzz-list-item"><span>生理体征</span><span id="val-status">--</span></div>
+                </div>
+
+                <div id="zzz-page-present" class="zzz-page">
+                    <div class="page-header" style="border-color:#ff0055">
+                        <div class="zzz-back-btn" style="color:#ff0055">&lt;</div><div class="page-title">NEARBY</div>
+                    </div>
+                    <div id="list-present"></div>
+                </div>
+
+                <div id="zzz-page-squad" class="zzz-page">
+                    <div class="page-header" style="border-color:#fff">
+                        <div class="zzz-back-btn" style="color:#fff">&lt;</div><div class="page-title">PARTNERS</div>
+                    </div>
+                    <div id="list-squad"></div>
+                </div>
+
+                <div id="zzz-page-hdd" class="zzz-page">
+                    <div class="page-header" style="border-color:#00ccff">
+                        <div class="zzz-back-btn" style="color:#00ccff">&lt;</div><div class="page-title">HDD SYSTEM</div>
+                    </div>
+                    <div style="background:#000; border:1px solid #333; padding:15px; margin-bottom:15px;">
+                        <div style="color:#00ccff; font-size:10px; margin-bottom:5px;">ACTIVE_EVENT // CURRENT</div>
+                        <div id="val-main-prog" style="font-size:16px; font-weight:bold; color:#fff;">--</div>
+                    </div>
+                    <div style="background:#ccff00; color:#000; padding:15px; width:100%;">
+                        <div style="font-size:10px; font-weight:bold; opacity:0.7">ACTIVE OBJECTIVE</div>
+                        <div id="val-cur-task" style="font-size:14px; font-weight:bold; margin-top:5px;">--</div>
+                    </div>
+                </div>
+
+                <div id="zzz-page-inventory" class="zzz-page">
+                    <div class="page-header" style="border-color:#FFA500">
+                        <div class="zzz-back-btn" style="color:#FFA500">&lt;</div><div class="page-title">STORAGE</div>
+                    </div>
+                    <div class="denny-display" id="val-denny">₯ --</div>
+                    <div id="list-inventory"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
