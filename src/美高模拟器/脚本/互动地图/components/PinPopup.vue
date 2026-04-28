@@ -10,7 +10,7 @@ const emit = defineEmits<{
 
 const store = useMapStore();
 
-/** 当前显示的楼层索引，-1 表示不在楼层视图 */
+/** 当前显示的分区索引（可以是楼层、也可以是无高度区分的并列区域），-1 表示未进入分区详情 */
 const selectedFloor = ref(-1);
 
 function goToPin() {
@@ -51,9 +51,9 @@ function enterSubMap() {
         <template v-if="selectedFloor < 0">
           <p class="imap-popup-desc">{{ pin.desc || '暂无描述' }}</p>
 
-          <!-- 楼层列表 (building 类型) -->
+          <!-- 内部分区列表 (building 类型) -->
           <div v-if="pin.type === 'building' && pin.floors?.length" class="imap-floors">
-            <h4>内部楼层</h4>
+            <h4>内部分区</h4>
             <div v-for="(floor, i) in pin.floors" :key="i" class="imap-floor-item" @click="selectedFloor = i">
               <span class="imap-floor-name">{{ floor.name }}</span>
               <span class="imap-floor-arrow">›</span>
@@ -61,7 +61,7 @@ function enterSubMap() {
           </div>
         </template>
 
-        <!-- 楼层详情 -->
+        <!-- 分区详情 -->
         <template v-else>
           <p class="imap-popup-desc">{{ pin.floors![selectedFloor].desc || '暂无描述' }}</p>
         </template>
@@ -73,7 +73,7 @@ function enterSubMap() {
           <button class="imap-btn imap-btn-primary" @click="enterSubMap">🌀 进入该区域</button>
         </template>
         <template v-else-if="selectedFloor >= 0">
-          <button class="imap-btn imap-btn-primary" @click="goToFloor(selectedFloor)">🚀 前往此楼层</button>
+          <button class="imap-btn imap-btn-primary" @click="goToFloor(selectedFloor)">🚀 前往此分区</button>
         </template>
         <template v-else>
           <button class="imap-btn imap-btn-primary" @click="goToPin">🚀 前往此处</button>

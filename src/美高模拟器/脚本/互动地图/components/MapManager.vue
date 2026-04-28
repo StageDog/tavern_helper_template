@@ -9,24 +9,40 @@ const isLoading = ref(false);
 const errorMsg = ref('');
 const showGuide = ref(false);
 
-/** 从 URL 导入（支持普通 JSON URL 或 GitHub 仓库路径） */
+/** 从 URL 导入
+ * 支持：
+ *   1) 完整 URL —— 直接 fetch
+ *   2) 仓库文件路径 user/repo/.../name.json —— 走 jsDelivr
+ *   3) 仓库文件夹路径 user/repo/... —— 调 GitHub API 找到目录下唯一的 .json
+ */
 async function importFromUrl() {
   if (!urlInput.value.trim()) return;
   isLoading.value = true;
   errorMsg.value = '';
 
   try {
-    let fetchUrl = urlInput.value.trim();
+    const raw = urlInput.value.trim();
+    let jsonUrl = '';
 
-    // 如果看起来像 GitHub 仓库路径 (e.g. kayanorin/SillyTavernimg/美高模拟器/地图)
-    if (!fetchUrl.startsWith('http') && fetchUrl.includes('/')) {
-      fetchUrl = `https://testingcf.jsdelivr.net/gh/${fetchUrl}/mappack.json`;
+    if (/^https?:\/\//i.test(raw)) {
+      // 完整 URL —— 直接使用（图床、第三方 CDN、自建等）
+      jsonUrl = raw;
+    } else if (raw.includes('/')) {
+      if (/\.json(\?|$)/i.test(raw)) {
+        // 用户明确写了 .json 文件名 —— 直接套 jsDelivr
+        jsonUrl = `https://testingcf.jsdelivr.net/gh/${raw}`;
+      } else {
+        // 把 user/repo/path 当成文件夹 —— 用 GitHub API 找唯一的 JSON
+        jsonUrl = await discoverJsonInRepoFolder(raw);
+      }
+    } else {
+      throw new Error('请输入完整 URL 或 GitHub 仓库路径（用户/仓库/路径）');
     }
 
-    const resp = await fetch(fetchUrl);
+    const resp = await fetch(jsonUrl);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
     const data = await resp.json();
-    store.installPack(data, fetchUrl);
+    store.installPack(data, jsonUrl);
     importMode.value = 'none';
     urlInput.value = '';
   } catch (e: any) {
@@ -34,6 +50,42 @@ async function importFromUrl() {
   } finally {
     isLoading.value = false;
   }
+}
+
+/** 调用 GitHub API 列目录，找到其中唯一的 .json 文件 */
+async function discoverJsonInRepoFolder(repoPath: string): Promise<string> {
+  const parts = repoPath.split('/').filter(Boolean);
+  if (parts.length < 2) {
+    throw new Error('GitHub 路径至少需要 用户/仓库');
+  }
+  const [owner, repo, ...pathParts] = parts;
+  const subPath = pathParts.join('/');
+  const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${subPath}`;
+
+  const resp = await fetch(apiUrl);
+  if (!resp.ok) {
+    if (resp.status === 403) {
+      throw new Error('GitHub API 频率限制（每小时 60 次），请稍后重试，或直接填写完整 .json URL');
+    }
+    if (resp.status === 404) {
+      throw new Error('路径不存在，请检查 用户/仓库/路径 是否正确');
+    }
+    throw new Error(`无法列出目录 (HTTP ${resp.status})`);
+  }
+
+  const items = await resp.json();
+  if (!Array.isArray(items)) {
+    throw new Error('该路径指向的是文件而不是文件夹，请直接在末尾加上 .json 文件名');
+  }
+  const jsonFiles = items.filter((f: any) => f.type === 'file' && /\.json$/i.test(f.name));
+  if (jsonFiles.length === 0) {
+    throw new Error('文件夹里没有找到 .json 文件');
+  }
+  if (jsonFiles.length > 1) {
+    const names = jsonFiles.map((f: any) => f.name).join('、');
+    throw new Error(`文件夹里有多个 .json 文件（${names}），请把完整路径写到具体文件名`);
+  }
+  return `https://testingcf.jsdelivr.net/gh/${repoPath}/${jsonFiles[0].name}`;
 }
 
 /** 从文件导入 */
@@ -71,15 +123,21 @@ function onFileUpload(e: Event) {
       <h4>📘 两种导入方式怎么选？</h4>
       <ul class="imap-guide-list">
         <li>
-          <strong>🔗 URL 导入</strong>：从远程链接（如 jsDelivr CDN）拉取地图包 JSON。
+          <strong>🔗 URL 导入</strong>：从远程链接拉取地图包 JSON。
           <br />
           <span class="imap-guide-note">适合跟作者更新同步 —— 作者改了，你这边刷新就能用最新版本。</span>
           <br />
-          支持三种格式：
+          支持三种输入：
           <ul>
-            <li>完整 JSON URL：<code>https://.../mappack.json</code></li>
-            <li>GitHub 仓库路径（自动走 CDN）：<code>用户/仓库/路径</code></li>
-            <li>jsDelivr 等 CDN 链接</li>
+            <li><strong>GitHub 仓库文件夹</strong>：<code>用户/仓库/路径</code>
+              <br /><span class="imap-guide-note">脚本会自动查找文件夹里的 .json 文件（仅当文件夹内有且只有一个 JSON 时生效）</span>
+            </li>
+            <li><strong>GitHub 仓库文件</strong>：<code>用户/仓库/路径/文件名.json</code>
+              <br /><span class="imap-guide-note">精确指定某个 JSON，文件夹里可以有多个 JSON</span>
+            </li>
+            <li><strong>完整 URL</strong>：<code>https://.../任意名.json</code>
+              <br /><span class="imap-guide-note">图床、CDN、自建服务器等都行</span>
+            </li>
           </ul>
         </li>
         <li>
@@ -88,11 +146,22 @@ function onFileUpload(e: Event) {
           <span class="imap-guide-note">适合自己做的私人地图、离线使用，或者想改了就自己存的场景。</span>
         </li>
       </ul>
+
+      <h4>📂 仓库文件夹结构建议</h4>
+      <p class="imap-guide-para">
+        打算让别人用"文件夹路径"自动发现的话，<strong>文件夹里只放地图背景图片 + 一个 .json 地图包文件</strong>，
+        不要放其它 .json（README、配置等），否则自动发现无法确定用哪一个。
+      </p>
+      <p class="imap-guide-para">
+        图片引用方式二选一：JSON 里给 <code>image</code> 填完整外链（图床 URL），或者填裸文件名并让脚本用 JSON 所在文件夹作为 <code>baseUrl</code>。
+      </p>
+
       <h4>🧩 地图包 JSON 结构</h4>
       <p class="imap-guide-para">
-        每个地图包必须包含：<code>name</code>、<code>baseUrl</code>（图片基础 URL）、<code>defaultMapId</code>（默认地图 ID）、<code>maps</code>（地图层级字典）。
-        具体字段参考内置地图包 <code>defaultPack.ts</code>。
+        必需字段：<code>name</code>、<code>defaultMapId</code>（默认地图 ID）、<code>maps</code>（地图层级字典）。
+        可选：<code>baseUrl</code>（留空则自动用 JSON 所在文件夹）、<code>version</code>、<code>author</code>。
       </p>
+
       <p class="imap-guide-tip">
         💡 提示：如果 URL 导入报错但链接看起来没问题，可能是 jsDelivr 缓存了旧版本，
         在链接后面加个 <code>?v=时间戳</code>（任意值）强制刷新即可。
@@ -132,7 +201,7 @@ v-if="store.installedPacks.length > 1" class="imap-btn imap-btn-sm imap-btn-dang
       <!-- URL 导入 -->
       <div v-if="importMode === 'url'" class="imap-import-form">
         <p class="imap-import-hint">
-          支持：JSON URL、GitHub 仓库路径（如 <code>user/repo/path</code>）
+          支持：完整 URL、仓库文件夹 <code>用户/仓库/路径</code>（自动找唯一 JSON）、仓库文件 <code>用户/仓库/路径/name.json</code>
         </p>
         <div class="imap-import-row">
           <input

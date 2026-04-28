@@ -72,6 +72,7 @@ export const StoreStateSchema = z
     custom_css: z.string().default(''),
     css_presets: z.array(CSSPresetSchema).default([]),
     active_preset_index: z.number().default(-1),
+    should_send_directly: z.boolean().default(false),
   })
   .prefault({});
 

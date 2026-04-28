@@ -46,12 +46,15 @@ $(() => {
       // 初始化 store
       const store = useMapStore();
       store.init();
-      await store.loadWorldbookSettings();
-      await store.disableTextMapRule();
 
-      // 监听世界书更新以同步设置
-      eventOn(tavern_events.WORLDINFO_UPDATED, async () => {
-        await store.loadWorldbookSettings();
+      // ── 自定义 CSS 注入 ────────────────────────────
+      // 必须把 <style> 注入到 iframe 的 document.head 中，
+      // 注入到主窗口 head 是无效的（作用不到 iframe 里的 DOM）
+      const styleEl = doc.createElement('style');
+      styleEl.id = 'imap-custom-style';
+      doc.head.appendChild(styleEl);
+      watchEffect(() => {
+        styleEl.textContent = store.customCSS || '';
       });
     });
 

@@ -4,8 +4,6 @@
 import { defaultMapPack } from './defaultPack';
 import { type CSSPreset, type InstalledPack, type MapLayer, type Pin, MapPackSchema, StoreStateSchema } from './types';
 
-const LOREBOOK_NAME = '美高模拟器';
-
 /** 示例 CSS —— 首次打开样式设置时展示 */
 export const SAMPLE_CSS = `/* ─── 互动地图自定义样式（示例）──────────────────
  * 这里的 CSS 只作用于地图面板 iframe，不会影响酒馆主界面
@@ -48,8 +46,8 @@ export const useMapStore = defineStore('interactiveMap', () => {
   const mapHistory = ref<string[]>([]);
   const panelVisible = ref(false);
 
-  // 出行设置（来自世界书条目）
-  const shouldSendDirectly = ref(true);
+  // 出行设置：开启则直接 /send；关闭则写入输入框由用户确认
+  const shouldSendDirectly = ref(false);
 
   // 自定义样式
   const customCSS = ref('');
@@ -119,6 +117,7 @@ export const useMapStore = defineStore('interactiveMap', () => {
     customCSS.value = parsed.custom_css;
     cssPresets.value = parsed.css_presets;
     activePresetIndex.value = parsed.active_preset_index;
+    shouldSendDirectly.value = parsed.should_send_directly;
   }
 
   /** 持久化到脚本变量 */
@@ -132,6 +131,7 @@ export const useMapStore = defineStore('interactiveMap', () => {
         custom_css: customCSS.value,
         css_presets: cssPresets.value,
         active_preset_index: activePresetIndex.value,
+        should_send_directly: shouldSendDirectly.value,
       }),
       { type: 'script' },
     );
@@ -173,6 +173,11 @@ export const useMapStore = defineStore('interactiveMap', () => {
       throw new Error(`地图包格式无效:\n${errMsg}`);
     }
     const pack = result.data;
+    // 若 JSON 没填 baseUrl，而又是从远程 URL 导入的，自动用 URL 所在目录作为 baseUrl
+    // 让作者把 json+图片 一起丢进同一个文件夹上传就能开箱即用
+    if (!pack.baseUrl && /^https?:\/\//i.test(sourceUrl)) {
+      pack.baseUrl = sourceUrl.replace(/\/[^/]*(?:\?.*)?$/, '/');
+    }
     installedPacks.value.push({
       name: pack.name,
       version: pack.version,
@@ -209,35 +214,15 @@ export const useMapStore = defineStore('interactiveMap', () => {
     panelVisible.value = !panelVisible.value;
   }
 
-  // ── 世界书联动 ──────────────────────────────────────
+  // ── 出行指令 ────────────────────────────────────────
 
-  /** 读取世界书设置条目 */
-  async function loadWorldbookSettings() {
-    try {
-      const entries = await getWorldbook(LOREBOOK_NAME);
-      // 读取「设置-开启则直接发送」
-      const sendEntry = entries.find(e => e.name === '设置-开启则直接发送，关闭则填在输入框');
-      if (sendEntry) {
-        shouldSendDirectly.value = sendEntry.enabled;
-      }
-    } catch (e) {
-      console.warn('[互动地图] 读取世界书设置失败', e);
-    }
+  /** 切换"是否直接发送"模式并持久化 */
+  function setShouldSendDirectly(value: boolean) {
+    shouldSendDirectly.value = value;
+    persist();
   }
 
-  /** 关闭世界书中的「生成地图规则」条目 */
-  async function disableTextMapRule() {
-    try {
-      await updateWorldbookWith(LOREBOOK_NAME, entries =>
-        entries.map(e => (e.name === '生成地图规则' ? { ...e, enabled: false } : e)),
-      );
-      console.info('[互动地图] 已自动关闭「生成地图规则」世界书条目');
-    } catch (e) {
-      console.warn('[互动地图] 关闭「生成地图规则」失败', e);
-    }
-  }
-
-  /** 生成出行指令 */
+  /** 生成出行指令：开启则直接发送 + 触发生成，关闭则填入输入框 */
   function sendTravelCommand(command: string) {
     if (shouldSendDirectly.value) {
       triggerSlash(`/send ${command} || /trigger`);
@@ -332,8 +317,7 @@ export const useMapStore = defineStore('interactiveMap', () => {
     switchPack,
     removePack,
     togglePanel,
-    loadWorldbookSettings,
-    disableTextMapRule,
+    setShouldSendDirectly,
     sendTravelCommand,
     setCustomCSS,
     savePreset,

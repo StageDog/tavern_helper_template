@@ -47,7 +47,7 @@ class="imap-breadcrumb" :class="{ active: i === store.breadcrumbs.length - 1 }"
       <div class="imap-header-right">
         <button
 v-if="currentView === 'map'" class="imap-btn imap-btn-ghost"
-          title="样式设置" @click="currentView = 'styles'">🎨</button>
+          title="设置" @click="currentView = 'styles'">⚙️</button>
         <button
 v-if="currentView === 'map'" class="imap-btn imap-btn-ghost"
           title="管理地图包" @click="currentView = 'manager'">📦</button>

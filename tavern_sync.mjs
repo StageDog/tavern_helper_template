@@ -66061,18 +66061,7 @@ function extract_file_content(path) {
 
 
 function glob_file(base, file) {
-    const resolved = __WEBPACK_EXTERNAL_MODULE_node_path_02319fef_resolve__(base, file);
-    if (__WEBPACK_EXTERNAL_MODULE_node_fs_75ed2103_existsSync__(resolved)) {
-        return [resolved];
-    }
-    const resolved_basename = __WEBPACK_EXTERNAL_MODULE_path_basename__(resolved);
-    return __WEBPACK_EXTERNAL_MODULE_node_fs_75ed2103_globSync__(resolved.replaceAll(/[\[\]\{\}]/g, '[$&]') + '.*').filter(path => {
-        const basename = __WEBPACK_EXTERNAL_MODULE_path_basename__(path);
-        if (!basename.startsWith(resolved_basename + '.')) {
-            return false;
-        }
-        return !basename.slice(resolved_basename.length + 1).includes('.');
-    });
+    return __WEBPACK_EXTERNAL_MODULE_node_fs_75ed2103_globSync__(__WEBPACK_EXTERNAL_MODULE_node_path_02319fef_resolve__(base, file).replaceAll(/[\[\]\{\}]/g, '[$&]') + '{.*,}');
 }
 
 ;// ./src/server/util/sanitize_filename.ts
@@ -68871,3 +68860,4 @@ program
     .showHelpAfterError(true)
     .showSuggestionAfterError(true)
     .parse();
+

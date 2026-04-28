@@ -81,6 +81,11 @@ function removePreset(i: number) {
   store.removePreset(i);
 }
 
+/** 切换"是否直接发送"出行指令 */
+function toggleSendMode() {
+  store.setShouldSendDirectly(!store.shouldSendDirectly);
+}
+
 // 切换视图时若 store.customCSS 变化（例如其它组件改动），同步到 draft
 watch(
   () => store.customCSS,
@@ -94,10 +99,30 @@ const isDirty = computed(() => draftCSS.value !== store.customCSS);
 
 <template>
   <div class="imap-style-settings">
-    <h3 class="imap-ss-title">🎨 样式设置</h3>
+    <h3 class="imap-ss-title">⚙️ 脚本设置</h3>
     <p class="imap-ss-hint">
-      自定义 CSS 会注入到地图面板的 iframe 中，只作用于地图界面。可保存多个预设快速切换。
+      出行指令发送方式、自定义 CSS 均在此调整。CSS 只作用于地图面板，不影响酒馆主界面。
     </p>
+
+    <!-- 出行指令 -->
+    <div class="imap-ss-section imap-ss-section-first">
+      <div class="imap-ss-section-title">
+        <span>🚀 出行指令</span>
+      </div>
+      <div class="imap-ss-toggle-card" @click="toggleSendMode">
+        <div class="imap-ss-toggle-info">
+          <div class="imap-ss-toggle-name">直接发送模式</div>
+          <div class="imap-ss-toggle-hint">
+            {{ store.shouldSendDirectly
+              ? '✅ 开启中 —— 选定目的地后立即 /send 并触发生成'
+              : '📝 已关闭 —— 出行指令会填入输入框，由你手动检查后发送' }}
+          </div>
+        </div>
+        <div class="imap-ss-switch" :class="{ on: store.shouldSendDirectly }">
+          <div class="imap-ss-switch-dot"></div>
+        </div>
+      </div>
+    </div>
 
     <!-- 预设列表 -->
     <div class="imap-ss-section">
@@ -422,6 +447,75 @@ v-model="saveName" class="imap-ss-input" placeholder="预设名称"
   &:hover:not(:disabled) {
     background: rgba(229, 115, 115, 0.1) !important;
     color: #ff8a8a;
+  }
+}
+
+// ── 出行指令 toggle 卡片 ─────────────────────────────
+.imap-ss-toggle-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(179, 139, 89, 0.25);
+  }
+}
+
+.imap-ss-toggle-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.imap-ss-toggle-name {
+  font-size: 13px;
+  color: #fff;
+  font-weight: 500;
+}
+
+.imap-ss-toggle-hint {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.45;
+}
+
+.imap-ss-switch {
+  flex-shrink: 0;
+  width: 38px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 11px;
+  position: relative;
+  transition: background 0.2s;
+
+  &.on {
+    background: linear-gradient(135deg, #b38b59, #9a7548);
+  }
+}
+
+.imap-ss-switch-dot {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+
+  .imap-ss-switch.on & {
+    transform: translateX(16px);
   }
 }
 </style>
