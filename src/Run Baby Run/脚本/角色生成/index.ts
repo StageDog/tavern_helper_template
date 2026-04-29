@@ -247,16 +247,17 @@ function openCharCreator(): void {
   });
 }
 
-// ── 初始化：监听自定义事件 ────────────────────────────────────
+// ── 初始化：监听酒馆助手 QR 按钮 ────────────────────────────
 $(() => {
   errorCatched(async () => {
-    // 监听来自 QR 按钮的事件
-    window.addEventListener('rbr-open-char-creator', () => {
+    // 监听酒馆助手脚本按钮点击
+    const btnEvent = getButtonEvent('👤 创建角色');
+    eventOn(btnEvent, () => {
       openCharCreator();
     });
 
-    // 也监听父页面的事件（兼容不同触发方式）
-    window.parent.addEventListener('rbr-open-char-creator', () => {
+    // 也兼容自定义 DOM 事件触发（保留备用）
+    window.addEventListener('rbr-open-char-creator', () => {
       openCharCreator();
     });
 

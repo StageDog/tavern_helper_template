@@ -226,12 +226,24 @@ function buildDoneHtml(): string {
 
 // ── 可编辑列表渲染 ────────────────────────────────────────────
 function renderAreaItem(a: AreaDef, idx: number): string {
+  const dangerOpts = [0,1,2,3,4,5].map(d =>
+    `<option value="${d}"${a.danger === d ? ' selected' : ''}>${d} ${'☠'.repeat(d) || '—'}</option>`
+  ).join('');
   return `<div class="rbr-editable-item" data-area-idx="${idx}">
     <div class="rbr-item-header">
       <input class="rbr-item-name" type="text" value="${a.name}" placeholder="区域名">
       <button class="rbr-item-remove" title="删除">✕</button>
     </div>
     <textarea class="rbr-item-desc" rows="2" placeholder="区域描述">${a.desc}</textarea>
+    <div class="rbr-area-meta-row">
+      <label class="rbr-area-meta-label">
+        <input class="rbr-item-passable" type="checkbox"${a.passable ? ' checked' : ''}>
+        可通行
+      </label>
+      <label class="rbr-area-meta-label">危险等级
+        <select class="rbr-item-danger">${dangerOpts}</select>
+      </label>
+    </div>
   </div>`;
 }
 
@@ -274,8 +286,8 @@ function readAreasList(container: HTMLElement): AreaDef[] {
   return Array.from(container.querySelectorAll<HTMLElement>('.rbr-editable-item')).map(item => ({
     name: (item.querySelector<HTMLInputElement>('.rbr-item-name')?.value || '').trim(),
     desc: (item.querySelector<HTMLTextAreaElement>('.rbr-item-desc')?.value || '').trim(),
-    passable: true,
-    danger: 0,
+    passable: item.querySelector<HTMLInputElement>('.rbr-item-passable')?.checked ?? true,
+    danger: Number(item.querySelector<HTMLSelectElement>('.rbr-item-danger')?.value ?? 0),
     explored: false,
   })).filter(a => a.name);
 }

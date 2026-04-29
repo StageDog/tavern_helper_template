@@ -191,6 +191,45 @@ export const STYLE = `<style>
 }
 .rbr-item-remove:hover { color: var(--rbr-crimson); }
 
+/* ── 区域元数据行（可通行 + 危险等级） ── */
+.rbr-area-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.rbr-area-meta-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8em;
+  color: var(--rbr-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.rbr-area-meta-label input[type="checkbox"] {
+  accent-color: var(--rbr-crimson);
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.rbr-item-danger {
+  background: var(--rbr-dark);
+  color: var(--rbr-text);
+  border: 1px solid var(--rbr-border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 0.8em;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+}
+.rbr-item-danger:focus { border-color: var(--rbr-crimson); }
+
 .rbr-area-tags {
   display: flex;
   gap: 6px;
