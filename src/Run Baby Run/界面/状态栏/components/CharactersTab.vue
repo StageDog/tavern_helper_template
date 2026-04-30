@@ -15,11 +15,12 @@
 </template>
 
 <script setup lang="ts">
+import { storeToRefs } from 'pinia';
 import { useDataStore } from '../store';
 import CharacterCard from './CharacterCard.vue';
 
 const store = useDataStore();
-const data = store.data;
+const { data } = storeToRefs(store);
 
 function onRemoveItem(charName: string, itemName: string) {
   delete data.value.角色[charName].持有物品[itemName];

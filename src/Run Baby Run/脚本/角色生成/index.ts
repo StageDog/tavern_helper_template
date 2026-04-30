@@ -10,6 +10,7 @@ import {
   randomName,
   randomAppearance,
   randomMaleDress,
+  randomFemaleDress,
   PERSONALITIES,
   PERSONALITY_TAGS,
   WEAKNESSES,
@@ -26,6 +27,7 @@ function $pid(id: string): HTMLElement | null {
 interface CharData {
   name: string;
   gender: '女' | '男';
+  source: string;
   appearance: string;
   personality: string;
   personalityTag: string;
@@ -39,12 +41,19 @@ function randomCharData(existing?: Partial<CharData>, lockedFields: Set<string> 
   return {
     name: lockedFields.has('name') && existing?.name ? existing.name : randomName(gender),
     gender,
+    source: '原创',
     appearance: lockedFields.has('appearance') && existing?.appearance ? existing.appearance : randomAppearance(gender),
     personality: lockedFields.has('personality') && existing?.personality ? existing.personality : pick(PERSONALITIES),
-    personalityTag: lockedFields.has('personalityTag') && existing?.personalityTag ? existing.personalityTag : pick(PERSONALITY_TAGS),
+    personalityTag:
+      lockedFields.has('personalityTag') && existing?.personalityTag ? existing.personalityTag : pick(PERSONALITY_TAGS),
     weakness: lockedFields.has('weakness') && existing?.weakness ? existing.weakness : pick(WEAKNESSES),
     ability: lockedFields.has('ability') && existing?.ability ? existing.ability : pick(ABILITIES),
-    dress: lockedFields.has('dress') && existing?.dress ? existing.dress : (gender === '男' ? randomMaleDress() : pick(['校服', '休闲便装', '户外装备', '睡衣', '制服'])),
+    dress:
+      lockedFields.has('dress') && existing?.dress
+        ? existing.dress
+        : gender === '男'
+          ? randomMaleDress()
+          : randomFemaleDress(),
   };
 }
 
@@ -83,6 +92,7 @@ function buildModalHtml(d: CharData): string {
             <button class="rbr-icon-btn rbr-lock-btn" data-field="gender" title="锁定">🔓</button>
           </div>
         </div>
+        ${field('来源', 'source', d.source)}
         ${field('外貌', 'appearance', d.appearance, true)}
         ${field('性格核心', 'personality', d.personality)}
         ${field('性格标签', 'personalityTag', d.personalityTag)}
@@ -104,10 +114,11 @@ function buildModalHtml(d: CharData): string {
 function readModalCharData(): CharData {
   const modal = $pid(MODAL_ID)!;
   const get = (field: string) =>
-    (modal.querySelector<HTMLInputElement | HTMLTextAreaElement>(`[data-field="${field}"]`)?.value || '').trim();
+    (modal.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(`[data-field="${field}"]`)?.value || '').trim();
   return {
     name: get('name'),
     gender: (get('gender') as '女' | '男') || '女',
+    source: get('source') || '原创',
     appearance: get('appearance'),
     personality: get('personality'),
     personalityTag: get('personalityTag'),
@@ -121,6 +132,7 @@ function readModalCharData(): CharData {
 function buildCharText(cd: CharData): string {
   return `[新角色加入]\n`
     + `姓名：${cd.name}（${cd.gender}）\n`
+    + `来源：${cd.source || '原创'}\n`
     + `外貌：${cd.appearance}\n`
     + `性格：${cd.personality}，${cd.personalityTag}\n`
     + `弱点：${cd.weakness}\n`
@@ -177,6 +189,7 @@ function openCharCreator(): void {
         case 'weakness': value = pick(WEAKNESSES); break;
         case 'ability': value = pick(ABILITIES); break;
         case 'dress': value = currentGender === '男' ? randomMaleDress() : pick(['校服', '休闲便装', '户外装备', '睡衣', '制服']); break;
+        case 'source': value = '原创'; break;
         default: return;
       }
       const input = modal.querySelector<HTMLInputElement | HTMLTextAreaElement>(`[data-field="${field}"]`);

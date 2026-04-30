@@ -65,10 +65,11 @@
 </template>
 
 <script setup lang="ts">
+import { storeToRefs } from 'pinia';
 import { useDataStore } from '../store';
 
 const store = useDataStore();
-const data = store.data;
+const { data } = storeToRefs(store);
 
 function toggleAreaAccess(name: string) {
   const area = data.value.场景.区域状态[name];

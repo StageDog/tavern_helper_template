@@ -1,23 +1,22 @@
-:root {
-  /* 构成主义三色体系 */
+﻿:root {
   --rbr-red: #b62f2f;
   --rbr-red-dark: #7f1616;
   --rbr-black: #312c2c;
   --rbr-paper: #f2e8d5;
   --rbr-paper-dark: #e6d5b8;
-
-  /* 字体 */
   --rbr-font: 'Arial Black', 'Helvetica Neue', sans-serif;
-
-  /* 尺寸 */
   --rbr-border: 3px solid var(--rbr-black);
   --rbr-border-red: 3px solid var(--rbr-red);
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 body {
   background: transparent;
-  font-family: var(--rbr-font);
   color: var(--rbr-black);
+  font-family: var(--rbr-font);
 }

@@ -6,13 +6,14 @@
 import { STYLE } from './styles';
 import {
   pick,
-  pickN,
   RANDOM_AREAS,
   RANDOM_ESCAPES,
-  RANDOM_SCENE_PROMPTS,
+  pickScenePrompt,
+  type ScenePrompt,
   randomName,
   randomAppearance,
   randomMaleDress,
+  randomFemaleDress,
   PERSONALITIES,
   PERSONALITY_TAGS,
   WEAKNESSES,
@@ -22,6 +23,25 @@ import {
 // ── 常量 ──────────────────────────────────────────────────────
 const RENDERED_CLASS = 'rbr-stage-rendered';
 const PLACEHOLDER = '【【舞台设置】】';
+type SceneMode = 'disguised' | 'remote' | 'hunter';
+
+interface OpeningSceneConfig {
+  mode: SceneMode;
+  scene: string | null;
+  disguise: string | null;
+}
+
+const SCENE_MODE_LABEL: Record<SceneMode, string> = {
+  disguised: '伪装混入池',
+  remote: '幕后远程池',
+  hunter: '公开追击池',
+};
+
+function normalizeNullableInput(value: string): string | null {
+  const normalized = value.trim();
+  if (!normalized) return null;
+  return normalized.toLowerCase() === 'null' ? null : normalized;
+}
 
 // ── 舞台预设 ──────────────────────────────────────────────────
 interface AreaDef {
@@ -175,10 +195,30 @@ function buildStageConfigHtml(): string {
       <div class="rbr-section">
         <div class="rbr-section-title">◈ 开场白情景（不写入变量，仅影响AI生成）</div>
         <div class="rbr-row">
-          <span class="rbr-label">情景设置</span>
-          <div style="flex:1;position:relative;">
-            <textarea class="rbr-textarea" id="rbr-scene-prompt" placeholder="描述你希望开场白呈现的场景氛围、角色初始状态、user的出场方式等……"></textarea>
-            <button class="rbr-icon-btn" id="rbr-scene-random" style="position:absolute;top:4px;right:4px;" title="随机情景">🎲</button>
+          <span class="rbr-label">随机池</span>
+          <div class="rbr-inline-btns">
+            <button class="rbr-mode-btn active" id="rbr-scene-mode-disguised" data-mode="disguised">伪装混入池</button>
+            <button class="rbr-mode-btn" id="rbr-scene-mode-remote" data-mode="remote">幕后远程池</button>
+            <button class="rbr-mode-btn" id="rbr-scene-mode-hunter" data-mode="hunter">公开追击池</button>
+            <button class="rbr-btn-sm" id="rbr-scene-random" title="从当前池随机">🎲 抽取</button>
+          </div>
+        </div>
+        <div class="rbr-row rbr-row-top">
+          <span class="rbr-label">场景设定</span>
+          <div class="rbr-row-grow">
+            <textarea class="rbr-textarea" id="rbr-scene-custom" placeholder="可手动填写；点“抽取”会自动填入当前池随机结果"></textarea>
+            <div class="rbr-field-actions">
+              <button class="rbr-btn-sm rbr-btn-null" id="rbr-scene-null" title="将场景关联为 null">关联 null</button>
+            </div>
+          </div>
+        </div>
+        <div class="rbr-row rbr-row-top">
+          <span class="rbr-label">伪装身份</span>
+          <div class="rbr-row-grow">
+            <textarea class="rbr-textarea" id="rbr-disguise-custom" placeholder="可手动填写；非伪装池通常为 null"></textarea>
+            <div class="rbr-field-actions">
+              <button class="rbr-btn-sm rbr-btn-null" id="rbr-disguise-null" title="将身份关联为 null">关联 null</button>
+            </div>
           </div>
         </div>
         <div class="rbr-row">
@@ -303,6 +343,7 @@ function readEscapesList(container: HTMLElement): EscapeDef[] {
 interface CharData {
   name: string;
   gender: '女' | '男';
+  source: string;
   appearance: string;
   personality: string;
   personalityTag: string;
@@ -317,12 +358,14 @@ function randomCharData(existing?: Partial<CharData>, lockedFields: Set<string> 
   return {
     name: lockedFields.has('name') && existing?.name ? existing.name : randomName(gender),
     gender,
+    // 随机生成功能下，来源始终强制为原创
+    source: '原创',
     appearance: lockedFields.has('appearance') && existing?.appearance ? existing.appearance : randomAppearance(gender),
     personality: lockedFields.has('personality') && existing?.personality ? existing.personality : pick(PERSONALITIES),
     personalityTag: lockedFields.has('personalityTag') && existing?.personalityTag ? existing.personalityTag : pick(PERSONALITY_TAGS),
     weakness: lockedFields.has('weakness') && existing?.weakness ? existing.weakness : pick(WEAKNESSES),
     ability: lockedFields.has('ability') && existing?.ability ? existing.ability : pick(ABILITIES),
-    dress: lockedFields.has('dress') && existing?.dress ? existing.dress : (gender === '男' ? randomMaleDress() : pick(['校服', '休闲便装', '户外装备', '睡衣', '制服'])),
+    dress: lockedFields.has('dress') && existing?.dress ? existing.dress : (gender === '男' ? randomMaleDress() : randomFemaleDress()),
   };
 }
 
@@ -356,6 +399,7 @@ function createCharCard(index: number, data?: CharData): string {
         <button class="rbr-icon-btn rbr-lock-btn" data-field="gender" title="锁定">🔓</button>
       </div>
     </div>
+    ${field('来源', 'source', d.source)}
     ${field('外貌', 'appearance', d.appearance, true)}
     ${field('性格核心', 'personality', d.personality)}
     ${field('性格标签', 'personalityTag', d.personalityTag)}
@@ -369,10 +413,11 @@ function createCharCard(index: number, data?: CharData): string {
 
 function getCharData(cardEl: HTMLElement): CharData {
   const get = (field: string) =>
-    (cardEl.querySelector<HTMLInputElement | HTMLTextAreaElement>(`[data-field="${field}"]`)?.value || '').trim();
+    (cardEl.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(`[data-field="${field}"]`)?.value || '').trim();
   return {
     name: get('name'),
     gender: (get('gender') as '女' | '男') || '女',
+    source: get('source') || '原创',
     appearance: get('appearance'),
     personality: get('personality'),
     personalityTag: get('personalityTag'),
@@ -440,6 +485,7 @@ function bindCharCardEvents(cardEl: HTMLElement, onUpdate: () => void): void {
         case 'weakness': value = pick(WEAKNESSES); break;
         case 'ability': value = pick(ABILITIES); break;
         case 'dress': value = currentGender === '男' ? randomMaleDress() : pick(['校服', '休闲便装', '户外装备', '睡衣', '制服']); break;
+        case 'source': value = '原创'; break;
         default: return;
       }
       const input = cardEl.querySelector<HTMLInputElement | HTMLTextAreaElement>(`[data-field="${field}"]`);
@@ -457,10 +503,32 @@ function bindCharCardEvents(cardEl: HTMLElement, onUpdate: () => void): void {
   });
 }
 
+// ── 开场白情景配置 ────────────────────────────────────────────
+function collectOpeningSceneConfig(): OpeningSceneConfig {
+  const activeModeBtn = parentDoc.querySelector<HTMLButtonElement>('.rbr-mode-btn.active');
+  const mode = (activeModeBtn?.dataset.mode as SceneMode | undefined) ?? 'disguised';
+  const sceneRaw = ($pid('rbr-scene-custom') as HTMLTextAreaElement | null)?.value ?? '';
+  const disguiseRaw = ($pid('rbr-disguise-custom') as HTMLTextAreaElement | null)?.value ?? '';
+
+  return {
+    mode,
+    scene: normalizeNullableInput(sceneRaw),
+    disguise: normalizeNullableInput(disguiseRaw),
+  };
+}
+
+function applyScenePromptToInputs(scenePrompt: ScenePrompt): void {
+  const sceneInput = $pid('rbr-scene-custom') as HTMLTextAreaElement | null;
+  const disguiseInput = $pid('rbr-disguise-custom') as HTMLTextAreaElement | null;
+  if (sceneInput) sceneInput.value = scenePrompt.scene;
+  if (disguiseInput) disguiseInput.value = scenePrompt.disguise ?? 'null';
+}
+
 // ── 收集表单数据 ──────────────────────────────────────────────
 function collectFormData(areasContainer: HTMLElement, escapesContainer: HTMLElement) {
   const time = ($pid('rbr-time') as HTMLInputElement)?.value || '深夜 11:30';
   const weather = ($pid('rbr-weather') as HTMLInputElement)?.value || '未设定';
+  const openingScene = collectOpeningSceneConfig();
 
   const finalAreas = readAreasList(areasContainer);
   const finalEscapes = readEscapesList(escapesContainer);
@@ -490,7 +558,7 @@ function collectFormData(areasContainer: HTMLElement, escapesContainer: HTMLElem
         _性格核心: cd.personality,
         _性格标签: cd.personalityTag,
         _弱点: cd.weakness,
-        _来源: '原创',
+        _来源: cd.source || '原创',
         _特殊能力: cd.ability,
         状态: '存活',
         当前位置: firstAreaName,
@@ -518,7 +586,7 @@ function collectFormData(areasContainer: HTMLElement, escapesContainer: HTMLElem
     角色: characters,
     追击者: {
       当前位置: firstAreaName,
-      伪装身份: null,
+      伪装身份: openingScene.disguise,
       暴露程度: 0,
       威胁手段: {},
       已造成的效果: '尚未行动',
@@ -538,7 +606,7 @@ function collectFormData(areasContainer: HTMLElement, escapesContainer: HTMLElem
 
   return {
     stageData,
-    scenePrompt: ($pid('rbr-scene-prompt') as HTMLTextAreaElement)?.value || '',
+    openingScene,
     wordCount: ($pid('rbr-word-count') as HTMLSelectElement)?.value || '1000',
     areas: finalAreas,
     escapes: finalEscapes,
@@ -548,7 +616,7 @@ function collectFormData(areasContainer: HTMLElement, escapesContainer: HTMLElem
 // ── 构建发送给AI的摘要消息 ────────────────────────────────────
 function buildSummaryText(
   stageData: ReturnType<typeof collectFormData>['stageData'],
-  scenePrompt: string,
+  openingScene: OpeningSceneConfig,
   wordCount: string,
 ): string {
   const s = stageData.场景;
@@ -559,13 +627,23 @@ function buildSummaryText(
     .join('、') || '无登场角色';
 
   let text = `[舞台配置完成]\n`;
-  if (scenePrompt) text += `情景：${scenePrompt}\n`;
+  text += `开场白池：${SCENE_MODE_LABEL[openingScene.mode]}\n`;
+  if (openingScene.scene !== null) {
+    text += `情景：${openingScene.scene}\n`;
+  } else {
+    text += `情景：null（由AI按池类型自行扩展）\n`;
+  }
+  if (openingScene.disguise !== null) {
+    text += `user身份：${openingScene.disguise}\n`;
+  } else {
+    text += `user身份：null（无需伪装/不设定）\n`;
+  }
   text += `舞台：时间 ${s.时间} | 天气 ${s.天气与环境}\n`;
   text += `区域：${areaNames}\n`;
   text += `逃生条件：${escapeNames}\n`;
   text += `角色：${charNames}\n`;
   text += `目标字数：约${wordCount}字\n\n`;
-  text += `请根据以上设定开始恐怖剧的开场白。`;
+  text += `请根据以上设定开始恐怖剧开场白。若某项为 null，请按池类型自动补全并保持风格一致。`;
   return text;
 }
 
@@ -658,9 +736,41 @@ function renderOneMessage(message_id: number): void {
       renderEscapesList(currentEscapes, escapesContainer);
     });
 
-    // ── 情景随机按钮 ──
+    // ── 情景池选择与随机抽取 ──
+    let selectedSceneMode: SceneMode = 'disguised';
+
+    const setSceneMode = (mode: SceneMode) => {
+      selectedSceneMode = mode;
+      parentDoc.querySelectorAll<HTMLButtonElement>('.rbr-mode-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
+      });
+    };
+
+    parentDoc.querySelectorAll<HTMLButtonElement>('.rbr-mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const mode = btn.dataset.mode as SceneMode | undefined;
+        if (!mode) return;
+        setSceneMode(mode);
+      });
+    });
+    setSceneMode('disguised');
+
     $pid('rbr-scene-random')?.addEventListener('click', () => {
-      ($pid('rbr-scene-prompt') as HTMLTextAreaElement).value = pick(RANDOM_SCENE_PROMPTS);
+      const randomScene = pickScenePrompt(selectedSceneMode);
+      applyScenePromptToInputs(randomScene);
+      if (randomScene.type !== selectedSceneMode) {
+        setSceneMode(randomScene.type);
+      }
+    });
+
+    $pid('rbr-scene-null')?.addEventListener('click', () => {
+      const sceneInput = $pid('rbr-scene-custom') as HTMLTextAreaElement | null;
+      if (sceneInput) sceneInput.value = 'null';
+    });
+
+    $pid('rbr-disguise-null')?.addEventListener('click', () => {
+      const disguiseInput = $pid('rbr-disguise-custom') as HTMLTextAreaElement | null;
+      if (disguiseInput) disguiseInput.value = 'null';
     });
 
     // ── 角色面板：辅助函数 ──
@@ -722,7 +832,7 @@ function renderOneMessage(message_id: number): void {
       startBtn.textContent = '⏳ 正在配置…';
 
       try {
-        const { stageData, scenePrompt, wordCount } = collectFormData(areasContainer, escapesContainer);
+        const { stageData, openingScene, wordCount } = collectFormData(areasContainer, escapesContainer);
 
         // 写入 MVU 变量
         const mvuData = Mvu.getMvuData({ type: 'message', message_id });
@@ -731,7 +841,7 @@ function renderOneMessage(message_id: number): void {
         console.info('[RBR] MVU 变量已写入:', stageData);
 
         // 发送用户消息触发AI生成开场白
-        const summaryText = buildSummaryText(stageData, scenePrompt, wordCount);
+        const summaryText = buildSummaryText(stageData, openingScene, wordCount);
         await createChatMessages([{ role: 'user', message: summaryText }]);
 
         // 替换UI为完成状态

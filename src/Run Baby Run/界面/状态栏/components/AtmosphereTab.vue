@@ -48,10 +48,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useDataStore } from '../store';
 
 const store = useDataStore();
-const data = store.data;
+const { data } = storeToRefs(store);
 
 const horrorNumClass = computed(() => {
   const lv = data.value.氛围.恐怖等级;

@@ -41,10 +41,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useDataStore } from '../store';
 
 const store = useDataStore();
-const data = store.data;
+const { data } = storeToRefs(store);
 
 const sortedEvents = computed(() =>
   Object.entries(data.value.事件.关键事件)

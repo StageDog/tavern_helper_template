@@ -61,10 +61,11 @@
 </template>
 
 <script setup lang="ts">
+import { storeToRefs } from 'pinia';
 import { useDataStore } from '../store';
 
 const store = useDataStore();
-const data = store.data;
+const { data } = storeToRefs(store);
 
 function getExposureClass(val: number) {
   if (val >= 80) return 'bar-critical';

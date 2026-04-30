@@ -20,10 +20,12 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useDataStore } from '../store';
 
 const store = useDataStore();
-const logs = computed(() => store.data.value.系统日志);
+const { data } = storeToRefs(store);
+const logs = computed(() => data.value.系统日志);
 const expanded = ref(false);
 </script>
 
