@@ -228,4 +228,34 @@ function getExposureClass(val: number) {
   padding: 12px;
   font-style: italic;
 }
+
+@media (max-width: 640px) {
+  .info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .label {
+    min-width: 0;
+  }
+
+  .exposure-row {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .exposure-num {
+    font-size: 18px;
+  }
+
+  .method-header {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .method-name {
+    width: 100%;
+  }
+}
 </style>

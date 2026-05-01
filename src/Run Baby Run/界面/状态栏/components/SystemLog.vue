@@ -100,4 +100,11 @@ const expanded = ref(false);
   color: var(--rbr-paper);
   line-height: 1.3;
 }
+
+@media (max-width: 640px) {
+  .syslog-count {
+    font-size: 9px;
+    letter-spacing: 0.5px;
+  }
+}
 </style>

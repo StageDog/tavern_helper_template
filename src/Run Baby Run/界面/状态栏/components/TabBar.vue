@@ -61,4 +61,29 @@ const tabs = ['场景', '追击者', '角色', '事件', '氛围'];
 .tab-btn:last-child {
   border-right: none;
 }
+
+@media (max-width: 640px) {
+  .tab-bar {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-bottom: 2px solid var(--rbr-black);
+  }
+
+  .tab-btn {
+    width: 100%;
+    border-right: 2px solid var(--rbr-black);
+    border-bottom: 2px solid var(--rbr-black);
+    padding: 7px 4px;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+  }
+
+  .tab-btn:nth-child(3n) {
+    border-right: none;
+  }
+
+  .tab-btn:nth-last-child(-n + 2) {
+    border-bottom: none;
+  }
+}
 </style>

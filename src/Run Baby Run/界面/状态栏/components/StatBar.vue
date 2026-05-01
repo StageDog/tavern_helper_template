@@ -104,4 +104,14 @@ const numClass = computed(() => {
 
 .num-black { color: var(--rbr-black); }
 .num-red { color: var(--rbr-red); }
+
+@media (max-width: 640px) {
+  .stat-label {
+    min-width: 34px;
+  }
+
+  .bar-track {
+    min-width: 0;
+  }
+}
 </style>

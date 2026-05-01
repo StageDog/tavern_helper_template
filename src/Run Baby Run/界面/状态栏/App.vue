@@ -108,4 +108,26 @@ const currentTabComponent = computed(() => tabComponents[activeTab.value]);
 .rbr-content::-webkit-scrollbar-thumb {
   background: var(--rbr-red);
 }
+
+@media (max-width: 640px) {
+  .rbr-header {
+    padding: 7px 8px;
+    gap: 6px;
+  }
+
+  .rbr-title {
+    font-size: 12px;
+    letter-spacing: 2px;
+  }
+
+  .rbr-title-accent {
+    width: 16px;
+    height: 16px;
+  }
+
+  .rbr-content {
+    max-height: 62vh;
+    padding: 6px;
+  }
+}
 </style>

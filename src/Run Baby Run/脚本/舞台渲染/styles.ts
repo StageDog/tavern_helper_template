@@ -610,11 +610,30 @@ export const STYLE = `<style>
   .rbr-row { flex-wrap: wrap; }
   .rbr-label { width: 100%; min-width: 0; margin-bottom: 2px; }
   .rbr-row-grow { width: 100%; flex-wrap: wrap; }
+  .rbr-field-row {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .rbr-field-row .rbr-label {
+    width: 100%;
+    min-width: 0;
+    margin-bottom: 2px;
+  }
+  .rbr-field-row .rbr-input,
+  .rbr-field-row .rbr-textarea,
+  .rbr-field-row .rbr-select {
+    width: 100%;
+    flex: 1 1 100%;
+  }
   .rbr-field-actions { width: 100%; }
+  .rbr-field-row .rbr-field-actions { justify-content: flex-end; }
   .rbr-inline-btns { width: 100%; }
   .rbr-mode-btn { flex: 1 1 auto; }
   .rbr-btn-sm { flex: 1 1 auto; text-align: center; }
   .rbr-char-card { transform: none; }
+  .rbr-char-header { align-items: flex-start; }
+  .rbr-char-header .rbr-char-name-display { white-space: normal; word-break: break-word; line-height: 1.3; }
   .rbr-char-header .rbr-char-name-display { transform: none; }
   .rbr-char-header .rbr-char-toggle { transform: none; }
   .rbr-char-body { transform: none; }

@@ -323,9 +323,15 @@ onMounted(() => {
 }
 
 @media (max-width: 640px) {
+  .shell-summary {
+    padding: 7px 8px;
+    gap: 6px;
+  }
+
   .shell-title {
     font-size: 12px;
     letter-spacing: 2px;
+    text-align: left;
   }
 
   .shell-badge {
@@ -335,6 +341,32 @@ onMounted(() => {
   .header-accent {
     width: 14px;
     height: 14px;
+  }
+
+  .meta-bar {
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .refresh-btn {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .preview-card summary {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .summary-tip {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .preview-body {
+    max-height: 220px;
+    font-size: 11px;
+    padding: 10px;
   }
 }
 </style>

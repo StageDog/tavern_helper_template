@@ -179,4 +179,21 @@ const sortedEvents = computed(() =>
   padding: 16px;
   font-style: italic;
 }
+
+@media (max-width: 640px) {
+  .phase-num {
+    font-size: 18px;
+    letter-spacing: 2px;
+  }
+
+  .death-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .death-name {
+    min-width: 0;
+  }
+}
 </style>

@@ -244,4 +244,42 @@ function toggleAreaAccess(name: string) {
   padding: 16px;
   font-style: italic;
 }
+
+@media (max-width: 640px) {
+  .info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .label {
+    min-width: 0;
+  }
+
+  .escape-row {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .escape-name {
+    min-width: 0;
+  }
+
+  .escape-desc {
+    width: 100%;
+  }
+
+  .area-main {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .area-name {
+    width: 100%;
+  }
+
+  .toggle-btn {
+    width: 100%;
+  }
+}
 </style>

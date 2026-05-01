@@ -220,4 +220,26 @@ const horrorNumClass = computed(() => {
   padding: 16px;
   font-style: italic;
 }
+
+@media (max-width: 640px) {
+  .horror-header {
+    flex-wrap: wrap;
+    gap: 4px 8px;
+  }
+
+  .horror-label {
+    width: 100%;
+    letter-spacing: 2px;
+  }
+
+  .horror-num {
+    font-size: 30px;
+  }
+
+  .clue-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+}
 </style>

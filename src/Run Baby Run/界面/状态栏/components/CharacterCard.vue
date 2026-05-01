@@ -389,4 +389,72 @@ function addItem() {
   background: var(--rbr-red);
   border-color: var(--rbr-red);
 }
+
+@media (max-width: 640px) {
+  .card-header {
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .header-left {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+
+  .char-name {
+    width: 100%;
+    white-space: normal;
+    line-height: 1.3;
+  }
+
+  .char-pos {
+    width: 100%;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .field-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .fl {
+    min-width: 0;
+  }
+
+  .item-row {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .item-name {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .item-desc {
+    width: calc(100% - 24px);
+  }
+
+  .remove-btn {
+    margin-left: auto;
+  }
+
+  .add-item-row {
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  .item-input {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+
+  .add-btn {
+    width: 100%;
+    height: 28px;
+  }
+}
 </style>
