@@ -31,17 +31,30 @@ export function renderTopBar(rawSource: string, ctx: RenderContext): string {
   const theme = getThemeMeta('top', ctx.selection.top);
 
   return `
-<div class="sl-unified-card sl-top-card" data-sl-skin="top" data-theme-id="${theme.id}">
+<div class="sl-unified-card sl-top-card sl-theme-top-${theme.id}" data-sl-skin="top" data-theme-id="${theme.id}">
+  <span class="sl-corner tl"></span>
+  <span class="sl-corner tr"></span>
+  <span class="sl-corner bl"></span>
+  <span class="sl-corner br"></span>
   <div class="sl-card-inner">
     <div class="sl-card-head">
-      <span class="sl-card-title">Mundus</span>
-      <span class="sl-card-sub">顶部状态栏</span>
+      <div>
+        <span class="sl-card-title">Mundus</span>
+        <span class="sl-card-sub">世 界 之 卷</span>
+      </div>
+      <span class="sl-card-mark">— 蜃灵 §I —</span>
     </div>
-    <div class="sl-grid-2">
-      <div class="sl-chip"><span class="sl-key">Tempus</span><span class="sl-val">${nl2br(time)}</span></div>
-      <div class="sl-chip"><span class="sl-key">Locus</span><span class="sl-val">${nl2br(location)}</span></div>
-      <div class="sl-chip"><span class="sl-key">Caelum</span><span class="sl-val">${nl2br(weather)}</span></div>
-      <div class="sl-chip"><span class="sl-key">Praesentia</span><span class="sl-val">${nl2br(spatial)}</span></div>
+    <div class="sl-rows">
+      <div class="sl-row">
+        <div class="sl-chip"><span class="sl-key">Tempus</span><span class="sl-val">${nl2br(time)}</span></div>
+        <span class="sl-divider">❦</span>
+        <div class="sl-chip"><span class="sl-key">Locus</span><span class="sl-val">${nl2br(location)}</span></div>
+      </div>
+      <div class="sl-row">
+        <div class="sl-chip"><span class="sl-key">Caelum</span><span class="sl-val">${nl2br(weather)}</span></div>
+        <span class="sl-divider">❦</span>
+        <div class="sl-chip"><span class="sl-key">Praesentia</span><span class="sl-val">${nl2br(spatial)}</span></div>
+      </div>
     </div>
   </div>
 </div>`.trim();

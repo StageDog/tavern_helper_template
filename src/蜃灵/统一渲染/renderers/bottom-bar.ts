@@ -2,7 +2,8 @@ import type { RenderContext, ReplaceTarget } from '../types';
 import { escapeHtml, nl2br } from '../utils/escape';
 import { getThemeMeta } from '../themes';
 
-const BOTTOM_BLOCK_RE = /<SLstatusblock>[\s\S]*?<\/SLstatusblock>[\s\S]*?<memory>[\s\S]*?<\/memory>/i;
+const STATUS_BLOCK_RE = /<SLstatusblock>[\s\S]*?<\/SLstatusblock>/i;
+const MEMORY_BLOCK_RE = /<memory>[\s\S]*?<\/memory>/i;
 const CHARACTER_BLOCK_RE = /\[([^\]]+)\]([\s\S]*?)\[\/\1\]/g;
 const MEMORY_FIELD_RE = /<([a-zA-Z]+)>([\s\S]*?)<\/\1>/g;
 
@@ -61,12 +62,44 @@ function pickField(fields: Record<string, string>, keys: string[]): string {
 }
 
 export function findBottomTarget(raw: string, messageId: number): ReplaceTarget | null {
-  const match = raw.match(BOTTOM_BLOCK_RE);
-  if (!match) return null;
+  const statusMatch = raw.match(STATUS_BLOCK_RE);
+  const memoryMatch = raw.match(MEMORY_BLOCK_RE);
+  if (!statusMatch && !memoryMatch) return null;
+
+  const firstIndexCandidates = [statusMatch?.index, memoryMatch?.index].filter(
+    (idx): idx is number => typeof idx === 'number' && idx >= 0,
+  );
+  const firstIndex = Math.min(...firstIndexCandidates);
+  if (!Number.isFinite(firstIndex)) return null;
+
+  const blocks = [
+    statusMatch
+      ? {
+          start: statusMatch.index ?? -1,
+          end: (statusMatch.index ?? 0) + statusMatch[0].length,
+          source: statusMatch[0],
+        }
+      : null,
+    memoryMatch
+      ? {
+          start: memoryMatch.index ?? -1,
+          end: (memoryMatch.index ?? 0) + memoryMatch[0].length,
+          source: memoryMatch[0],
+        }
+      : null,
+  ]
+    .filter((item): item is { start: number; end: number; source: string } => Boolean(item))
+    .sort((a, b) => a.start - b.start);
+
+  const includeBoth =
+    blocks.length === 2 && blocks[0].end <= blocks[1].start && raw.slice(blocks[0].end, blocks[1].start).trim() === '';
+
+  const source = includeBoth ? raw.slice(blocks[0].start, blocks[1].end) : raw.slice(firstIndex, firstIndex + blocks[0].source.length);
+
   return {
     messageId,
     tag: 'bottom',
-    source: match[0],
+    source,
   };
 }
 
@@ -75,8 +108,19 @@ export function renderBottomBar(rawSource: string, ctx: RenderContext): string {
   if (!parsed) return rawSource;
 
   const theme = getThemeMeta('bottom', ctx.selection.bottom);
+  const hasPeople = parsed.people.length > 0;
+  const hasMemory =
+    Boolean(parsed.memory.number?.trim()) ||
+    Boolean(parsed.memory.worldstate?.trim()) ||
+    Boolean(parsed.memory.currentTask?.trim()) ||
+    Boolean(parsed.memory.plot?.trim()) ||
+    Boolean(parsed.memory.psychology?.trim()) ||
+    Boolean(parsed.memory.list?.trim()) ||
+    Boolean(parsed.memory.database?.trim());
+  const showPeopleSection = hasPeople;
+  const showMemorySection = hasMemory;
 
-  const peopleHtml = parsed.people.length
+  const peopleHtml = hasPeople
     ? parsed.people
         .map(person => {
           const relation = pickField(person.fields, ['Relation', 'relation', '关系']);
@@ -112,7 +156,7 @@ export function renderBottomBar(rawSource: string, ctx: RenderContext): string {
           </details>`;
         })
         .join('')
-    : `<div class="sl-empty">尚无角色数据</div>`;
+    : '';
 
   const number = parsed.memory.number ?? '';
   const worldstate = parsed.memory.worldstate ?? '';
@@ -122,19 +166,33 @@ export function renderBottomBar(rawSource: string, ctx: RenderContext): string {
   const list = parsed.memory.list ?? '';
   const database = parsed.memory.database ?? '';
 
+  if (!showPeopleSection && !showMemorySection) {
+    return rawSource;
+  }
+
+  const subTitle = showPeopleSection && showMemorySection ? '尾部状态栏（角色状态栏 + 小总结）' : showPeopleSection ? '角色状态栏' : '小总结';
+
   return `
-<div class="sl-unified-card sl-bottom-card" data-sl-skin="bottom" data-theme-id="${theme.id}">
+<div class="sl-unified-card sl-bottom-card sl-theme-bottom-${theme.id}" data-sl-skin="bottom" data-theme-id="${theme.id}">
   <div class="sl-card-inner">
     <div class="sl-card-head">
       <span class="sl-card-title">Personae & Liber</span>
-      <span class="sl-card-sub">尾部状态栏（角色状态栏 + 小总结）</span>
+      <span class="sl-card-sub">${subTitle}</span>
     </div>
 
+    ${
+      showPeopleSection
+        ? `
     <section class="sl-section">
       <div class="sl-section-title">在场角色</div>
       <div class="sl-acc-list">${peopleHtml}</div>
-    </section>
+    </section>`
+        : ''
+    }
 
+    ${
+      showMemorySection
+        ? `
     <section class="sl-section">
       <details class="sl-memory-details">
         <summary class="sl-memory-summary">
@@ -150,7 +208,9 @@ export function renderBottomBar(rawSource: string, ctx: RenderContext): string {
           ${database ? `<div class="sl-block"><div class="sl-block-title">Database</div><div>${nl2br(database)}</div></div>` : ''}
         </div>
       </details>
-    </section>
+    </section>`
+        : ''
+    }
   </div>
 </div>`.trim();
 }

@@ -11,9 +11,9 @@ export type ThemeSelection = {
 };
 
 export const DEFAULT_THEME_SELECTION: ThemeSelection = {
-  top: TOP_BAR_THEMES[0]?.id ?? 'archive',
-  bottom: BOTTOM_BAR_THEMES[0]?.id ?? 'folio',
-  branch: BRANCH_THEMES[0]?.id ?? 'quill',
+  top: TOP_BAR_THEMES[0]?.id ?? 'gjsz',
+  bottom: BOTTOM_BAR_THEMES[0]?.id ?? 'gjsz',
+  branch: BRANCH_THEMES[0]?.id ?? 'gjsz',
 };
 
 export const THEME_SETS: Record<ThemePart, ThemeMeta[]> = {

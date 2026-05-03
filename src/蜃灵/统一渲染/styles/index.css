@@ -1,8 +1,30 @@
 .sl-unified-card {
+  --sl-card-bg: #efe2c7;
+  --sl-card-bg-image: repeating-linear-gradient(
+    0deg,
+    rgba(130, 94, 56, 0.06) 0px,
+    rgba(130, 94, 56, 0.06) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  --sl-panel-bg: #f8eedb;
+  --sl-text: #2f1f12;
+  --sl-muted: #6f5437;
+  --sl-border: #6d4f2f;
+  --sl-accent: #7f3c2e;
+  --sl-accent-soft: #b28658;
+  --sl-border-thin: #b89974;
+  --sl-key-bg: rgba(255, 249, 237, 0.75);
+  --sl-chip-bg: rgba(255, 249, 237, 0.75);
+  --sl-thought-bg: rgba(247, 238, 218, 0.8);
+  --sl-thought-border: #b89974;
+  --sl-hover: rgba(118, 84, 50, 0.12);
+  --sl-shadow: 4px 4px 0 rgba(80, 50, 20, 0.35);
   --sl-font-serif: "EB Garamond", "Cormorant Garamond", "Noto Serif SC", "Songti SC", Georgia, serif;
   --sl-font-label: "Cinzel", "Trajan Pro", "Noto Serif SC", serif;
   --sl-font-display: "Cormorant Garamond", "Playfair Display", "Noto Serif SC", serif;
   margin: 12px 0;
+  position: relative;
   border: 3px double var(--sl-border);
   box-shadow: var(--sl-shadow);
   color: var(--sl-text);
@@ -25,9 +47,9 @@
 }
 
 .sl-unified-card .sl-card-inner {
-  margin: 6px;
-  padding: 12px 14px;
-  border: 1px solid color-mix(in srgb, var(--sl-border) 58%, transparent);
+  margin: 5px;
+  padding: 14px 16px;
+  border: 1px solid var(--sl-border-thin);
   background: var(--sl-panel-bg);
 }
 
@@ -44,29 +66,57 @@
 
 .sl-unified-card .sl-card-title {
   font-family: var(--sl-font-display);
-  font-size: 1.08em;
+  font-size: 1.05em;
   font-weight: 600;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.1em;
+  font-variant: small-caps;
 }
 
 .sl-unified-card .sl-card-sub {
   font-family: var(--sl-font-serif);
-  font-size: 0.86em;
-  letter-spacing: 0.1em;
+  font-size: 0.78em;
+  letter-spacing: 0.32em;
   color: var(--sl-muted);
+  margin-left: 8px;
 }
 
-.sl-unified-card .sl-grid-2 {
+.sl-unified-card .sl-card-mark {
+  font-family: var(--sl-font-display);
+  font-style: italic;
+  font-size: 0.78em;
+  color: var(--sl-muted);
+  opacity: 0.75;
+  letter-spacing: 0.05em;
+}
+
+.sl-unified-card .sl-rows {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
+}
+
+.sl-unified-card .sl-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: baseline;
+  gap: 12px;
+  padding: 6px 2px;
 }
 
 .sl-unified-card .sl-chip {
-  display: grid;
-  grid-template-columns: auto 1fr;
+  display: flex;
   align-items: baseline;
   gap: 8px;
+  min-width: 0;
+}
+
+.sl-unified-card .sl-top-card .sl-chip {
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+
+.sl-unified-card .sl-bottom-card .sl-chip,
+.sl-unified-card .sl-branch-card .sl-chip {
   border: 1px solid color-mix(in srgb, var(--sl-border) 42%, transparent);
   background: var(--sl-chip-bg);
   padding: 7px 9px;
@@ -79,11 +129,60 @@
   color: var(--sl-muted);
   text-transform: uppercase;
   white-space: nowrap;
+  padding: 2px 7px;
+  border: 1px solid var(--sl-muted);
+  background: var(--sl-key-bg);
 }
 
 .sl-unified-card .sl-val {
   min-width: 0;
   word-break: break-word;
+}
+
+.sl-unified-card .sl-divider {
+  font-family: var(--sl-font-display);
+  color: var(--sl-accent-soft);
+  font-size: 1em;
+  opacity: 0.7;
+  letter-spacing: 1px;
+  align-self: center;
+}
+
+.sl-corner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--sl-accent);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.sl-corner.tl {
+  top: -2px;
+  left: -2px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.sl-corner.tr {
+  top: -2px;
+  right: -2px;
+  border-left: none;
+  border-bottom: none;
+}
+
+.sl-corner.bl {
+  bottom: -2px;
+  left: -2px;
+  border-right: none;
+  border-top: none;
+}
+
+.sl-corner.br {
+  bottom: -2px;
+  right: -2px;
+  border-left: none;
+  border-top: none;
 }
 
 .sl-section {
@@ -147,7 +246,7 @@
 
 .sl-detail {
   display: grid;
-  grid-template-columns: 74px 1fr;
+  grid-template-columns: 84px 1fr;
   gap: 9px;
   margin-bottom: 6px;
 }
@@ -174,6 +273,7 @@
   align-items: baseline;
   gap: 10px;
   border: 1px solid color-mix(in srgb, var(--sl-border) 45%, transparent);
+  border-left: 3px solid var(--sl-accent-soft);
   padding: 8px 10px;
 }
 
@@ -242,7 +342,7 @@
   align-items: center;
   justify-content: center;
   border: 1px solid color-mix(in srgb, var(--sl-border) 50%, transparent);
-  background: color-mix(in srgb, var(--sl-chip-bg) 78%, white 22%);
+  background: var(--sl-key-bg);
   font-family: var(--sl-font-label);
   font-size: 0.8em;
 }
@@ -275,18 +375,18 @@
   width: min(680px, calc(100vw - 24px));
   max-height: calc(100vh - 24px);
   overflow: auto;
-  background: #f8efde;
-  border: 3px double #6d4f2f;
+  background: #ede0c4;
+  border: 4px double #6b4f33;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.32);
   color: #2f1f12;
   font-family: var(--sl-font-serif, "EB Garamond", "Noto Serif SC", serif);
 }
 
 #sl-theme-modal .sl-modal-inner {
-  margin: 7px;
-  padding: 12px 14px;
-  border: 1px solid rgba(109, 79, 47, 0.48);
-  background: #fff9ee;
+  margin: 5px;
+  padding: 14px 16px;
+  border: 1px solid #b89977;
+  background: #f4ead4;
 }
 
 #sl-theme-modal .sl-modal-head {
@@ -321,8 +421,8 @@
 }
 
 #sl-theme-modal .sl-modal-group {
-  border: 1px solid rgba(109, 79, 47, 0.4);
-  background: rgba(255, 250, 238, 0.78);
+  border: 1px solid rgba(107, 79, 51, 0.45);
+  background: rgba(248, 238, 215, 0.65);
   padding: 9px;
 }
 
@@ -339,15 +439,15 @@
   width: 100%;
   text-align: left;
   border: 1px solid rgba(109, 79, 47, 0.42);
-  background: #fff6e6;
+  background: #f8efde;
   padding: 7px 8px;
   margin-bottom: 6px;
   cursor: pointer;
 }
 
 #sl-theme-modal .sl-theme-btn[data-active="1"] {
-  border-color: #8b4332;
-  background: #f2e1cd;
+  border-color: #7a3b2e;
+  background: #ead9c1;
 }
 
 #sl-theme-modal .sl-theme-name {
@@ -363,8 +463,13 @@
 }
 
 @media (max-width: 760px) {
-  .sl-unified-card .sl-grid-2 {
+  .sl-unified-card .sl-row {
     grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .sl-unified-card .sl-divider {
+    display: none;
   }
 
   #sl-theme-modal .sl-modal-grid {
