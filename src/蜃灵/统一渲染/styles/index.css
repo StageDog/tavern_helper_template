@@ -514,7 +514,41 @@
     display: none;
   }
 
+  #sl-theme-modal {
+    padding: 8px;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+
+  #sl-theme-modal .sl-modal-card {
+    width: 100%;
+    max-height: calc(100vh - 16px);
+  }
+
+  #sl-theme-modal .sl-modal-head {
+    position: sticky;
+    top: 0;
+    background: #f4ead4;
+    z-index: 1;
+  }
+
+  #sl-theme-modal .sl-close-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 1.2em;
+    flex-shrink: 0;
+  }
+
   #sl-theme-modal .sl-modal-grid {
     grid-template-columns: 1fr;
+  }
+
+  #sl-theme-modal .sl-theme-btn {
+    padding: 10px 12px;
+    min-height: 44px;
+    margin-bottom: 8px;
+  }
+
+  #sl-theme-modal .sl-theme-hint {
+    font-size: 0.85em;
   }
 }

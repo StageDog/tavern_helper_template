@@ -6,7 +6,7 @@ import { applyThemeVars, removeThemeVars } from './theme-style';
 import type { RenderContext } from './types';
 import './styles/index.css';
 
-const BUTTON_NAME = '蜃灵 · QR主题';
+const BUTTON_NAME = '蜃灵 · 主题';
 
 $(() => {
   console.info('[蜃灵统一渲染][boot] script start', {
