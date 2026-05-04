@@ -1,74 +1,48 @@
-﻿import { findBranchTargets, renderBranchCard } from './renderers/branches';
+import { findBranchTargets, renderBranchCard } from './renderers/branches';
 import { findBottomTarget, renderBottomBar } from './renderers/bottom-bar';
 import { findTopTarget, renderTopBar } from './renderers/top-bar';
 import type { RenderContext } from './types';
 
-const RENDER_FLAG = 'data-sl-unified-rendered';
-const LEGACY_TOKEN_RE = /(?:__)?SL_UNIFIED_TOKEN_(\d+)(?:__)?/g;
-
-function logRenderedSummary(
-  messageId: number,
-  displayHtmlLength: number,
-  classCount: number,
-  dataThemeCount: number,
-  classThemeCount: number,
-): void {
-  console.info(
-    `[蜃灵统一渲染][render] rendered messageId=${messageId} htmlLength=${displayHtmlLength} classCount=${classCount} dataThemeCount=${dataThemeCount} classThemeCount=${classThemeCount}`,
-  );
+function tagCard(html: string, target: string): string {
+  return html.replace(/^<div class="sl-unified-card/, `<div data-sl-target="${target}" class="sl-unified-card`);
 }
 
-function injectByTokens(
-  raw: string,
-  ctx: RenderContext,
-  messageId: number,
-): { nextRaw: string; htmlByToken: string[]; tokenPrefix: string } {
-  let nextRaw = raw;
-  const htmlByToken: string[] = [];
-  const tokenPrefix = `SLTK${messageId}${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+function applyOrInsertCard(
+  $display: JQuery,
+  target: string,
+  newHtml: string | null,
+  position: 'prepend' | 'append',
+): boolean {
+  const $existing = $display.find(`.sl-unified-card[data-sl-target="${target}"]`);
 
-  const insertToken = (html: string): string => {
-    const index = htmlByToken.push(html) - 1;
-    return `@@${tokenPrefix}_${index}@@`;
-  };
-
-  const topTarget = findTopTarget(nextRaw, messageId);
-  if (topTarget) {
-    nextRaw = nextRaw.replace(topTarget.source, insertToken(renderTopBar(topTarget.source, ctx)));
+  if (!newHtml) {
+    if ($existing.length) {
+      $existing.remove();
+      return true;
+    }
+    return false;
   }
 
-  const bottomTarget = findBottomTarget(nextRaw, messageId);
-  if (bottomTarget) {
-    nextRaw = nextRaw.replace(bottomTarget.source, insertToken(renderBottomBar(bottomTarget.source, ctx)));
+  if ($existing.length) {
+    $existing.first().replaceWith(newHtml);
+    $existing.slice(1).remove();
+    return true;
   }
 
-  const branchTargets = findBranchTargets(nextRaw, messageId);
-  branchTargets.forEach(target => {
-    nextRaw = nextRaw.replace(target.source, insertToken(renderBranchCard(target.source, ctx)));
+  if (position === 'prepend') {
+    $display.prepend(newHtml);
+  } else {
+    $display.append(newHtml);
+  }
+  return true;
+}
+
+function cleanupBranchesAfter($display: JQuery, keep: number): void {
+  $display.find('.sl-unified-card[data-sl-target^="branch-"]').each((_, el) => {
+    const t = el.getAttribute('data-sl-target') || '';
+    const n = Number(t.slice('branch-'.length));
+    if (Number.isFinite(n) && n >= keep) el.remove();
   });
-
-  if (topTarget || bottomTarget || branchTargets.length > 0) {
-    console.info(
-      `[蜃灵统一渲染][render] matched messageId=${messageId} top=${Boolean(topTarget)} bottom=${Boolean(bottomTarget)} branches=${branchTargets.length} changed=${nextRaw !== raw}`,
-    );
-  }
-
-  return { nextRaw, htmlByToken, tokenPrefix };
-}
-
-function replaceByIndexToken(displayHtml: string, re: RegExp, htmlByToken: string[]): string {
-  return displayHtml.replace(re, (_all, idxText: string) => {
-    const idx = Number(idxText);
-    if (!Number.isFinite(idx) || idx < 0 || idx >= htmlByToken.length) return _all;
-    return htmlByToken[idx] ?? _all;
-  });
-}
-
-function restoreTokens(displayHtml: string, htmlByToken: string[], tokenPrefix: string): string {
-  const currentTokenRe = new RegExp(`@@${tokenPrefix}_(\\d+)@@`, 'g');
-  let restored = replaceByIndexToken(displayHtml, currentTokenRe, htmlByToken);
-  restored = replaceByIndexToken(restored, LEGACY_TOKEN_RE, htmlByToken);
-  return restored;
 }
 
 function processMessage(messageId: number, ctx: RenderContext): void {
@@ -79,28 +53,33 @@ function processMessage(messageId: number, ctx: RenderContext): void {
   const raw = messages[0].message ?? '';
   if (!raw) return;
 
-  const { nextRaw, htmlByToken, tokenPrefix } = injectByTokens(raw, ctx, messageId);
-  if (!htmlByToken.length || nextRaw === raw) return;
-
-  const formatted = formatAsDisplayedMessage(nextRaw, { message_id: messageId });
-  const displayHtml = restoreTokens(formatted, htmlByToken, tokenPrefix);
-
   const $display = retrieveDisplayedMessage(messageId);
-  if (!$display.length) {
-    console.warn(`[蜃灵统一渲染][render] display node not found messageId=${messageId}`);
-    return;
+  if (!$display.length) return;
+
+  const topTarget = findTopTarget(raw, messageId);
+  const bottomTarget = findBottomTarget(raw, messageId);
+  const branchTargets = findBranchTargets(raw, messageId);
+
+  const topHtml = topTarget ? tagCard(renderTopBar(topTarget.source, ctx), 'top') : null;
+  const bottomHtml = bottomTarget ? tagCard(renderBottomBar(bottomTarget.source, ctx), 'bottom') : null;
+
+  const topChanged = applyOrInsertCard($display, 'top', topHtml, 'prepend');
+  const bottomChanged = applyOrInsertCard($display, 'bottom', bottomHtml, 'append');
+
+  cleanupBranchesAfter($display, branchTargets.length);
+  let branchChanged = false;
+  branchTargets.forEach((t, idx) => {
+    const html = tagCard(renderBranchCard(t.source, ctx), `branch-${idx}`);
+    if (applyOrInsertCard($display, `branch-${idx}`, html, 'append')) {
+      branchChanged = true;
+    }
+  });
+
+  if (topChanged || bottomChanged || branchChanged) {
+    console.info(
+      `[蜃灵统一渲染][render] applied messageId=${messageId} top=${Boolean(topHtml)} bottom=${Boolean(bottomHtml)} branches=${branchTargets.length}`,
+    );
   }
-
-  $display.html(displayHtml);
-  $display.attr(RENDER_FLAG, '1');
-
-  const classCount = $display.find('.sl-unified-card').length;
-  const dataThemeCount = $display.find('.sl-unified-card[data-theme-id]').length;
-  const classThemeCount = $display.find(
-    '.sl-unified-card[class*="sl-theme-top-"], .sl-unified-card[class*="sl-theme-bottom-"], .sl-unified-card[class*="sl-theme-branch-"]',
-  ).length;
-
-  logRenderedSummary(messageId, displayHtml.length, classCount, dataThemeCount, classThemeCount);
 }
 
 function processAll(ctx: RenderContext): void {

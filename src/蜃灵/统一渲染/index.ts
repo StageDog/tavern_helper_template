@@ -1,5 +1,6 @@
 ﻿import { teleportStyle } from '@util/script';
 import { initRenderer, bindBranchClickAppender } from './render';
+import { ensureCleanupRegex, disableCleanupRegex } from './regex-bootstrap';
 import { getThemeSelection } from './state';
 import { toggleThemeModal } from './theme-modal';
 import { applyThemeVars, removeThemeVars } from './theme-style';
@@ -8,7 +9,7 @@ import './styles/index.css';
 
 const BUTTON_NAME = '蜃灵 · 主题';
 
-$(() => {
+$(async () => {
   console.info('[蜃灵统一渲染][boot] script start', {
     scriptId: getScriptId(),
     scriptName: getScriptName(),
@@ -21,6 +22,10 @@ $(() => {
   console.info('[蜃灵统一渲染][boot] teleportStyle done', {
     parentHeadStyleCount: parentHasCss,
   });
+
+  // 注册并启用预设清理正则；同时禁用旧版美化正则避免冲突。
+  // 已是最终态时内部跳过 update,不会触发 CHAT_CHANGED。
+  await ensureCleanupRegex();
 
   let context: RenderContext = {
     selection: getThemeSelection(),
@@ -46,8 +51,15 @@ $(() => {
 
   toastr.success('蜃灵统一渲染已加载（原位渲染）');
 
-  $(window).on('pagehide', () => {
-    console.info('[蜃灵统一渲染][boot] pagehide cleanup');
+  $(window).on('pagehide', e => {
+    // persisted=true 表示页面被放进 BFCache(临时挂起,可能恢复),不应该禁用正则。
+    // persisted=false 才是真正销毁(脚本被禁用 / 关浏览器),才禁用正则。
+    const persisted = (e.originalEvent as PageTransitionEvent | undefined)?.persisted ?? false;
+    console.info('[蜃灵统一渲染][boot] pagehide cleanup', { persisted });
+    if (!persisted) {
+      // fire-and-forget: postMessage 已同步入队到父窗口,即使 iframe 销毁请求也已发出
+      void disableCleanupRegex();
+    }
     renderer.destroy();
     clickBinding.destroy();
     removeThemeVars();
