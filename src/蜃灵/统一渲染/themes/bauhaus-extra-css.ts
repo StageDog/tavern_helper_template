@@ -6,7 +6,7 @@
 export const BAUHAUS_TOP_EXTRA_CSS = `
 & {
   --bh-red: #B23A2E;
-  --bh-yellow: #C9A434;
+  --bh-yellow: #e3b939;
   --bh-blue: #2F5891;
   --bh-black: #2C2C2E;
   --bh-paper: #ECE7D6;
@@ -197,7 +197,7 @@ export const BAUHAUS_TOP_EXTRA_CSS = `
 export const BAUHAUS_BOTTOM_EXTRA_CSS = `
 & {
   --bh-red: #B23A2E;
-  --bh-yellow: #C9A434;
+  --bh-yellow: #e3b939;
   --bh-blue: #2F5891;
   --bh-black: #2C2C2E;
   --bh-paper: #ECE7D6;
@@ -302,7 +302,7 @@ export const BAUHAUS_BOTTOM_EXTRA_CSS = `
   background: transparent;
 }
 & .sl-acc[open] .sl-acc-head {
-  background: var(--bh-yellow);
+  background: #FFFFFF;
 }
 & .sl-acc-mark {
   display: inline-flex;
@@ -419,9 +419,9 @@ export const BAUHAUS_BOTTOM_EXTRA_CSS = `
   font-family: var(--sl-font-display);
   font-style: normal;
   font-weight: 900;
-  font-size: 1em;
+  font-size: 1.2em;
   margin: 0 6px;
-  color: var(--bh-yellow);
+  color: #FFFFFF;
 }
 & .sl-section-memory .sl-memory-summary .sl-acc-action {
   background: var(--bh-yellow);
@@ -484,7 +484,7 @@ export const BAUHAUS_BOTTOM_EXTRA_CSS = `
 export const BAUHAUS_BRANCH_EXTRA_CSS = `
 & {
   --bh-red: #B23A2E;
-  --bh-yellow: #C9A434;
+  --bh-yellow: #e3b939;
   --bh-blue: #2F5891;
   --bh-black: #2C2C2E;
   --bh-paper: #ECE7D6;
