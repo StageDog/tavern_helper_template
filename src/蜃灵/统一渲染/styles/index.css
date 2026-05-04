@@ -403,14 +403,25 @@
 }
 
 #sl-theme-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 999999;
+  /* 显式 top/left + 100vw/100dvh，避免 inset: 0 在父文档存在 transform 祖先时
+     被压缩到祖先 box 内（手机端酒馆常见，会出现 modal 只露顶部一条边的问题） */
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: 100vw !important;
+  height: 100vh;
+  height: 100dvh;
+  margin: 0 !important;
+  z-index: 999999 !important;
+  box-sizing: border-box;
   background: rgba(0, 0, 0, 0.42);
-  display: flex;
-  justify-content: center;
-  /* 避免移动端 flex center + overflow 组合导致顶部内容不可达 */
-  align-items: flex-start;
+  /* 用 grid 替代 flex centering：grid 的 place-items 在 overflow 时不会使顶部内容不可达 */
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  place-items: start center;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -420,8 +431,16 @@
 
 #sl-theme-modal .sl-modal-card {
   width: min(680px, calc(100vw - 24px));
-  /* 内容不超高时居中，超高时自动回退为顶部对齐可滚动 */
-  margin: auto 0;
+  max-width: 100%;
+  /* 卡片自身限制高度并独立滚动，避免依赖外层 flex/grid 居中行为 */
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  /* grid 容器中通过 align-self 实现"内容矮则居中、高则顶对齐" */
+  align-self: center;
+  justify-self: center;
+  margin: 0;
+  box-sizing: border-box;
   background: #ede0c4;
   border: 4px double #6b4f33;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.32);
@@ -483,13 +502,16 @@
 }
 
 #sl-theme-modal .sl-theme-btn {
+  display: block;
   width: 100%;
   text-align: left;
   border: 1px solid rgba(109, 79, 47, 0.42);
+  border-radius: 0;
   background: #f8efde;
   padding: 7px 8px;
   margin-bottom: 6px;
   cursor: pointer;
+  box-sizing: border-box;
 }
 
 #sl-theme-modal .sl-theme-btn[data-active="1"] {
@@ -520,6 +542,10 @@
   }
 
   #sl-theme-modal {
+    /* 手机端再次显式锁死全屏覆盖，避免被酒馆 transform 祖先压扁 */
+    width: 100vw !important;
+    height: 100vh;
+    height: 100dvh;
     padding: 8px;
     padding-top: max(8px, env(safe-area-inset-top));
     padding-bottom: max(8px, env(safe-area-inset-bottom));
@@ -527,6 +553,8 @@
 
   #sl-theme-modal .sl-modal-card {
     width: 100%;
+    max-width: 100%;
+    max-height: calc(100dvh - 16px);
     margin: 0;
   }
 
@@ -549,6 +577,10 @@
   }
 
   #sl-theme-modal .sl-theme-btn {
+    /* 防止酒馆全局按钮样式把它压成 inline 圆形按钮（手机端报告过此现象） */
+    display: block;
+    width: 100%;
+    border-radius: 0;
     padding: 10px 12px;
     min-height: 44px;
     margin-bottom: 8px;

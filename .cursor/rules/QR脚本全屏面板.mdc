@@ -1,0 +1,75 @@
+---
+description: 当编写或修复 QR 脚本中的全屏 modal/面板（设置弹窗、主题选择器、地图等）时，你应该参考本文件
+alwaysApply: false
+---
+# QR 脚本全屏 Modal/面板的正确做法（手机端避坑）
+
+## 问题症状
+
+手机端打开 QR 脚本的全屏面板（设置弹窗、主题选择器等）时，面板错位跑到屏幕顶部，只露出一条窄边，下面被酒馆 UI 盖住；同时 overlay 背景也只覆盖那一小块区域，而不是整屏。
+
+## 根本原因
+
+酒馆父文档中存在带 `transform` / `filter` / `perspective` / `will-change: transform` 的祖先元素（手机端为做硬件加速极常见）。一旦这些属性出现在祖先上，CSS 规范会让 `position: fixed` 改以**该祖先**为定位上下文，而不是 viewport。结果就是：
+
+- `position: fixed; inset: 0` 不再覆盖整屏，而是被压缩到那个祖先 box 的尺寸内
+- `100vw` / `100vh` 仍是 viewport 尺寸，但 `top: 0` 锚点变了
+- 视觉上 modal 整个被挤到顶部一小块
+
+桌面端因为没有这种 transform 祖先（或者祖先够大），看不出问题。
+
+## 推荐做法（首选）：用 iframe 隔离
+
+参考 `src/美高模拟器/脚本/互动地图/index.ts` 的架构：
+
+```ts
+import { createScriptIdIframe, teleportStyle } from '@util/script';
+
+const $iframe = createScriptIdIframe()
+  .css({
+    position: 'fixed',
+    top: '0',
+    left: '0',
+    width: '100vw',
+    height: '100vh',
+    border: 'none',
+    'z-index': '20000',
+    'pointer-events': 'none', // 不挡 tavern 交互；面板自身要恢复 auto
+    display: 'none',
+  })
+  .appendTo(window.parent.document.body)
+  .on('load', async () => {
+    const doc = $iframe[0].contentDocument!;
+    teleportStyle(doc.head); // 把当前脚本的 <style> 复制进 iframe
+    // 在 iframe 里挂 Vue / 渲染 HTML
+  });
+```
+
+iframe 自身就是独立的定位上下文，免疫父文档任何 transform 祖先；CSS 也独立，不会被酒馆样式干扰。**新写带全屏 modal 的 QR 脚本一律走这条路。**
+
+## 备选做法：纯 CSS 加固（已有 `<div>` 直挂 body 的旧脚本）
+
+如果不方便重构成 iframe，可以最大程度让 `<div>` modal 更鲁棒，写法见 `src/蜃灵/统一渲染/styles/index.css` 里的 `#sl-theme-modal`。要点：
+
+- **位置/尺寸用显式值 + `!important`**，不用 `inset: 0`：
+
+  ```css
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh;   /* 兜底 */
+  height: 100dvh;  /* 移动端动态视口 */
+  margin: 0 !important;
+  ```
+
+- **居中用 grid，不用 flex hack**：`display: grid; place-items: start center;` 比 `flex + align-items: flex-start + margin: auto 0` 在 overflow 场景下更可靠，不会让顶部内容不可达
+- **modal-card 自带 `max-height: calc(100dvh - Xpx)` + `overflow-y: auto`**，让卡片自身可滚动，不依赖外层
+- **加 `box-sizing: border-box`**，避免 padding 把宽度撑出 viewport
+- **按钮显式声明 `display: block; border-radius: 0; width: 100%`**，防止被酒馆全局按钮样式覆盖成 inline-block 圆形（症状：截图里出现一排小圆点，其实是被压扁的按钮）
+
+⚠️ 纯 CSS 方案是"尽力而为"，对 transform 祖先击穿的情况 CSS 无法根治；如果加固完仍有问题，必须改 iframe 方案。
+
+## 排查口诀
+
+手机端面板"只露一条边"→ 99% 是 `position: fixed` 被祖先 transform 击穿 → 优先想 iframe 隔离，CSS 加固只是降级方案。
