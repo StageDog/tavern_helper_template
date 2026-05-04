@@ -409,13 +409,18 @@
   background: rgba(0, 0, 0, 0.42);
   display: flex;
   align-items: center;
+  /* 内容超过视口时，从顶部开始而不是裁剪上半部分 */
+  align-items: safe center;
   justify-content: center;
   padding: 16px;
 }
 
 #sl-theme-modal .sl-modal-card {
   width: min(680px, calc(100vw - 24px));
+  /* 100vh 在移动浏览器代表"地址栏隐藏后的高度"，会大于实际可视区域；
+     100dvh 才是动态可视高度，老浏览器不支持时自动忽略后一行 */
   max-height: calc(100vh - 24px);
+  max-height: calc(100dvh - 24px);
   overflow: auto;
   background: #ede0c4;
   border: 4px double #6b4f33;
@@ -522,6 +527,7 @@
   #sl-theme-modal .sl-modal-card {
     width: 100%;
     max-height: calc(100vh - 16px);
+    max-height: calc(100dvh - 16px);
   }
 
   #sl-theme-modal .sl-modal-head {
