@@ -74,7 +74,7 @@ export function renderBranchCard(rawSource: string, ctx: RenderContext): string 
 <div class="sl-unified-card sl-branch-card sl-theme-branch-${theme.id}" data-sl-skin="branch" data-theme-id="${theme.id}">
   <div class="sl-card-inner">
     <div class="sl-card-head">
-      <span class="sl-card-title">Optio</span>
+      <span class="sl-card-title">Option</span>
       <span class="sl-card-sub">${escapeHtml(parsed.summary)}</span>
     </div>
     <div class="sl-branch-list">

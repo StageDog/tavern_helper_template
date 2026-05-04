@@ -1,4 +1,4 @@
-﻿import { getThemeMeta, type ThemePart, type ThemeSelection } from './themes';
+import { getThemeMeta, type ThemePart, type ThemeSelection } from './themes';
 
 const STYLE_ID = 'sl-unified-theme-vars';
 const PART_TO_SKIN: Record<ThemePart, string> = {
@@ -13,19 +13,50 @@ function varsToCss(vars: Record<string, string>): string {
     .join(' ');
 }
 
-function blockForPart(part: ThemePart, themeId: string): string {
-  const theme = getThemeMeta(part, themeId);
+function getThemeRoots(part: ThemePart, themeId: string): { rootByAttr: string; rootByClass: string } {
   const skin = PART_TO_SKIN[part];
-  return [
-    `.sl-unified-card[data-sl-skin="${skin}"][data-theme-id="${theme.id}"] { ${varsToCss(theme.tokens)} }`,
-    `.sl-unified-card.sl-theme-${skin}-${theme.id} { ${varsToCss(theme.tokens)} }`,
+  return {
+    rootByAttr: `.sl-unified-card[data-sl-skin="${skin}"][data-theme-id="${themeId}"]`,
+    rootByClass: `.sl-unified-card.sl-theme-${skin}-${themeId}`,
+  };
+}
+
+function scopeExtraCss(rawCss: string, rootSelector: string): string {
+  const css = rawCss.trim();
+  if (!css) return '';
+  if (css.includes('&')) {
+    return css.replace(/&/g, rootSelector);
+  }
+  return `${rootSelector} {\n${css}\n}`;
+}
+
+function blockForPart(part: ThemePart, themeId: string): { varsBlock: string; extraBlock: string } {
+  const theme = getThemeMeta(part, themeId);
+  const roots = getThemeRoots(part, theme.id);
+
+  const varsBlock = [
+    `${roots.rootByAttr} { ${varsToCss(theme.tokens)} }`,
+    `${roots.rootByClass} { ${varsToCss(theme.tokens)} }`,
   ].join('\n');
+
+  const extraCss = theme.extraCss?.trim() ?? '';
+  const extraBlock = extraCss
+    ? [scopeExtraCss(extraCss, roots.rootByAttr), scopeExtraCss(extraCss, roots.rootByClass)]
+        .filter(Boolean)
+        .join('\n')
+    : '';
+
+  return { varsBlock, extraBlock };
 }
 
 function buildThemeCss(selection: ThemeSelection): string {
-  return [blockForPart('top', selection.top), blockForPart('bottom', selection.bottom), blockForPart('branch', selection.branch)].join(
-    '\n',
-  );
+  const top = blockForPart('top', selection.top);
+  const bottom = blockForPart('bottom', selection.bottom);
+  const branch = blockForPart('branch', selection.branch);
+
+  return [top.varsBlock, bottom.varsBlock, branch.varsBlock, top.extraBlock, bottom.extraBlock, branch.extraBlock]
+    .filter(Boolean)
+    .join('\n');
 }
 
 export function applyThemeVars(selection: ThemeSelection): void {

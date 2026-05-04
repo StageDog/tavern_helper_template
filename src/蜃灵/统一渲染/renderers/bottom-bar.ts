@@ -170,47 +170,65 @@ export function renderBottomBar(rawSource: string, ctx: RenderContext): string {
     return rawSource;
   }
 
-  const subTitle = showPeopleSection && showMemorySection ? '尾部状态栏（角色状态栏 + 小总结）' : showPeopleSection ? '角色状态栏' : '小总结';
+  const subTitle =
+    showPeopleSection && showMemorySection
+      ? '尾部状态栏'
+      : showPeopleSection
+        ? '角色状态栏'
+        : '小总结';
+
+  const sectionMix = showPeopleSection && showMemorySection ? 'sl-section-mix' : '';
 
   return `
-<div class="sl-unified-card sl-bottom-card sl-theme-bottom-${theme.id}" data-sl-skin="bottom" data-theme-id="${theme.id}">
+<div class="sl-unified-card sl-bottom-card sl-theme-bottom-${theme.id} ${sectionMix}" data-sl-skin="bottom" data-theme-id="${theme.id}">
   <div class="sl-card-inner">
+    <div class="sl-news-masthead" aria-hidden="true">
+      <span class="sl-news-issue">VOL · II · PERSONAE & LIBER</span>
+      <span class="sl-news-edition">${showPeopleSection && showMemorySection ? 'Dramatis Personae · Memoria' : showPeopleSection ? 'Dramatis Personae' : 'Memoria'}</span>
+    </div>
     <div class="sl-card-head">
-      <span class="sl-card-title">Personae & Liber</span>
-      <span class="sl-card-sub">${subTitle}</span>
+      <div class="sl-card-titleblock">
+        <span class="sl-card-title">Personae &amp; Liber</span>
+        <span class="sl-card-sub">${subTitle}</span>
+      </div>
+      <span class="sl-card-mark">— 蜃灵 §II —</span>
     </div>
 
     ${
       showPeopleSection
         ? `
-    <section class="sl-section">
+    <section class="sl-section sl-section-people">
       <div class="sl-section-title">在场角色</div>
       <div class="sl-acc-list">${peopleHtml}</div>
     </section>`
         : ''
     }
 
+    ${showPeopleSection && showMemorySection ? '<div class="sl-news-rule" aria-hidden="true"><span class="sl-news-rule-mark">❦</span></div>' : ''}
+
     ${
       showMemorySection
         ? `
-    <section class="sl-section">
+    <section class="sl-section sl-section-memory">
       <details class="sl-memory-details">
         <summary class="sl-memory-summary">
-          <span class="sl-section-title">第 ${escapeHtml(number || '?')} 卷 · 小总结</span>
+          <span class="sl-section-title">第<span class="sl-vol-num">${escapeHtml(number || '?')}</span>卷 · 小总结</span>
           <span class="sl-acc-action">展卷</span>
         </summary>
         <div class="sl-memory-body">
-          ${worldstate ? `<div class="sl-block"><div class="sl-block-title">Worldstate</div><div>${nl2br(worldstate)}</div></div>` : ''}
-          ${currentTask ? `<div class="sl-block"><div class="sl-block-title">CurrentTask</div><div>${nl2br(currentTask)}</div></div>` : ''}
-          ${plot ? `<div class="sl-block"><div class="sl-block-title">Plot</div><div>${nl2br(plot)}</div></div>` : ''}
-          ${psychology ? `<div class="sl-block"><div class="sl-block-title">Psychology</div><div>${nl2br(psychology)}</div></div>` : ''}
-          ${list ? `<div class="sl-block"><div class="sl-block-title">List</div><div>${nl2br(list)}</div></div>` : ''}
-          ${database ? `<div class="sl-block"><div class="sl-block-title">Database</div><div>${nl2br(database)}</div></div>` : ''}
+          ${worldstate ? `<div class="sl-block sl-block-worldstate"><div class="sl-block-title">Worldstate</div><div class="sl-block-body">${nl2br(worldstate)}</div></div>` : ''}
+          ${currentTask ? `<div class="sl-block sl-block-currentTask"><div class="sl-block-title">CurrentTask</div><div class="sl-block-body">${nl2br(currentTask)}</div></div>` : ''}
+          ${plot ? `<div class="sl-block sl-block-plot"><div class="sl-block-title">Plot</div><div class="sl-block-body">${nl2br(plot)}</div></div>` : ''}
+          ${psychology ? `<div class="sl-block sl-block-psychology"><div class="sl-block-title">Psychology</div><div class="sl-block-body">${nl2br(psychology)}</div></div>` : ''}
+          ${list ? `<div class="sl-block sl-block-list"><div class="sl-block-title">List</div><div class="sl-block-body">${nl2br(list)}</div></div>` : ''}
+          ${database ? `<div class="sl-block sl-block-database"><div class="sl-block-title">Database</div><div class="sl-block-body">${nl2br(database)}</div></div>` : ''}
         </div>
       </details>
     </section>`
         : ''
     }
+
+    <div class="sl-news-colophon" aria-hidden="true">— 蜃灵 §II — Liber Personarum · Volume II</div>
   </div>
 </div>`.trim();
 }

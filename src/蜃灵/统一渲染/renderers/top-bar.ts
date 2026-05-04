@@ -37,25 +37,30 @@ export function renderTopBar(rawSource: string, ctx: RenderContext): string {
   <span class="sl-corner bl"></span>
   <span class="sl-corner br"></span>
   <div class="sl-card-inner">
+    <div class="sl-news-masthead" aria-hidden="true">
+      <span class="sl-news-issue">VOL · I · MUNDUS</span>
+      <span class="sl-news-edition">Liber Primus · 世界之卷</span>
+    </div>
     <div class="sl-card-head">
-      <div>
+      <div class="sl-card-titleblock">
         <span class="sl-card-title">Mundus</span>
         <span class="sl-card-sub">世 界 之 卷</span>
       </div>
       <span class="sl-card-mark">— 蜃灵 §I —</span>
     </div>
     <div class="sl-rows">
-      <div class="sl-row">
-        <div class="sl-chip"><span class="sl-key">Tempus</span><span class="sl-val">${nl2br(time)}</span></div>
+      <div class="sl-row sl-row-meta">
+        <div class="sl-chip sl-chip-tempus"><span class="sl-key">Tempus</span><span class="sl-val">${nl2br(time)}</span></div>
         <span class="sl-divider">❦</span>
-        <div class="sl-chip"><span class="sl-key">Locus</span><span class="sl-val">${nl2br(location)}</span></div>
+        <div class="sl-chip sl-chip-locus"><span class="sl-key">Locus</span><span class="sl-val">${nl2br(location)}</span></div>
       </div>
-      <div class="sl-row">
-        <div class="sl-chip"><span class="sl-key">Caelum</span><span class="sl-val">${nl2br(weather)}</span></div>
+      <div class="sl-row sl-row-news">
+        <div class="sl-chip sl-chip-caelum"><span class="sl-key">Caelum</span><span class="sl-val">${nl2br(weather)}</span></div>
         <span class="sl-divider">❦</span>
-        <div class="sl-chip"><span class="sl-key">Praesentia</span><span class="sl-val">${nl2br(spatial)}</span></div>
+        <div class="sl-chip sl-chip-praesentia"><span class="sl-key">Praesentia</span><span class="sl-val">${nl2br(spatial)}</span></div>
       </div>
     </div>
+    <div class="sl-news-colophon" aria-hidden="true">— 蜃灵 §I — Liber Mundi · All Realms Reserved</div>
   </div>
 </div>`.trim();
 }

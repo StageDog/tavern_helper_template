@@ -1,3 +1,7 @@
+@import url("https://fontsapi.zeoseven.com/309/main/result.css");
+@import url("https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Noto+Serif+SC:wght@400;700;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;700;900&family=Bungee&family=Permanent+Marker&display=swap");
+
 .sl-unified-card {
   --sl-card-bg: #efe2c7;
   --sl-card-bg-image: repeating-linear-gradient(
@@ -20,9 +24,33 @@
   --sl-thought-border: #b89974;
   --sl-hover: rgba(118, 84, 50, 0.12);
   --sl-shadow: 4px 4px 0 rgba(80, 50, 20, 0.35);
-  --sl-font-serif: "EB Garamond", "Cormorant Garamond", "Noto Serif SC", "Songti SC", Georgia, serif;
-  --sl-font-label: "Cinzel", "Trajan Pro", "Noto Serif SC", serif;
-  --sl-font-display: "Cormorant Garamond", "Playfair Display", "Noto Serif SC", serif;
+  --sl-font-serif:
+    "KingHwaOldSong",
+    "PingFang SC",
+    "Microsoft YaHei",
+    "Hiragino Sans GB",
+    "Noto Sans CJK SC",
+    "Source Han Sans SC",
+    "WenQuanYi Micro Hei",
+    sans-serif;
+  --sl-font-label:
+    "KingHwaOldSong",
+    "PingFang SC",
+    "Microsoft YaHei",
+    "Hiragino Sans GB",
+    "Noto Sans CJK SC",
+    "Source Han Sans SC",
+    "WenQuanYi Micro Hei",
+    sans-serif;
+  --sl-font-display:
+    "KingHwaOldSong",
+    "PingFang SC",
+    "Microsoft YaHei",
+    "Hiragino Sans GB",
+    "Noto Sans CJK SC",
+    "Source Han Sans SC",
+    "WenQuanYi Micro Hei",
+    sans-serif;
   margin: 12px 0;
   position: relative;
   border: 3px double var(--sl-border);
@@ -31,8 +59,8 @@
   background-color: var(--sl-card-bg);
   background-image: var(--sl-card-bg-image);
   animation: sl-fadein 0.28s ease-out;
-  font-size: 14px;
-  line-height: 1.65;
+  font-size: 16px;
+  line-height: 1.75;
 }
 
 @keyframes sl-fadein {
@@ -193,6 +221,13 @@
   font-family: var(--sl-font-display);
   letter-spacing: 0.08em;
   font-size: 0.98em;
+}
+
+.sl-vol-num {
+  font-family: var(--sl-font-display);
+  font-style: italic;
+  color: var(--sl-accent);
+  margin: 0 4px;
 }
 
 .sl-acc-list {
@@ -358,6 +393,13 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   text-align: center;
+}
+
+/* 报纸专用容器：默认隐藏（仅在 news / news-deep 主题下由 extraCss 显示） */
+.sl-unified-card .sl-news-masthead,
+.sl-unified-card .sl-news-colophon,
+.sl-unified-card .sl-news-rule {
+  display: none;
 }
 
 #sl-theme-modal {
