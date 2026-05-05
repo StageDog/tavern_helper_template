@@ -1,9 +1,15 @@
 // ═══════════════════════════════════════════════════════════════
-// Run Baby Run — 角色生成脚本（QR按钮弹窗版）
+// Run Baby Run — 角色生成脚本（QR按钮弹窗版，iframe 隔离方案）
 // 监听 rbr-open-char-creator 自定义事件，打开角色创建弹窗
 // 提交后写入 MVU 变量，并弹出发送方式选择
+//
+// ⚠️ 全屏 modal 必须用 iframe 隔离（参见 .cursor/rules/QR脚本全屏面板.mdc）
+//   旧的 position:fixed;inset:0 div 直挂 parent.body 的写法在手机端会被
+//   酒馆祖先的 transform 击穿，面板只露出顶部一小条。iframe 自身是独立的
+//   定位上下文，免疫该问题。
 // ═══════════════════════════════════════════════════════════════
 
+import { createScriptIdIframe } from '@util/script';
 import { STYLE } from '../舞台渲染/styles';
 import {
   pick,
@@ -19,9 +25,6 @@ import {
 
 // ── 父页面辅助 ────────────────────────────────────────────────
 const parentDoc = window.parent.document;
-function $pid(id: string): HTMLElement | null {
-  return parentDoc.getElementById(id);
-}
 
 // ── 角色数据类型 ──────────────────────────────────────────────
 interface CharData {
@@ -57,11 +60,17 @@ function randomCharData(existing?: Partial<CharData>, lockedFields: Set<string> 
   };
 }
 
-// ── 弹窗 HTML ─────────────────────────────────────────────────
+// ── iframe 内的弹窗骨架 ───────────────────────────────────────
 const MODAL_ID = 'rbr-char-creator-modal';
 
+/**
+ * iframe 自身就是全屏 viewport，所以内部的容器不需要 position:fixed。
+ * 用 grid 居中卡片，外层负责半透明遮罩 + 模糊。
+ */
 function buildModalHtml(d: CharData): string {
-  const genderOpts = ['女', '男'].map(g => `<option value="${g}"${d.gender === g ? ' selected' : ''}>${g}</option>`).join('');
+  const genderOpts = ['女', '男']
+    .map(g => `<option value="${g}"${d.gender === g ? ' selected' : ''}>${g}</option>`)
+    .join('');
 
   const field = (label: string, key: string, value: string, isTextarea = false) => `
     <div class="rbr-field-row">
@@ -75,13 +84,9 @@ function buildModalHtml(d: CharData): string {
       </div>
     </div>`;
 
-  return `<div id="${MODAL_ID}" style="
-      position:fixed;inset:0;z-index:99999;
-      display:flex;align-items:center;justify-content:center;
-      background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);">
-    ${STYLE}
-    <div class="rbr-stage-wrapper" style="margin:0;max-height:90vh;overflow-y:auto;width:min(560px,95vw);">
-      <div class="rbr-card" style="max-height:none;">
+  return `<div id="${MODAL_ID}" class="rbr-cc-overlay">
+    <div class="rbr-stage-wrapper rbr-cc-wrapper">
+      <div class="rbr-card rbr-cc-card">
         <div class="rbr-title" style="margin-bottom:12px;">👤 创 建 角 色</div>
 
         ${field('姓名', 'name', d.name)}
@@ -110,11 +115,95 @@ function buildModalHtml(d: CharData): string {
   </div>`;
 }
 
+/** iframe 内额外注入的少量布局样式：遮罩 + 居中 + 滚动 */
+const IFRAME_LAYOUT_CSS = `
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+  }
+  body {
+    box-sizing: border-box;
+  }
+  .rbr-cc-overlay {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    padding: 12px;
+    box-sizing: border-box;
+    overflow-y: auto;
+  }
+  .rbr-cc-wrapper {
+    margin: 0;
+    width: min(560px, 100%);
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+  }
+  .rbr-cc-card {
+    max-height: none;
+  }
+`;
+
+// ── iframe 单例 ──────────────────────────────────────────────
+let $iframe: JQuery<HTMLIFrameElement> | null = null;
+let iframeReady: Promise<Document> | null = null;
+
+function ensureIframe(): Promise<Document> {
+  if (iframeReady) return iframeReady;
+
+  iframeReady = new Promise<Document>(resolve => {
+    const $f = createScriptIdIframe()
+      .css({
+        position: 'fixed',
+        top: '0',
+        left: '0',
+        width: '100vw',
+        height: '100vh',
+        border: 'none',
+        'z-index': '99999',
+        'pointer-events': 'none',
+        display: 'none',
+      })
+      .appendTo(parentDoc.body)
+      .on('load', () => {
+        const doc = $f[0].contentDocument!;
+        // 注入舞台渲染共享的样式（rbr-* 类）
+        // STYLE 已经是 <style>...</style> 字符串，直接 insertAdjacentHTML
+        doc.head.insertAdjacentHTML('beforeend', STYLE);
+        // 再叠加 iframe 内布局样式
+        const layoutEl = doc.createElement('style');
+        layoutEl.textContent = IFRAME_LAYOUT_CSS;
+        doc.head.appendChild(layoutEl);
+        resolve(doc);
+      });
+
+    $iframe = $f;
+  });
+
+  return iframeReady;
+}
+
+function showIframe(): void {
+  $iframe?.css({ display: 'block', 'pointer-events': 'auto' });
+}
+
+function hideIframe(): void {
+  $iframe?.css({ display: 'none', 'pointer-events': 'none' });
+  // 清空 body，避免残留事件 / DOM
+  const doc = $iframe?.[0]?.contentDocument;
+  if (doc) doc.body.innerHTML = '';
+}
+
 // ── 从弹窗 DOM 读取角色数据 ───────────────────────────────────
-function readModalCharData(): CharData {
-  const modal = $pid(MODAL_ID)!;
+function readModalCharData(modalRoot: ParentNode): CharData {
   const get = (field: string) =>
-    (modal.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(`[data-field="${field}"]`)?.value || '').trim();
+    (modalRoot.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(`[data-field="${field}"]`)?.value || '').trim();
   return {
     name: get('name'),
     gender: (get('gender') as '女' | '男') || '女',
@@ -142,16 +231,20 @@ function buildCharText(cd: CharData): string {
 }
 
 // ── 打开弹窗 ──────────────────────────────────────────────────
-function openCharCreator(): void {
-  // 防止重复弹窗
-  if ($pid(MODAL_ID)) return;
+async function openCharCreator(): Promise<void> {
+  const doc = await ensureIframe();
+
+  // 已有同名 modal 时直接显示，不重建
+  if (doc.getElementById(MODAL_ID)) {
+    showIframe();
+    return;
+  }
 
   const initialData = randomCharData();
+  doc.body.innerHTML = buildModalHtml(initialData);
+  const modal = doc.getElementById(MODAL_ID)!;
 
-  const overlay = parentDoc.createElement('div');
-  overlay.innerHTML = buildModalHtml(initialData);
-  const modal = overlay.firstElementChild as HTMLElement;
-  parentDoc.body.appendChild(modal);
+  showIframe();
 
   // 锁定状态
   const lockedFields = new Set<string>();
@@ -198,8 +291,8 @@ function openCharCreator(): void {
   });
 
   // ── 全部随机 ──
-  $pid('rbr-cc-random-all')?.addEventListener('click', () => {
-    const existing = readModalCharData();
+  doc.getElementById('rbr-cc-random-all')?.addEventListener('click', () => {
+    const existing = readModalCharData(modal);
     const newData = randomCharData(existing, lockedFields);
     Object.entries(newData).forEach(([k, v]) => {
       const el = modal.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(`[data-field="${k}"]`);
@@ -208,8 +301,8 @@ function openCharCreator(): void {
   });
 
   // ── 取消 ──
-  const closeModal = () => modal.remove();
-  $pid('rbr-cc-cancel')?.addEventListener('click', closeModal);
+  const closeModal = () => hideIframe();
+  doc.getElementById('rbr-cc-cancel')?.addEventListener('click', closeModal);
 
   // 点击遮罩关闭
   modal.addEventListener('click', e => {
@@ -217,15 +310,16 @@ function openCharCreator(): void {
   });
 
   // ── 确认提交 ──
-  $pid('rbr-cc-submit')?.addEventListener('click', async () => {
-    const cd = readModalCharData();
+  doc.getElementById('rbr-cc-submit')?.addEventListener('click', async () => {
+    const cd = readModalCharData(modal);
     if (!cd.name) {
       toastr.warning('请填写角色姓名', '⚠️');
       return;
     }
 
     // 弹出发送方式选择
-    const choice = confirm(
+    // 注意：confirm 必须用父窗口的，避免 iframe 内的 confirm 在某些环境下被屏蔽
+    const choice = window.parent.confirm(
       `角色【${cd.name}（${cd.gender}）】已创建。\n\n`
       + `点击「确定」→ 直接发送消息触发 AI\n`
       + `点击「取消」→ 追加到当前输入框末尾`
@@ -263,15 +357,18 @@ function openCharCreator(): void {
 // ── 初始化：监听酒馆助手 QR 按钮 ────────────────────────────
 $(() => {
   errorCatched(async () => {
+    // 预先创建好 iframe，首次点击立即可用
+    void ensureIframe();
+
     // 监听酒馆助手脚本按钮点击
     const btnEvent = getButtonEvent('👤 创建角色');
     eventOn(btnEvent, () => {
-      openCharCreator();
+      void openCharCreator();
     });
 
     // 也兼容自定义 DOM 事件触发（保留备用）
     window.addEventListener('rbr-open-char-creator', () => {
-      openCharCreator();
+      void openCharCreator();
     });
 
     toastr.success('角色生成脚本已加载', '👤 Run Baby Run');
@@ -279,7 +376,9 @@ $(() => {
 });
 
 $(window).on('pagehide', () => {
-  // 清理弹窗
-  $pid(MODAL_ID)?.remove();
+  // 清理 iframe
+  $iframe?.remove();
+  $iframe = null;
+  iframeReady = null;
   console.info('[RBR] 角色生成脚本已卸载');
 });

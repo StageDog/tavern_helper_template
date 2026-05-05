@@ -1,4 +1,4 @@
-﻿import { teleportStyle } from '@util/script';
+import { teleportStyle } from '@util/script';
 import { initRenderer, bindBranchClickAppender } from './render';
 import { ensureCleanupRegex, disableCleanupRegex } from './regex-bootstrap';
 import { getThemeSelection } from './state';
@@ -49,7 +49,7 @@ $(async () => {
     });
   });
 
-  toastr.success('蜃灵统一渲染已加载（原位渲染）');
+  toastr.success('蜃灵统一渲染已加载（固定位置）');
 
   $(window).on('pagehide', e => {
     // persisted=true 表示页面被放进 BFCache(临时挂起,可能恢复),不应该禁用正则。

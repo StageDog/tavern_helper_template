@@ -1,1 +1,2 @@
-import'https://testingcf.jsdelivr.net/gh/MagicalAstrogy/MagVarUpdate/artifact/bundle.js';
+import 'https://quantil.jsdelivr.net/gh/MagicalAstrogy/MagVarUpdate/artifact/bundle.js';
+

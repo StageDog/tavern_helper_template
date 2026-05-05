@@ -42,9 +42,9 @@ https://discord.com/channels/1291925535324110879/1426510405399744552
   - 第四行
 - 第五行
 ```
-想缩进就多空两格，序号`1. `同理
+想缩进就多空两格,序号`1. `同理
 
-# 以及最好玩的，超链接变变变！
+# 以及最好玩的,超链接变变变！
 
 -# [小链接](https://discord.com/channels/1291925535324110879/1427639383317549198)
 `-# [smaoking](https://discord.com/channels/1291925535324110879/1427639383317549198)`
@@ -61,10 +61,10 @@ https://discord.com/channels/1291925535324110879/1426510405399744552
 # [一级标题链接](https://discord.com/channels/1291925535324110879/1427639383317549198)
 `# [smaoking](https://discord.com/channels/1291925535324110879/1427639383317549198)`
 
--# [***小字smaoking（粗斜体，星号写里面）***](https://discord.com/channels/1291925535324110879/1427639383317549198)
+-# [***小字smaoking（粗斜体,星号写里面）***](https://discord.com/channels/1291925535324110879/1427639383317549198)
 `-# [***smaoking***](https://discord.com/channels/1291925535324110879/1427639383317549198)`
 
-***-# [小字smaoking（粗斜体，星号写外面）](https://discord.com/channels/1291925535324110879/1427639383317549198)***
+***-# [小字smaoking（粗斜体,星号写外面）](https://discord.com/channels/1291925535324110879/1427639383317549198)***
 `***-# [smaoking](https://discord.com/channels/1291925535324110879/1427639383317549198)***`
 
 ## [**标题加粗大概率无显示效果（看你用什么字体）smao**king](https://discord.com/channels/1291925535324110879/1427639383317549198)
@@ -99,7 +99,7 @@ https://discord.com/channels/1291925535324110879/1426510405399744552
 - # [smaoking](https://discord.com/channels/1291925535324110879/1427639383317549198)```
 ## 换个顺序标题可以显示
 # 1. [大标题smaoking](https://discord.com/channels/1291925535324110879/1427639383317549198)
-# 3. [大标题smaoking（序号连接不上，要手动维护）](https://discord.com/channels/1291925535324110879/1427639383317549198)
+# 3. [大标题smaoking（序号连接不上,要手动维护）](https://discord.com/channels/1291925535324110879/1427639383317549198)
 # - [分点+大标题smaoking（这个能用）](https://discord.com/channels/1291925535324110879/1427639383317549198)
 `# - [smaoking](https://discord.com/channels/1291925535324110879/1427639383317549198)`
 

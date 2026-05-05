@@ -3,7 +3,7 @@
 
 版本对比: 184d882(旧) → defb6f3(新/当前)
 
-## 1. 旧版方案（能渲染蜃灵，但破坏食为天）
+## 1. 旧版方案（能渲染蜃灵,但破坏食为天）
 
 旧版 processMessage 流程:
   raw = getChatMessages(messageId).message
@@ -11,12 +11,12 @@
   → formatAsDisplayedMessage(修改后的raw) 重新走一遍酒馆的 markdown+正则 渲染管线
   → $display.html(结果) 整个替换 DOM
 
-问题: formatAsDisplayedMessage 会重新跑酒馆的显示正则(display regex)，
-食为天的 `[界面]前端界面状态栏` 正则把 <StatusPlaceHolderImpl/> 替换成 ```<body><script>$('body').load(...)</script></body>```，
-本来酒馆渲染管线只跑一次这个正则，但蜃灵又调了一次 formatAsDisplayedMessage，
+问题: formatAsDisplayedMessage 会重新跑酒馆的显示正则(display regex),
+食为天的 `[界面]前端界面状态栏` 正则把 <StatusPlaceHolderImpl/> 替换成 ```<body><script>$('body').load(...)</script></body>```,
+本来酒馆渲染管线只跑一次这个正则,但蜃灵又调了一次 formatAsDisplayedMessage,
 导致食为天的状态栏 iframe 渲染出问题（可能是二次处理或上下文丢失）。
 
-## 2. 新版方案（食为天正常，但蜃灵不渲染）
+## 2. 新版方案（食为天正常,但蜃灵不渲染）
 
 新版 processMessage 流程:
   raw = getChatMessages(messageId).message
@@ -26,18 +26,18 @@
   → 用正则匹配 <pre> 的 textContent 来定位锚点
   → 把 <pre> 替换成渲染后的卡片
 
-问题所在: <SLstatusblock>/<memory> 在原始消息中 **没有被 ``` 包裹**，
-所以酒馆的 markdown 渲染器把它们渲染成普通 <p> 段落文本（HTML 标签被 strip），
+问题所在: <SLstatusblock>/<memory> 在原始消息中 **没有被 ``` 包裹**,
+所以酒馆的 markdown 渲染器把它们渲染成普通 <p> 段落文本（HTML 标签被 strip）,
 而不是 <pre><code> 代码块。
 
-collectPreCandidates() 只搜索 <pre> 元素，永远找不到这些内容。
-findBottomAnchor() 返回空 jQuery，applyCard() 中 $anchor.length === 0 直接 return false。
+collectPreCandidates() 只搜索 <pre> 元素,永远找不到这些内容。
+findBottomAnchor() 返回空 jQuery,applyCard() 中 $anchor.length === 0 直接 return false。
 所以蜃灵的卡片从未被插入 DOM。
 
 控制台日志佐证:
   processAll start lastId=2
   processAll done lastId=2
-  （中间没有 "applied" 日志，说明没有任何卡片被成功渲染）
+  （中间没有 "applied" 日志,说明没有任何卡片被成功渲染）
 
 ## 3. 食为天状态栏为什么在新版正常
 
@@ -49,25 +49,25 @@ findBottomAnchor() 返回空 jQuery，applyCard() 中 $anchor.length === 0 直�
   </script>
   </body>
   ```
-注意外面包了 ```（三个反引号），markdown 会把它渲染成 <pre><code>...</code></pre>。
+注意外面包了 ```（三个反引号）,markdown 会把它渲染成 <pre><code>...</code></pre>。
 然后酒馆的 TavernHelper 再把这个 <pre> 处理成 iframe 执行里面的 script。
-这个流程不依赖蜃灵渲染，所以新版不影响它。
+这个流程不依赖蜃灵渲染,所以新版不影响它。
 
 ## 4. 核心矛盾
 
 - 蜃灵的 <SLstatusblock>/<memory>/<time>...<spatial> 标签在 AI 输出中是裸标签（无 ``` 包裹）
-- markdown 渲染后变成普通文本/被 strip，不在 <pre> 里
+- markdown 渲染后变成普通文本/被 strip,不在 <pre> 里
 - 新版 render.ts 只在 <pre> 里找锚点 → 找不到 → 不渲染
-- 旧版直接改 raw 再重新格式化 → 能渲染蜃灵，但重新走管线会破坏食为天的 iframe
+- 旧版直接改 raw 再重新格式化 → 能渲染蜃灵,但重新走管线会破坏食为天的 iframe
 
 ## 5. 修复方向（仅供参考）
 
-方案A: 不局限于 <pre>，在整个 mes_text 的 DOM 中搜索包含蜃灵标签文本内容的节点（可能是 <p>），
+方案A: 不局限于 <pre>,在整个 mes_text 的 DOM 中搜索包含蜃灵标签文本内容的节点（可能是 <p>）,
        用这些节点作为锚点进行替换。需要更灵活的锚点查找逻辑。
 
-方案B: 回到旧版"改 raw + formatAsDisplayedMessage"的思路，但在调用 formatAsDisplayedMessage 之前
-       先把食为天的 <StatusPlaceHolderImpl/> 保护起来（用占位符），渲染完再还原，
+方案B: 回到旧版"改 raw + formatAsDisplayedMessage"的思路,但在调用 formatAsDisplayedMessage 之前
+       先把食为天的 <StatusPlaceHolderImpl/> 保护起来（用占位符）,渲染完再还原,
        避免二次处理食为天的正则。
 
-方案C: 混合方案 - 对蜃灵内容用旧版逻辑（改 raw 重新格式化），但跳过/保护
+方案C: 混合方案 - 对蜃灵内容用旧版逻辑（改 raw 重新格式化）,但跳过/保护
        非蜃灵的正则替换结果（如食为天的 iframe 代码块）。

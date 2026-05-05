@@ -210,8 +210,9 @@ export const STYLE = `<style>
 }
 
 .rbr-textarea {
-  resize: vertical;
+  resize: both;
   min-height: 56px;
+  overflow: auto;
 }
 
 .rbr-inline-btns {
@@ -288,7 +289,8 @@ export const STYLE = `<style>
   font-size: 0.78em;
   font-family: inherit;
   outline: none;
-  resize: none;
+  resize: both;
+  overflow: auto;
   min-height: 34px;
   transition: border-color 0.2s;
 }
@@ -610,6 +612,27 @@ export const STYLE = `<style>
   .rbr-row { flex-wrap: wrap; }
   .rbr-label { width: 100%; min-width: 0; margin-bottom: 2px; }
   .rbr-row-grow { width: 100%; flex-wrap: wrap; }
+  /* section 标题在手机端：标题 + 带文字的按钮组改为上下排布 */
+  .rbr-section-title {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+  .rbr-section-title .rbr-field-actions {
+    width: 100%;
+    display: flex;
+    gap: 6px;
+    justify-content: stretch;
+  }
+  .rbr-section-title .rbr-field-actions .rbr-btn-sm {
+    flex: 1 1 0;
+    text-align: center;
+  }
+  /* 手机端 textarea 宽度被强制 100%，仅保留垂直拖拽 */
+  .rbr-textarea,
+  .rbr-editable-item .rbr-item-desc {
+    resize: vertical;
+  }
   .rbr-field-row {
     flex-wrap: wrap;
     align-items: flex-start;

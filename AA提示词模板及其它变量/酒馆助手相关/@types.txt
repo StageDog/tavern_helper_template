@@ -844,7 +844,7 @@ declare function getProxyPresetNames(): string[];
  * console.info('收到回复: ', result);
  *
  * @example
- * // 使用当前 ST 源，但切换模型
+ * // 使用当前 ST 源,但切换模型
  * const result = await generate({
  *   user_input: '你好',
  *   custom_api: {
@@ -956,7 +956,7 @@ type GenerateConfig = {
   user_input?: string;
 
   /**
-   * 图片输入，支持以下格式：
+   * 图片输入,支持以下格式：
    * - File 对象：通过 input[type="file"] 获取的文件对象
    * - Base64 字符串：图片的 base64 编码
    * - URL 字符串：图片的在线地址
@@ -1062,14 +1062,14 @@ type Overrides = {
  * 所有字段均为可选：
  * - 指定 proxy_preset：使用酒馆代理预设的 URL 和 Key
  * - 指定 apiurl：使用自定义 API 地址
- * - 都不指定：使用当前 ST 源，但可覆盖 model 等参数
+ * - 都不指定：使用当前 ST 源,但可覆盖 model 等参数
  */
 type CustomApiConfig = {
   /**
    * 酒馆代理预设名称。
    * - 预设匹配成功：完全使用预设的 URL 和密码（即使为空也不回退到 custom_api 的字段）
    * - 预设未找到：回退到 custom_api.apiurl 和 custom_api.key
-   * 注意：名称需完全一致（大小写敏感，前后空格会被自动去除）
+   * 注意：名称需完全一致（大小写敏感,前后空格会被自动去除）
    */
   proxy_preset?: string;
   /** 自定义API地址 */
@@ -1950,7 +1950,7 @@ declare class RawCharacter {
   /**
    * 根据名称或头像id查找角色卡数据
    * @param options 查找选项
-   * @returns 找到的角色卡数据，找不到为null
+   * @returns 找到的角色卡数据,找不到为null
    */
   static find({
     name,
@@ -1963,17 +1963,17 @@ declare class RawCharacter {
   /**
    * 根据名称查找角色卡数据在characters数组中的索引（类似this_chid）
    * @param name 角色名称
-   * @returns 角色卡数据在characters数组中的索引，未找到返回-1
+   * @returns 角色卡数据在characters数组中的索引,未找到返回-1
    */
   static findCharacterIndex(name: string): any;
 
   /**
-   * 从服务器获取每个聊天文件的聊天内容，并将其编译成字典。
-   * 该函数遍历提供的聊天元数据列表，并请求每个聊天的实际聊天内容，
+   * 从服务器获取每个聊天文件的聊天内容,并将其编译成字典。
+   * 该函数遍历提供的聊天元数据列表,并请求每个聊天的实际聊天内容,
    *
-   * @param {Array} data - 包含每个聊天的元数据的数组，例如文件名。
-   * @param {boolean} isGroupChat - 一个标志，指示聊天是否为群组聊天。
-   * @returns {Promise<Object>} chat_dict - 一个字典，其中每个键是文件名，值是
+   * @param {Array} data - 包含每个聊天的元数据的数组,例如文件名。
+   * @param {boolean} isGroupChat - 一个标志,指示聊天是否为群组聊天。
+   * @returns {Promise<Object>} chat_dict - 一个字典,其中每个键是文件名,值是
    * 从服务器获取的相应聊天内容。
    */
   static getChatsFromFiles(data: any[], isGroupChat: boolean): Promise<Record<string, any>>;
@@ -2215,7 +2215,7 @@ type TavernRegex = {
   id: string;
   script_name: string;
   enabled: boolean;
-  /** @deprecated 使用新 API 时不再返回此字段，仅在使用旧 scope 参数时返回 */
+  /** @deprecated 使用新 API 时不再返回此字段,仅在使用旧 scope 参数时返回 */
   scope?: 'global' | 'character';
 
   find_regex: string;
@@ -2335,7 +2335,7 @@ declare function substitudeMacros(text: string): string;
 declare function getLastMessageId(): number;
 
 /**
- * 包装任意函数，返回一个会将报错消息通过酒馆通知显示出来的同功能函数
+ * 包装任意函数,返回一个会将报错消息通过酒馆通知显示出来的同功能函数
  *
  * @param fn 要包装的函数
  * @returns 包装后的函数
@@ -3438,7 +3438,7 @@ declare namespace EjsTemplate {
     with_context_disabled: boolean;
     /** 控制台显示详细信息 */
     debug_enabled: boolean;
-    /** 旧设定兼容模式，世界书中的 GENERATE/RENDER/INJECT 条目禁用时视为启用 */
+    /** 旧设定兼容模式,世界书中的 GENERATE/RENDER/INJECT 条目禁用时视为启用 */
     invert_enabled: boolean;
     /** 是否启用后台编译 (用 Web Workers 编译) */
     compile_workers: boolean;
@@ -4455,7 +4455,7 @@ declare function getScriptButtons(): ScriptButton[];
  * replaceScriptButtons([{name: '开始游戏', visible: true}])
  *
  * @example
- * // 点击"前往地点"按钮后，切换为地点选项按钮
+ * // 点击"前往地点"按钮后,切换为地点选项按钮
  * eventOnButton("前往地点" () => {
  *   replaceScriptButtons([{name: '学校', visible: true}, {name: '商店', visible: true}])
  * })

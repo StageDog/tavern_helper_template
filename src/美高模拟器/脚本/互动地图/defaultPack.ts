@@ -17,7 +17,7 @@ export const defaultMapPack: MapPack = {
     // ── 学院俯瞰图（根层级）──────────────────────────
     overview: {
       name: '学院俯瞰图',
-      image: 'https://testingcf.jsdelivr.net/gh/kayanorin/SillyTavernimg/美高模拟器/地图/学院俯瞰图.png',
+      image: 'https://quantil.jsdelivr.net/gh/kayanorin/SillyTavernimg/美高模拟器/地图/学院俯瞰图.png',
       pins: [
         {
           id: 'central_stem',
@@ -134,7 +134,7 @@ export const defaultMapPack: MapPack = {
     // ── 中央剑径 ──────────────────────────────────────
     central_stem: {
       name: '中央剑径',
-      image: 'https://testingcf.jsdelivr.net/gh/kayanorin/SillyTavernimg/美高模拟器/地图/铁百合广场.png',
+      image: 'https://quantil.jsdelivr.net/gh/kayanorin/SillyTavernimg/美高模拟器/地图/铁百合广场.png',
       parentMapId: 'overview',
       pins: [
         {
@@ -171,7 +171,7 @@ export const defaultMapPack: MapPack = {
     // ── 左翼·铁盾区 ──────────────────────────────────
     iron_shield: {
       name: '左翼·铁盾区',
-      image: 'https://testingcf.jsdelivr.net/gh/kayanorin/SillyTavernimg/美高模拟器/地图/体育区.png',
+      image: 'https://quantil.jsdelivr.net/gh/kayanorin/SillyTavernimg/美高模拟器/地图/体育区.png',
       parentMapId: 'overview',
       pins: [
         {
@@ -225,7 +225,7 @@ export const defaultMapPack: MapPack = {
     // ── 右翼·柔瓣区 ──────────────────────────────────
     soft_petal: {
       name: '右翼·柔瓣区',
-      image: 'https://testingcf.jsdelivr.net/gh/kayanorin/SillyTavernimg/美高模拟器/地图/文化区.png',
+      image: 'https://quantil.jsdelivr.net/gh/kayanorin/SillyTavernimg/美高模拟器/地图/文化区.png',
       parentMapId: 'overview',
       pins: [
         {
@@ -270,7 +270,7 @@ export const defaultMapPack: MapPack = {
     // ── 冠部·智慧穹顶 ────────────────────────────────
     dome_of_intellect: {
       name: '冠部·智慧穹顶',
-      image: 'https://testingcf.jsdelivr.net/gh/kayanorin/SillyTavernimg/美高模拟器/地图/教育区.png',
+      image: 'https://quantil.jsdelivr.net/gh/kayanorin/SillyTavernimg/美高模拟器/地图/教育区.png',
       parentMapId: 'overview',
       pins: [
         {
@@ -334,7 +334,7 @@ export const defaultMapPack: MapPack = {
     map_mo4dh288w8: {
       name: '中央行政塔楼内部',
       image:
-        'https://testingcf.jsdelivr.net/gh/kayanorin/SillyTavernimg/美高模拟器/地图/中央行政塔楼与学生会总部-无字版.png',
+        'https://quantil.jsdelivr.net/gh/kayanorin/SillyTavernimg/美高模拟器/地图/中央行政塔楼与学生会总部-无字版.png',
       parentMapId: 'central_stem',
       pins: [
         {

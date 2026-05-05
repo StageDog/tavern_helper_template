@@ -130,6 +130,39 @@ function $pid(id: string): HTMLElement | null {
   return parentDoc.getElementById(id);
 }
 
+// ── textarea 自动撑高（仅增不减，保留用户手动 resize 的尺寸） ──
+function attachAutoGrow(textarea: HTMLTextAreaElement): void {
+  if ((textarea as any).__rbrAutoGrowAttached) return;
+  (textarea as any).__rbrAutoGrowAttached = true;
+
+  const adjust = () => {
+    // 仅当内容溢出当前可视高度时撑高，避免反复缩回与拖拽冲突
+    if (textarea.scrollHeight > textarea.clientHeight + 1) {
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }
+  };
+  textarea.addEventListener('input', adjust);
+  // 程序化 setValue 后会 dispatch 'input'，这里再监听一次冗余兜底
+  textarea.addEventListener('change', adjust);
+  // 初次渲染时若已有内容则撑高
+  setTimeout(adjust, 0);
+}
+
+/** 对容器内（含自身）所有 textarea 应用 auto-grow */
+function applyAutoGrowToAll(root: ParentNode): void {
+  root.querySelectorAll<HTMLTextAreaElement>('textarea').forEach(attachAutoGrow);
+}
+
+/** 设置 input/textarea 的值，并触发 input 事件以驱动 auto-grow 等监听 */
+function setFieldValue(
+  el: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null,
+  value: string,
+): void {
+  if (!el) return;
+  el.value = value;
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
 // ── HTML 构建：整个界面 ───────────────────────────────────────
 function buildStageConfigHtml(): string {
   const presetOptions = Object.entries(PRESETS)
@@ -298,6 +331,8 @@ function renderAreasList(areas: AreaDef[], container: HTMLElement): void {
       renderAreasList(areas, container);
     });
   });
+  // 让区域内的 textarea 根据预设内容自动撑高
+  applyAutoGrowToAll(container);
 }
 
 function renderEscapeItem(e: EscapeDef, idx: number): string {
@@ -320,6 +355,7 @@ function renderEscapesList(escapes: EscapeDef[], container: HTMLElement): void {
       renderEscapesList(escapes, container);
     });
   });
+  applyAutoGrowToAll(container);
 }
 
 function readAreasList(container: HTMLElement): AreaDef[] {
@@ -489,7 +525,7 @@ function bindCharCardEvents(cardEl: HTMLElement, onUpdate: () => void): void {
         default: return;
       }
       const input = cardEl.querySelector<HTMLInputElement | HTMLTextAreaElement>(`[data-field="${field}"]`);
-      if (input) input.value = value;
+      setFieldValue(input, value);
       if (field === 'name') syncDisplay();
     });
   });
@@ -520,8 +556,8 @@ function collectOpeningSceneConfig(): OpeningSceneConfig {
 function applyScenePromptToInputs(scenePrompt: ScenePrompt): void {
   const sceneInput = $pid('rbr-scene-custom') as HTMLTextAreaElement | null;
   const disguiseInput = $pid('rbr-disguise-custom') as HTMLTextAreaElement | null;
-  if (sceneInput) sceneInput.value = scenePrompt.scene;
-  if (disguiseInput) disguiseInput.value = scenePrompt.disguise ?? 'null';
+  setFieldValue(sceneInput, scenePrompt.scene);
+  setFieldValue(disguiseInput, scenePrompt.disguise ?? 'null');
 }
 
 // ── 收集表单数据 ──────────────────────────────────────────────
@@ -694,6 +730,9 @@ function renderOneMessage(message_id: number): void {
     const weatherInput = $pid('rbr-weather') as HTMLInputElement;
     const startBtn = $pid('rbr-start-btn') as HTMLButtonElement;
 
+    // ── 全局 textarea auto-grow（场景设定/伪装身份等） ──
+    applyAutoGrowToAll(card);
+
     let currentAreas: AreaDef[] = [];
     let currentEscapes: EscapeDef[] = [];
     let charCount = 0;
@@ -765,12 +804,12 @@ function renderOneMessage(message_id: number): void {
 
     $pid('rbr-scene-null')?.addEventListener('click', () => {
       const sceneInput = $pid('rbr-scene-custom') as HTMLTextAreaElement | null;
-      if (sceneInput) sceneInput.value = 'null';
+      setFieldValue(sceneInput, 'null');
     });
 
     $pid('rbr-disguise-null')?.addEventListener('click', () => {
       const disguiseInput = $pid('rbr-disguise-custom') as HTMLTextAreaElement | null;
-      if (disguiseInput) disguiseInput.value = 'null';
+      setFieldValue(disguiseInput, 'null');
     });
 
     // ── 角色面板：辅助函数 ──
@@ -783,6 +822,8 @@ function renderOneMessage(message_id: number): void {
       // 默认展开新添加的卡片
       cardEl.querySelector<HTMLElement>('.rbr-char-body')?.classList.add('open');
       cardEl.querySelector<HTMLElement>('.rbr-char-toggle')?.classList.add('open');
+      // 让随机生成的长内容自动撑高
+      applyAutoGrowToAll(cardEl);
     }
 
     $pid('rbr-char-add')?.addEventListener('click', () => addCharCard());
@@ -802,10 +843,10 @@ function renderOneMessage(message_id: number): void {
         });
         const existing = getCharData(cardEl);
         const newData = randomCharData(existing, lockedFields);
-        // 写回
+        // 写回（通过 setFieldValue 触发 input 事件，让 textarea 自动撑高）
         const setField = (field: string, value: string) => {
           const el = cardEl.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(`[data-field="${field}"]`);
-          if (el) el.value = value;
+          setFieldValue(el, value);
         };
         Object.entries(newData).forEach(([k, v]) => setField(k, String(v)));
         // 更新显示名称

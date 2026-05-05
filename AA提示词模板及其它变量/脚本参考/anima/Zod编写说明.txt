@@ -1,30 +1,30 @@
 请你扮演一位精通 JavaScript、Zod 库以及 SillyTavern 扩展开发的程序员。我需要你为我的插件编写一段 Zod Schema 校验脚本。
 
 1. 运行环境说明
-这段脚本将运行在一个沙箱环境中，你不需要 import 任何模块。环境已内置以下全局变量：
+这段脚本将运行在一个沙箱环境中,你不需要 import 任何模块。环境已内置以下全局变量：
 z: Zod 库的核心对象 (v3.x)。
 _: Lodash 库对象。
 utils.autoNum(path, options): 一个自定义的高级数值校验器。
 
 2. 特殊工具：utils.autoNum 使用规范
-凡是涉及数值（Number）类型的字段，请务必使用 utils.autoNum 而不是 z.number()。它可以自动处理模型输出的字符串增量（如 "+10"），并提供了增量限制和自动回退功能。
+凡是涉及数值（Number）类型的字段,请务必使用 utils.autoNum 而不是 z.number()。它可以自动处理模型输出的字符串增量（如 "+10"）,并提供了增量限制和自动回退功能。
 函数签名: utils.autoNum(pathString, optionsObject)
-pathString: 对应数据的路径字符串。注意：必须使用别名路径（如 _user.HP），不要使用真实名字。
+pathString: 对应数据的路径字符串。注意：必须使用别名路径（如 _user.HP）,不要使用真实名字。
 optionsObject 支持的字段：
 min: 最小值 (number)
 max: 最大值 (number)
 maxDelta: 单次最大变化幅度 (number, 绝对值)
 fallback: 初始默认值 (number, 当旧数据不存在时使用)
-priority: 默认为delta（优先满足变化幅度限制），range（强制优先满足 min/max 边界限制，再考虑幅度）
+priority: 默认为delta（优先满足变化幅度限制）,range（强制优先满足 min/max 边界限制,再考虑幅度）
 
 3. 核心机制：通用别名 (_user / _char)
-为了保证脚本的通用性（无论用户或角色改什么名字都能运行），环境已自动注入了以下别名引用：
+为了保证脚本的通用性（无论用户或角色改什么名字都能运行）,环境已自动注入了以下别名引用：
 _user: 指向当前用户的对象（对应 data[UserName]）。
 _char: 指向当前角色的对象（对应 data[CharName]）。
 
 编写要求：
-在定义根 Schema 时，必须使用 _user 或 _char 作为一级 Key，严禁硬编码真实名字（如 "Player", "Alice" 等）。
-在使用 utils.autoNum 指定路径时，也必须以 _user. 或 _char. 开头。
+在定义根 Schema 时,必须使用 _user 或 _char 作为一级 Key,严禁硬编码真实名字（如 "Player", "Alice" 等）。
+在使用 utils.autoNum 指定路径时,也必须以 _user. 或 _char. 开头。
 
 错误示例 ❌：
 JavaScript
@@ -44,9 +44,9 @@ return z.object({
 4. 代码格式要求
 直接返回函数体即可 return z.object({ ... })。
 不要使用 export 或 module.exports。
-如果是复杂的逻辑（如根据某个属性限制数组长度），请使用 .transform() 配合 Lodash (_) 实现。
-如果是类似“背包”、“状态列表”等 Key 不固定的结构，请使用 z.record()。
+如果是复杂的逻辑（如根据某个属性限制数组长度）,请使用 .transform() 配合 Lodash (_) 实现。
+如果是类似“背包”、“状态列表”等 Key 不固定的结构,请使用 z.record()。
 根对象建议使用 .passthrough() 以避免误删未定义的字段。
 
 5. 我的数据结构需求
-请根据以下 YAML 描述和注释要求，编写对应的 Zod 脚本：
+请根据以下 YAML 描述和注释要求,编写对应的 Zod 脚本：
