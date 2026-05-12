@@ -153,6 +153,7 @@ const IFRAME_LAYOUT_CSS = `
 // ── iframe 单例 ──────────────────────────────────────────────
 let $iframe: JQuery<HTMLIFrameElement> | null = null;
 let iframeReady: Promise<Document> | null = null;
+let vvCleanup: (() => void) | null = null;
 
 function ensureIframe(): Promise<Document> {
   if (iframeReady) return iframeReady;
@@ -173,6 +174,27 @@ function ensureIframe(): Promise<Document> {
       .appendTo(parentDoc.body)
       .on('load', () => {
         const doc = $f[0].contentDocument!;
+        const win = $f[0].contentWindow!;
+
+        // ── 手机端键盘行为：让键盘"覆盖"内容，而不是把窗口顶起 ──
+        // 1) interactive-widget=overlays-content：Chromium 108+ 标准做法
+        let metaViewport = doc.querySelector('meta[name="viewport"]');
+        if (!metaViewport) {
+          metaViewport = doc.createElement('meta');
+          metaViewport.setAttribute('name', 'viewport');
+          doc.head.appendChild(metaViewport);
+        }
+        metaViewport.setAttribute(
+          'content',
+          'width=device-width, initial-scale=1, interactive-widget=overlays-content',
+        );
+
+        // 2) VirtualKeyboard API：Chromium 系兜底
+        const vk = (win.navigator as any).virtualKeyboard;
+        if (vk) {
+          try { vk.overlaysContent = true; } catch { /* 老内核不支持，忽略 */ }
+        }
+
         // 注入舞台渲染共享的样式（rbr-* 类）
         // STYLE 已经是 <style>...</style> 字符串，直接 insertAdjacentHTML
         doc.head.insertAdjacentHTML('beforeend', STYLE);
@@ -184,6 +206,27 @@ function ensureIframe(): Promise<Document> {
       });
 
     $iframe = $f;
+
+    // 3) 父窗口 visualViewport 兜底：iOS Safari 等不支持上面两条 API 的浏览器，
+    //    键盘弹出时 visualViewport.height 会变小，把 iframe 同步缩到可见区，
+    //    避免内容被键盘挤出屏幕外。
+    const pvv = window.parent.visualViewport;
+    if (pvv) {
+      const syncSize = () => {
+        $f.css({
+          top: `${pvv.offsetTop}px`,
+          left: `${pvv.offsetLeft}px`,
+          width: `${pvv.width}px`,
+          height: `${pvv.height}px`,
+        });
+      };
+      pvv.addEventListener('resize', syncSize);
+      pvv.addEventListener('scroll', syncSize);
+      vvCleanup = () => {
+        pvv.removeEventListener('resize', syncSize);
+        pvv.removeEventListener('scroll', syncSize);
+      };
+    }
   });
 
   return iframeReady;
@@ -377,6 +420,8 @@ $(() => {
 
 $(window).on('pagehide', () => {
   // 清理 iframe
+  vvCleanup?.();
+  vvCleanup = null;
   $iframe?.remove();
   $iframe = null;
   iframeReady = null;
