@@ -46,15 +46,15 @@ export const BAUHAUS_FONT_TOKENS: ThemeTokens = {
     '"Archivo Black", "Inter", "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", "Helvetica Neue", Helvetica, Arial, sans-serif',
 };
 
-// 涂鸦字体堆叠：标题用 Bungee（粗体几何，街头招牌感），强调 Permanent Marker（手喷漆体）
+// 涂鸦字体堆叠：标题用 Nerko One（街头招牌感），强调 Sedgwick Ave
 // 中文回退到系统粗体黑体
 export const GRAFFITI_FONT_TOKENS: ThemeTokens = {
   '--sl-font-serif':
     '"Inter", "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", "Source Han Sans SC", "Noto Sans CJK SC", "Helvetica Neue", sans-serif',
   '--sl-font-label':
-    '"Bungee", "Permanent Marker", "Archivo Black", "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", "Helvetica Neue", sans-serif',
+    '"Nerko One", "Sedgwick Ave", "Archivo Black", "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", "Helvetica Neue", sans-serif',
   '--sl-font-display':
-    '"Bungee", "Permanent Marker", "Archivo Black", "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", "Helvetica Neue", sans-serif',
+    '"Sedgwick Ave", "Nerko One","Archivo Black", "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", "Helvetica Neue", sans-serif',
 };
 
 export const TOP_BAR_THEMES: ThemeMeta[] = [

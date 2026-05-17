@@ -132,7 +132,7 @@ ${GR_VARS}
 }
 & .sl-row-meta .sl-key {
   font-family: var(--sl-font-label);
-  font-size: 0.66em;
+  font-size: 0.76em;
   letter-spacing: 0.22em;
   font-weight: 900;
   text-transform: uppercase;
@@ -396,7 +396,7 @@ ${GR_VARS}
   color: var(--gr-text);
   padding: 3px 8px;
   font-family: var(--sl-font-label);
-  font-size: 0.62em;
+  font-size: 0.82em;
   letter-spacing: 0.18em;
   font-weight: 900;
   text-transform: uppercase;

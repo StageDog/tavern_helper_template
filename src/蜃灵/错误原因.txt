@@ -71,3 +71,6 @@ findBottomAnchor() 返回空 jQuery,applyCard() 中 $anchor.length === 0 直接 
 
 方案C: 混合方案 - 对蜃灵内容用旧版逻辑（改 raw 重新格式化）,但跳过/保护
        非蜃灵的正则替换结果（如食为天的 iframe 代码块）。
+
+
+
