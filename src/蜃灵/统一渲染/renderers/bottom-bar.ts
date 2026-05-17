@@ -297,8 +297,8 @@ export function renderBottomBar(rawSource: string, ctx: RenderContext): string {
           ${currentTask ? `<div class="sl-block sl-block-currentTask"><div class="sl-block-title">CurrentTask</div><div class="sl-block-body">${nl2br(currentTask)}</div></div>` : ''}
           ${plot ? `<div class="sl-block sl-block-plot"><div class="sl-block-title">Plot</div><div class="sl-block-body">${nl2br(plot)}</div></div>` : ''}
           ${psychology ? `<div class="sl-block sl-block-psychology"><div class="sl-block-title">Psychology</div><div class="sl-block-body">${nl2br(psychology)}</div></div>` : ''}
-          ${list ? renderListBlock(list) : ''}
           ${database ? `<div class="sl-block sl-block-database"><div class="sl-block-title">Database</div><div class="sl-block-body">${nl2br(database)}</div></div>` : ''}
+          ${list ? renderListBlock(list) : ''}
         </div>
       </details>
     </section>`

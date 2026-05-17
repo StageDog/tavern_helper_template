@@ -503,9 +503,9 @@ ${GR_VARS}
   top: 0;
   width: 2px;
   pointer-events: none;
-  transition: height 0.45s cubic-bezier(.4,0,.2,1),
-              top 0.45s cubic-bezier(.4,0,.2,1);
-  z-index: 0;
+  transition: height 0.32s cubic-bezier(.25,.7,.3,1.1),
+              top 0.32s cubic-bezier(.25,.7,.3,1.1);
+  z-index: 2;
 }
 & .sl-block::before {
   right: 18px;
@@ -539,8 +539,8 @@ ${GR_VARS}
 & .sl-block:nth-child(4n+3):hover { box-shadow: 3px 9px 0 0 var(--gr-yellow); }
 & .sl-block:nth-child(4n+4):hover { box-shadow: 3px 9px 0 0 var(--gr-purple); }
 /* hover 时涂鸦双竖线向下伸长（仍保持在 block 内部） */
-& .sl-block:hover::before { height: 30px; }
-& .sl-block:hover::after  { height: 38px; }
+& .sl-block:hover::before { height: 52px; }
+& .sl-block:hover::after  { height: 68px; }
 
 & .sl-block-title {
   font-family: var(--sl-font-display);
@@ -575,41 +575,105 @@ ${GR_VARS}
   line-height: 1.55;
 }
 
-/* —— list 按角色拆分:贴纸式撞色 mini-block,带轻微旋转 —— */
-& .sl-block-list .sl-list-grid {
-  /* 在 multi-column 容器内,改成单列堆叠避免被列再切 */
-  grid-template-columns: 1fr;
-  gap: 10px;
-  margin-top: 6px;
+/* —— list 多角色拆分:每个角色作为独立 mini-block,平等参与 column-count 列流 ——
+ * 仅在解析成功(存在 .sl-list-grid)时触发;回退场景(只有 .sl-block-body)沿用通用 .sl-block 规则
+ */
+& .sl-block-list:has(.sl-list-grid) {
+  display: contents;
 }
-& .sl-block-list .sl-list-char {
+& .sl-block-list:has(.sl-list-grid) > .sl-block-title {
+  display: none;
+}
+& .sl-block-list:has(.sl-list-grid) .sl-list-grid {
+  display: contents;
+}
+& .sl-block-list:has(.sl-list-grid) .sl-list-char {
+  break-inside: avoid;
+  display: block;
   border: 2px solid var(--gr-text);
   background: var(--gr-wall);
-  padding: 6px 10px 8px;
+  padding: 0;
+  margin: 6px 4px 22px;
   position: relative;
+  overflow: visible;
+  box-shadow: none;
+  transform: none;
+  transition: transform 0.32s cubic-bezier(.25,.7,.3,1.1),
+              box-shadow 0.32s cubic-bezier(.25,.7,.3,1.1);
 }
-& .sl-block-list .sl-list-char:nth-child(odd)  { transform: rotate(-0.5deg); }
-& .sl-block-list .sl-list-char:nth-child(even) { transform: rotate(0.5deg); }
-& .sl-block-list .sl-list-char:nth-child(4n+1) { border-left: 6px solid var(--gr-pink); }
-& .sl-block-list .sl-list-char:nth-child(4n+2) { border-left: 6px solid var(--gr-cyan); }
-& .sl-block-list .sl-list-char:nth-child(4n+3) { border-left: 6px solid var(--gr-yellow); }
-& .sl-block-list .sl-list-char:nth-child(4n+4) { border-left: 6px solid var(--gr-purple); }
-& .sl-block-list .sl-list-char-name {
+/* 双竖线喷漆滴痕,几何参数与 .sl-block::before / ::after 一致(P3-3 修正后) */
+& .sl-block-list:has(.sl-list-grid) .sl-list-char::before,
+& .sl-block-list:has(.sl-list-grid) .sl-list-char::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 2px;
+  pointer-events: none;
+  transition: height 0.32s cubic-bezier(.25,.7,.3,1.1),
+              top 0.32s cubic-bezier(.25,.7,.3,1.1);
+  z-index: 2;
+}
+& .sl-block-list:has(.sl-list-grid) .sl-list-char::before {
+  right: 18px;
+  background: var(--gr-pink);
+  height: 14px;
+}
+& .sl-block-list:has(.sl-list-grid) .sl-list-char::after {
+  right: 26px;
+  background: var(--gr-cyan);
+  height: 18px;
+}
+/* nth-child 配色:双竖线随角色顺序轮换 */
+& .sl-block-list:has(.sl-list-grid) .sl-list-char:nth-child(4n+1)::before { background: var(--gr-pink); }
+& .sl-block-list:has(.sl-list-grid) .sl-list-char:nth-child(4n+1)::after  { background: var(--gr-yellow); }
+& .sl-block-list:has(.sl-list-grid) .sl-list-char:nth-child(4n+2)::before { background: var(--gr-cyan); }
+& .sl-block-list:has(.sl-list-grid) .sl-list-char:nth-child(4n+2)::after  { background: var(--gr-pink); }
+& .sl-block-list:has(.sl-list-grid) .sl-list-char:nth-child(4n+3)::before { background: var(--gr-yellow); }
+& .sl-block-list:has(.sl-list-grid) .sl-list-char:nth-child(4n+3)::after  { background: var(--gr-purple); }
+& .sl-block-list:has(.sl-list-grid) .sl-list-char:nth-child(4n+4)::before { background: var(--gr-purple); }
+& .sl-block-list:has(.sl-list-grid) .sl-list-char:nth-child(4n+4)::after  { background: var(--gr-cyan); }
+
+/* hover:轻微倾斜 + 向下延伸的彩色阴影 */
+& .sl-block-list:has(.sl-list-grid) .sl-list-char:nth-child(odd):hover  { transform: rotate(-0.8deg); }
+& .sl-block-list:has(.sl-list-grid) .sl-list-char:nth-child(even):hover { transform: rotate(0.8deg); }
+& .sl-block-list:has(.sl-list-grid) .sl-list-char:nth-child(4n+1):hover { box-shadow: 3px 9px 0 0 var(--gr-pink); }
+& .sl-block-list:has(.sl-list-grid) .sl-list-char:nth-child(4n+2):hover { box-shadow: 3px 9px 0 0 var(--gr-cyan); }
+& .sl-block-list:has(.sl-list-grid) .sl-list-char:nth-child(4n+3):hover { box-shadow: 3px 9px 0 0 var(--gr-yellow); }
+& .sl-block-list:has(.sl-list-grid) .sl-list-char:nth-child(4n+4):hover { box-shadow: 3px 9px 0 0 var(--gr-purple); }
+& .sl-block-list:has(.sl-list-grid) .sl-list-char:hover::before { height: 52px; }
+& .sl-block-list:has(.sl-list-grid) .sl-list-char:hover::after  { height: 68px; }
+
+/* 角色名:撞色头条 mini-block-title,nth-child 4n 轮换 */
+& .sl-block-list:has(.sl-list-grid) .sl-list-char-name {
   font-family: var(--sl-font-display);
-  font-size: 0.76em;
+  font-size: 0.78em;
   font-weight: 900;
-  letter-spacing: 0.18em;
-  color: var(--gr-yellow);
-  margin-bottom: 6px;
-  padding-bottom: 4px;
-  border-bottom: 1px dashed var(--gr-text);
+  letter-spacing: 0.22em;
+  color: var(--gr-bg);
   text-transform: uppercase;
-  text-shadow: 1px 1px 0 var(--gr-pink);
+  margin: 0;
+  padding: 5px 10px;
+  border: 0;
+  position: relative;
+  z-index: 1;
+  text-shadow: none;
+  background: var(--gr-lime);
 }
-& .sl-block-list .sl-list-char-items {
-  padding-left: 18px;
+& .sl-block-list:has(.sl-list-grid) .sl-list-char:nth-child(4n+1) .sl-list-char-name { background: var(--gr-cyan); }
+& .sl-block-list:has(.sl-list-grid) .sl-list-char:nth-child(4n+2) .sl-list-char-name { background: var(--gr-pink); color: var(--gr-text); }
+& .sl-block-list:has(.sl-list-grid) .sl-list-char:nth-child(4n+3) .sl-list-char-name { background: var(--gr-yellow); }
+& .sl-block-list:has(.sl-list-grid) .sl-list-char:nth-child(4n+4) .sl-list-char-name { background: var(--gr-purple); color: var(--gr-text); }
+
+/* 角色 items:mini-block body */
+& .sl-block-list:has(.sl-list-grid) .sl-list-char-items {
+  padding: 10px 30px 12px;
+  margin: 0;
+  font-family: var(--sl-font-serif);
   font-size: 0.92em;
+  line-height: 1.55;
   color: var(--gr-text);
+  position: relative;
+  z-index: 1;
 }
 
 @media (max-width: 1100px) {
