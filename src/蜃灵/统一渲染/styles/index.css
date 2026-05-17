@@ -803,11 +803,11 @@
 }
 
 @media (max-width: 480px) {
-  /* 极窄屏:隐藏左右细线,只留文字,避免 key 把行挤换行 */
+  /* 极窄屏:左右细线进一步缩短到 8px,保留杂志风修饰但不挤爆行 */
   .sl-unified-card[data-theme-id="gjsz"] .sl-key::before,
   .sl-unified-card[data-theme-id="gjsz"] .sl-key::after,
   .sl-unified-card[data-theme-id="gjsz-deep"] .sl-key::before,
   .sl-unified-card[data-theme-id="gjsz-deep"] .sl-key::after {
-    display: none;
+    width: 8px;
   }
 }
