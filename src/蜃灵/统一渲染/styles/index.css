@@ -268,11 +268,20 @@
   color: var(--sl-muted);
 }
 
+.sl-acc-action::before {
+  content: "展卷";
+}
+
 .sl-acc[open] .sl-acc-action,
 .sl-memory-details[open] .sl-acc-action {
   background: var(--sl-accent);
   color: var(--sl-panel-bg);
   border-color: var(--sl-accent);
+}
+
+.sl-acc[open] .sl-acc-action::before,
+.sl-memory-details[open] .sl-acc-action::before {
+  content: "收卷";
 }
 
 .sl-acc-body {
@@ -284,6 +293,26 @@
   grid-template-columns: 84px 1fr;
   gap: 9px;
   margin-bottom: 6px;
+}
+
+/* 默认主题（gjsz / gjsz-deep）专属：标签框垂直居中、内文字居中、内边距宽松。
+   news/bauhaus/graffiti 各自的 extraCss 优先级更高，不受影响。 */
+.sl-unified-card[data-theme-id="gjsz"] .sl-detail,
+.sl-unified-card[data-theme-id="gjsz-deep"] .sl-detail,
+.sl-unified-card.sl-theme-bottom-gjsz .sl-detail,
+.sl-unified-card.sl-theme-bottom-gjsz-deep .sl-detail {
+  align-items: center;
+}
+.sl-unified-card[data-theme-id="gjsz"] .sl-detail .sl-key,
+.sl-unified-card[data-theme-id="gjsz-deep"] .sl-detail .sl-key,
+.sl-unified-card.sl-theme-bottom-gjsz .sl-detail .sl-key,
+.sl-unified-card.sl-theme-bottom-gjsz-deep .sl-detail .sl-key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 9px;
 }
 
 .sl-thought {
@@ -400,6 +429,45 @@
 .sl-unified-card .sl-news-colophon,
 .sl-unified-card .sl-news-rule {
   display: none;
+}
+
+/* 音乐 chip：歌名/歌手 + 播放按钮 */
+.sl-unified-card .sl-music-chip {
+  align-items: center;
+}
+
+.sl-unified-card .sl-music-text {
+  font-style: italic;
+  opacity: 0.92;
+}
+
+.sl-unified-card .sl-music-btn {
+  flex: 0 0 auto;
+  background: transparent;
+  border: 1px solid var(--sl-border-thin);
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  font-size: 10px;
+  color: var(--sl-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+  margin-left: 6px;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.sl-unified-card .sl-music-btn:hover {
+  color: var(--sl-accent);
+  border-color: var(--sl-accent);
+}
+
+.sl-unified-card .sl-music-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
 }
 
 #sl-theme-modal {
@@ -539,6 +607,29 @@
 
   .sl-unified-card .sl-divider {
     display: none;
+  }
+
+  /* 默认主题（gjsz）窄屏：顶栏 chip 标签独占一行
+     定制主题对 .sl-row-xxx .sl-chip 的覆盖具更高优先级，不受影响 */
+  .sl-unified-card .sl-row .sl-chip {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  /* 默认主题（gjsz）窄屏：底部 .sl-detail 标签上下布局
+     定制主题对 .sl-acc-body .sl-detail 的覆盖具更高优先级，不受影响 */
+  .sl-unified-card .sl-detail {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .sl-unified-card .sl-detail .sl-key {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    white-space: normal;
+    text-align: left;
+    padding: 4px 9px;
   }
 
   #sl-theme-modal {

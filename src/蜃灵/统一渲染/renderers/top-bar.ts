@@ -1,12 +1,41 @@
 import type { RenderContext, ReplaceTarget } from '../types';
-import { nl2br } from '../utils/escape';
+import { escapeHtml, nl2br } from '../utils/escape';
 import { getThemeMeta } from '../themes';
 
 const TOP_BLOCK_RE =
   /<time>([\s\S]*?)<\/time>[\s\S]*?<location>([\s\S]*?)<\/location>[\s\S]*?<weather>([\s\S]*?)<\/weather>[\s\S]*?<spatial>([\s\S]*?)<\/spatial>/i;
 
+const MUSIC_RE = /[《<]([^》>]+)[》>]\s*(.+)/;
+
 function clean(value: string): string {
   return value.trim();
+}
+
+function parseMusic(spatial: string): { name: string; artist: string; keyword: string } | null {
+  const m = spatial.match(MUSIC_RE);
+  if (!m) return null;
+  const name = m[1].trim();
+  const artist = m[2].trim();
+  if (!name || !artist) return null;
+  return { name, artist, keyword: `${name} ${artist}` };
+}
+
+function renderMusicChip(spatial: string): string {
+  const music = parseMusic(spatial);
+  if (music) {
+    const text = `《${escapeHtml(music.name)}》${escapeHtml(music.artist)}`;
+    const keyword = escapeHtml(music.keyword);
+    return `<div class="sl-chip sl-chip-praesentia sl-music-chip">
+        <span class="sl-key">Praesentia</span>
+        <span class="sl-val sl-music-text">${text}</span>
+        <button type="button" class="sl-music-btn" data-sl-music-keyword="${keyword}" title="播放">▶</button>
+      </div>`;
+  }
+  return `<div class="sl-chip sl-chip-praesentia sl-music-chip">
+        <span class="sl-key">Praesentia</span>
+        <span class="sl-val sl-music-text">${nl2br(spatial)}</span>
+        <button type="button" class="sl-music-btn" style="display:none" aria-hidden="true" tabindex="-1">▶</button>
+      </div>`;
 }
 
 export function findTopTarget(raw: string, messageId: number): ReplaceTarget | null {
@@ -57,7 +86,7 @@ export function renderTopBar(rawSource: string, ctx: RenderContext): string {
       <div class="sl-row sl-row-news">
         <div class="sl-chip sl-chip-caelum"><span class="sl-key">Caelum</span><span class="sl-val">${nl2br(weather)}</span></div>
         <span class="sl-divider">❦</span>
-        <div class="sl-chip sl-chip-praesentia"><span class="sl-key">Praesentia</span><span class="sl-val">${nl2br(spatial)}</span></div>
+        ${renderMusicChip(spatial)}
       </div>
     </div>
     <div class="sl-news-colophon" aria-hidden="true">— 蜃灵 §I — Liber Mundi · All Realms Reserved</div>

@@ -1,5 +1,6 @@
 import { teleportStyle } from '@util/script';
 import { initRenderer, bindBranchClickAppender } from './render';
+import { bindMusicPlayer } from './music-player';
 import { ensureCleanupRegex, disableCleanupRegex } from './regex-bootstrap';
 import { getThemeSelection } from './state';
 import { toggleThemeModal } from './theme-modal';
@@ -35,6 +36,7 @@ $(async () => {
 
   const renderer = initRenderer(() => context);
   const clickBinding = bindBranchClickAppender();
+  const musicBinding = bindMusicPlayer();
   console.info('[蜃灵统一渲染][boot] renderer initialized');
 
   appendInexistentScriptButtons([{ name: BUTTON_NAME, visible: true }]);
@@ -62,6 +64,7 @@ $(async () => {
     }
     renderer.destroy();
     clickBinding.destroy();
+    musicBinding.destroy();
     removeThemeVars();
     teleported.destroy();
     const w = window.parent || window;

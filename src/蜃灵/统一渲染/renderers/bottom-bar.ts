@@ -133,7 +133,7 @@ export function renderBottomBar(rawSource: string, ctx: RenderContext): string {
             <summary class="sl-acc-head">
               <span class="sl-acc-mark">§</span>
               <span class="sl-acc-name">${escapeHtml(person.name)}</span>
-              <span class="sl-acc-action">展卷</span>
+              <span class="sl-acc-action"></span>
             </summary>
             <div class="sl-acc-body">
               ${
@@ -213,7 +213,7 @@ export function renderBottomBar(rawSource: string, ctx: RenderContext): string {
       <details class="sl-memory-details">
         <summary class="sl-memory-summary">
           <span class="sl-section-title">第<span class="sl-vol-num">${escapeHtml(number || '?')}</span>卷 · 小总结</span>
-          <span class="sl-acc-action">展卷</span>
+          <span class="sl-acc-action"></span>
         </summary>
         <div class="sl-memory-body">
           ${worldstate ? `<div class="sl-block sl-block-worldstate"><div class="sl-block-title">Worldstate</div><div class="sl-block-body">${nl2br(worldstate)}</div></div>` : ''}

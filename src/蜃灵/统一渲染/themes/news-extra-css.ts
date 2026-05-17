@@ -136,6 +136,20 @@ export const NEWS_TOP_EXTRA_CSS = `
   border: 1px solid var(--sl-border);
   background: var(--sl-chip-bg);
 }
+/* 音乐 chip 在报纸 sidebar 下需要给按钮腾出右上角空间 */
+& .sl-row-news .sl-chip-praesentia.sl-music-chip {
+  position: relative;
+  padding-right: 36px;
+}
+& .sl-row-news .sl-chip-praesentia .sl-music-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  margin-left: 0;
+  border-color: var(--sl-accent);
+  color: var(--sl-accent);
+  background: var(--sl-panel-bg);
+}
 & .sl-row-news .sl-chip-caelum > .sl-key,
 & .sl-row-news .sl-chip-praesentia > .sl-key {
   display: block;
@@ -202,6 +216,14 @@ export const NEWS_TOP_EXTRA_CSS = `
   & .sl-row-meta {
     flex-wrap: wrap;
     justify-content: flex-start;
+  }
+  & .sl-row-meta .sl-chip {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+  & .sl-row-meta .sl-key {
+    margin-right: 0;
   }
   & .sl-card-title {
     font-size: 1.9em;
@@ -394,19 +416,20 @@ export const NEWS_BOTTOM_EXTRA_CSS = `
   color: var(--sl-accent);
 }
 
-/* —— 小总结 body：grid auto-fit 多栏 —— */
+/* —— 小总结 body：multi-column 报纸排版，长短不一时自动均衡 —— */
 & .sl-memory-body {
   margin-top: 14px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 14px;
-  align-items: start;
+  column-count: 3;
+  column-gap: 16px;
+  column-rule: 1px solid var(--sl-border-thin);
 }
 & .sl-block {
+  break-inside: avoid;
+  display: block;
   border: 1px solid var(--sl-border);
   background: transparent;
   padding: 10px 12px 12px;
-  margin-bottom: 0;
+  margin: 0 0 14px;
   position: relative;
 }
 & .sl-block-title {
@@ -460,12 +483,29 @@ export const NEWS_BOTTOM_EXTRA_CSS = `
   font-variant: small-caps;
 }
 
+@media (max-width: 1100px) {
+  & .sl-memory-body {
+    column-count: 2;
+  }
+}
+
 @media (max-width: 760px) {
   & .sl-card-title {
     font-size: 1.6em;
   }
   & .sl-memory-body {
+    column-count: 1;
+    column-rule: none;
+  }
+  & .sl-acc-body .sl-detail {
     grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  & .sl-acc-body .sl-detail .sl-key {
+    display: block;
+    width: 100%;
+    white-space: normal;
+    padding-bottom: 2px;
   }
 }
 `;

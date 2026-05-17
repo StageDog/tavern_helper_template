@@ -183,6 +183,30 @@ export const BAUHAUS_TOP_EXTRA_CSS = `
   color: var(--bh-black);
 }
 
+/* 音乐 chip：按钮绝对定位到右上角，避免占用 chip 列内空间 */
+& .sl-row-news .sl-chip-praesentia.sl-music-chip {
+  padding-right: 56px;
+}
+& .sl-row-news .sl-chip-praesentia .sl-music-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  margin-left: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 0;
+  border: 2px solid var(--bh-black);
+  background: var(--bh-yellow);
+  color: var(--bh-black);
+  font-weight: 900;
+  z-index: 3;
+}
+& .sl-row-news .sl-chip-praesentia .sl-music-btn:hover {
+  background: var(--bh-red);
+  color: #FFFFFF;
+  border-color: var(--bh-black);
+}
+
 @media (max-width: 760px) {
   & .sl-row-meta,
   & .sl-row-news {
@@ -477,6 +501,17 @@ export const BAUHAUS_BOTTOM_EXTRA_CSS = `
 
 @media (max-width: 760px) {
   & .sl-card-title { font-size: 1.6em; }
+  /* 窄屏：标签独占一行 + 内容在下 */
+  & .sl-acc-body .sl-detail {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  & .sl-acc-body .sl-detail .sl-key {
+    display: block;
+    width: 100%;
+    text-align: center;
+    align-self: stretch;
+  }
 }
 `;
 
@@ -616,6 +651,25 @@ export const BAUHAUS_BRANCH_EXTRA_CSS = `
   margin-top: 12px;
   text-transform: uppercase;
   font-weight: 700;
+}
+
+@media (max-width: 760px) {
+  /* 窄屏：单列堆叠，避免长文本被 grid auto 1fr auto 挤压换行 */
+  & .sl-branch-btn {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 10px 12px;
+  }
+  & .sl-branch-key {
+    justify-self: start;
+  }
+  & .sl-branch-text {
+    display: block;
+    width: 100%;
+  }
+  & .sl-branch-arrow {
+    justify-self: end;
+  }
 }
 `;
 

@@ -202,6 +202,31 @@ ${GR_VARS}
   font-weight: 600;
 }
 
+/* 音乐 chip：按钮绝对定位到右上角 */
+& .sl-row-news .sl-chip-praesentia.sl-music-chip {
+  position: relative;
+  padding-right: 44px;
+}
+& .sl-row-news .sl-chip-praesentia .sl-music-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  margin-left: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--gr-yellow);
+  background: var(--gr-wall);
+  color: var(--gr-yellow);
+  font-weight: 900;
+  z-index: 3;
+  text-shadow: 0 0 4px rgba(230, 203, 67, 0.55);
+}
+& .sl-row-news .sl-chip-praesentia .sl-music-btn:hover {
+  background: var(--gr-yellow);
+  color: var(--gr-bg);
+}
+
 @media (max-width: 760px) {
   & .sl-row-meta { grid-template-columns: 1fr; }
   & .sl-row-news { grid-template-columns: 1fr; }
@@ -449,19 +474,19 @@ ${GR_VARS}
   color: var(--gr-bg);
 }
 
-/* —— 小总结 body：静置无阴影，右上角双竖线涂鸦；hover 倾斜 + 阴影向下延伸 + 涂鸦伸长 —— */
+/* —— 小总结 body：multi-column 排版；为 hover 时 transform 与 box-shadow 预留位移空间 —— */
 & .sl-memory-body {
   margin-top: 16px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 18px 14px;
-  align-items: start;
+  column-count: 3;
+  column-gap: 18px;
 }
 & .sl-block {
+  break-inside: avoid;
+  display: block;
   border: 2px solid var(--gr-text);
   background: var(--gr-wall);
   padding: 0;
-  margin-bottom: 0;
+  margin: 6px 4px 22px;
   position: relative;
   overflow: visible;
   box-shadow: none;
@@ -549,9 +574,24 @@ ${GR_VARS}
   line-height: 1.55;
 }
 
+@media (max-width: 1100px) {
+  & .sl-memory-body { column-count: 2; }
+}
+
 @media (max-width: 760px) {
   & .sl-card-title { font-size: 1.7em; }
-  & .sl-memory-body { grid-template-columns: 1fr; }
+  & .sl-memory-body { column-count: 1; }
+  /* 窄屏：标签独占一行 + 内容在下 */
+  & .sl-acc-body .sl-detail {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  & .sl-acc-body .sl-detail .sl-key {
+    display: block;
+    width: 100%;
+    text-align: center;
+    align-self: stretch;
+  }
 }
 `;
 
@@ -679,5 +719,24 @@ ${GR_VARS}
   margin-top: 12px;
   text-transform: uppercase;
   font-weight: 900;
+}
+
+@media (max-width: 760px) {
+  /* 窄屏：单列堆叠，保留贴纸 ±0.5deg 倾斜装饰 */
+  & .sl-branch-btn {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 12px 14px;
+  }
+  & .sl-branch-key {
+    justify-self: start;
+  }
+  & .sl-branch-text {
+    display: block;
+    width: 100%;
+  }
+  & .sl-branch-arrow {
+    justify-self: end;
+  }
 }
 `;
