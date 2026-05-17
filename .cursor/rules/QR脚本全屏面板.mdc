@@ -73,3 +73,70 @@ iframe 自身就是独立的定位上下文，免疫父文档任何 transform �
 ## 排查口诀
 
 手机端面板"只露一条边"→ 99% 是 `position: fixed` 被祖先 transform 击穿 → 优先想 iframe 隔离，CSS 加固只是降级方案。
+
+## 手机端键盘把窗口顶起的处理（iframe 方案下）
+
+### 问题症状
+
+iframe 弹窗里的 input/textarea 获得焦点后，整个面板被键盘顶上去，只露出顶部一半，底部按钮看不见也点不到。希望的效果是：**键盘覆盖在面板上面，面板本身不动**。
+
+### 根本原因
+
+浏览器默认行为是 `interactive-widget=resizes-visual`：键盘弹出时让 visual viewport 缩小，并把焦点元素"滚进可见区"。即便 iframe 本身是 `position: fixed`，被聚焦的输入元素仍会触发浏览器自动滚动/位移，连带把整个 iframe 视觉上顶上去。
+
+### 解决方案：三招组合（在 iframe `load` 回调里全部加上）
+
+```ts
+.on('load', () => {
+  const doc = $f[0].contentDocument!;
+  const win = $f[0].contentWindow!;
+
+  // 1) interactive-widget=overlays-content — Chromium 108+ 标准
+  //    告诉浏览器键盘弹出时不要动 viewport，直接覆盖
+  let metaViewport = doc.querySelector('meta[name="viewport"]');
+  if (!metaViewport) {
+    metaViewport = doc.createElement('meta');
+    metaViewport.setAttribute('name', 'viewport');
+    doc.head.appendChild(metaViewport);
+  }
+  metaViewport.setAttribute(
+    'content',
+    'width=device-width, initial-scale=1, interactive-widget=overlays-content',
+  );
+
+  // 2) VirtualKeyboard API — Chromium 系兜底，效果同 1
+  const vk = (win.navigator as any).virtualKeyboard;
+  if (vk) {
+    try { vk.overlaysContent = true; } catch { /* 老内核不支持，忽略 */ }
+  }
+
+  // ...其它样式 / 渲染初始化
+});
+
+// 3) 父窗口 visualViewport — iOS Safari 等不支持 1+2 的浏览器兜底
+//    键盘弹出时 visualViewport.height 会变小，把 iframe 同步缩到可见区，
+//    让键盘自然落在 iframe 下方，而不是把 iframe 顶上去
+const pvv = window.parent.visualViewport;
+if (pvv) {
+  const syncSize = () => {
+    $f.css({
+      top: `${pvv.offsetTop}px`,
+      left: `${pvv.offsetLeft}px`,
+      width: `${pvv.width}px`,
+      height: `${pvv.height}px`,
+    });
+  };
+  pvv.addEventListener('resize', syncSize);
+  pvv.addEventListener('scroll', syncSize);
+  // 卸载时记得 removeEventListener，避免 visualViewport 监听泄漏
+}
+```
+
+三招分工：
+
+- **1 + 2** 让 Chromium 系内核（安卓酒馆主流）直接以覆盖方式弹键盘，iframe 完全不动
+- **3** 在 iOS Safari 等不支持 1+2 的浏览器上兜底：visualViewport 缩小时把 iframe 同步缩到可见区，效果是"iframe 让出键盘空间"，达成与"覆盖"近似的视觉
+
+### 参考实现
+
+`src/Run Baby Run/脚本/角色生成/index.ts` 的 `ensureIframe()` 函数。
