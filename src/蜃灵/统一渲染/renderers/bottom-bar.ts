@@ -61,6 +61,83 @@ function pickField(fields: Record<string, string>, keys: string[]): string {
   return '';
 }
 
+function parseListByCharacter(raw: string): Array<{ name: string; items: string[] }> {
+  const lines = raw.split(/\r?\n/);
+  const result: Array<{ name: string; items: string[] }> = [];
+  let current: { name: string; items: string[] } | null = null;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    // 方案 A: [角色名]
+    const bracketHead = trimmed.match(/^\[([^\]\/][^\]]*)\]$/);
+    if (bracketHead) {
+      current = { name: bracketHead[1].trim(), items: [] };
+      result.push(current);
+      continue;
+    }
+
+    // 方案 B: 角色名:（独占一行,以冒号结尾,排除项目符号开头）
+    if (!/^[-*•]/.test(trimmed)) {
+      const colonHead = trimmed.match(/^([^:：]{1,30})[:：]$/);
+      if (colonHead) {
+        current = { name: colonHead[1].trim(), items: [] };
+        result.push(current);
+        continue;
+      }
+    }
+
+    // 项目符号 list item
+    const itemMatch = trimmed.match(/^[-*•]\s*(.+)$/);
+    if (itemMatch) {
+      if (!current) {
+        current = { name: '', items: [] };
+        result.push(current);
+      }
+      current.items.push(itemMatch[1].trim());
+      continue;
+    }
+
+    // 普通文本行(非项目符号、非角色头)
+    if (current) {
+      current.items.push(trimmed);
+    } else {
+      current = { name: '', items: [trimmed] };
+      result.push(current);
+    }
+  }
+
+  // 全部解析失败 → 回退:整段当作匿名分组的单一 item
+  if (result.length === 0) {
+    return [{ name: '', items: [raw.trim()] }];
+  }
+  return result;
+}
+
+function renderListBlock(list: string): string {
+  const parsed = parseListByCharacter(list);
+  const hasNamedSplit = parsed.some(c => c.name);
+
+  if (!hasNamedSplit) {
+    // 回退:整段 nl2br
+    return `<div class="sl-block sl-block-list"><div class="sl-block-title">List</div><div class="sl-block-body">${nl2br(list)}</div></div>`;
+  }
+
+  const charsHtml = parsed
+    .map(char => {
+      const itemsHtml = char.items.map(item => `<li>${escapeHtml(item)}</li>`).join('');
+      const nameHtml = char.name ? `<div class="sl-list-char-name">${escapeHtml(char.name)}</div>` : '';
+      return `<div class="sl-list-char">${nameHtml}<ul class="sl-list-char-items">${itemsHtml}</ul></div>`;
+    })
+    .join('');
+
+  return `<div class="sl-block sl-block-list">
+    <div class="sl-block-title">List</div>
+    <div class="sl-list-grid">${charsHtml}</div>
+  </div>`;
+}
+
 export function findBottomTarget(raw: string, messageId: number): ReplaceTarget | null {
   const statusMatch = raw.match(STATUS_BLOCK_RE);
   const memoryMatch = raw.match(MEMORY_BLOCK_RE);
@@ -220,7 +297,7 @@ export function renderBottomBar(rawSource: string, ctx: RenderContext): string {
           ${currentTask ? `<div class="sl-block sl-block-currentTask"><div class="sl-block-title">CurrentTask</div><div class="sl-block-body">${nl2br(currentTask)}</div></div>` : ''}
           ${plot ? `<div class="sl-block sl-block-plot"><div class="sl-block-title">Plot</div><div class="sl-block-body">${nl2br(plot)}</div></div>` : ''}
           ${psychology ? `<div class="sl-block sl-block-psychology"><div class="sl-block-title">Psychology</div><div class="sl-block-body">${nl2br(psychology)}</div></div>` : ''}
-          ${list ? `<div class="sl-block sl-block-list"><div class="sl-block-title">List</div><div class="sl-block-body">${nl2br(list)}</div></div>` : ''}
+          ${list ? renderListBlock(list) : ''}
           ${database ? `<div class="sl-block sl-block-database"><div class="sl-block-title">Database</div><div class="sl-block-body">${nl2br(database)}</div></div>` : ''}
         </div>
       </details>

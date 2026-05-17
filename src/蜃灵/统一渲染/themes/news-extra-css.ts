@@ -130,18 +130,18 @@ export const NEWS_TOP_EXTRA_CSS = `
   padding-right: 14px;
   border-right: 1px solid var(--sl-border-thin);
 }
-& .sl-row-news .sl-chip-praesentia {
+& .sl-row-news .sl-chip-CANTUS {
   /* sidebar 样式 */
   padding: 6px 8px;
   border: 1px solid var(--sl-border);
   background: var(--sl-chip-bg);
 }
 /* 音乐 chip 在报纸 sidebar 下需要给按钮腾出右上角空间 */
-& .sl-row-news .sl-chip-praesentia.sl-music-chip {
+& .sl-row-news .sl-chip-CANTUS.sl-music-chip {
   position: relative;
   padding-right: 36px;
 }
-& .sl-row-news .sl-chip-praesentia .sl-music-btn {
+& .sl-row-news .sl-chip-CANTUS .sl-music-btn {
   position: absolute;
   top: 6px;
   right: 6px;
@@ -151,7 +151,7 @@ export const NEWS_TOP_EXTRA_CSS = `
   background: var(--sl-panel-bg);
 }
 & .sl-row-news .sl-chip-caelum > .sl-key,
-& .sl-row-news .sl-chip-praesentia > .sl-key {
+& .sl-row-news .sl-chip-CANTUS > .sl-key {
   display: block;
   font-size: 0.72em;
   font-weight: 900;
@@ -166,7 +166,7 @@ export const NEWS_TOP_EXTRA_CSS = `
   text-transform: uppercase;
 }
 & .sl-row-news .sl-chip-caelum > .sl-val,
-& .sl-row-news .sl-chip-praesentia > .sl-val {
+& .sl-row-news .sl-chip-CANTUS > .sl-val {
   display: block;
   text-align: justify;
   hyphens: auto;
@@ -184,7 +184,7 @@ export const NEWS_TOP_EXTRA_CSS = `
   color: var(--sl-accent);
 }
 /* sidebar 内容字号略小、紧凑 */
-& .sl-row-news .sl-chip-praesentia > .sl-val {
+& .sl-row-news .sl-chip-CANTUS > .sl-val {
   font-size: 0.88em;
   line-height: 1.6;
 }
@@ -469,6 +469,35 @@ export const NEWS_BOTTOM_EXTRA_CSS = `
   line-height: 1.65;
 }
 
+/* —— list 按角色拆分:在 multi-column 下让整块占满全宽,避免被列再切 —— */
+& .sl-block-list {
+  column-span: all;
+}
+& .sl-block-list .sl-list-grid {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 6px;
+}
+& .sl-block-list .sl-list-char {
+  border-left: 2px solid var(--sl-accent);
+  background: var(--sl-key-bg);
+  padding: 6px 10px;
+}
+& .sl-block-list .sl-list-char-name {
+  font-family: var(--sl-font-display);
+  font-size: 0.78em;
+  letter-spacing: 0.18em;
+  color: var(--sl-accent);
+  margin-bottom: 6px;
+  border-bottom: 1px dotted var(--sl-border-thin);
+  padding-bottom: 3px;
+  text-transform: uppercase;
+}
+& .sl-block-list .sl-list-char-items {
+  padding-left: 20px;
+  font-size: 0.92em;
+}
+
 /* —— 底部 colophon —— */
 & .sl-news-colophon {
   display: block;
@@ -601,5 +630,17 @@ export const NEWS_BRANCH_EXTRA_CSS = `
   padding-top: 6px;
   margin-top: 10px;
   font-variant: small-caps;
+}
+
+@media (max-width: 760px) {
+  /* 窄屏：避免 OPTION 标题与副标题在同一行挤压 */
+  & .sl-card-head {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  & .sl-card-title {
+    white-space: nowrap;
+    letter-spacing: 0.1em;
+  }
 }
 `;

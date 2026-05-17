@@ -150,8 +150,8 @@ export const BAUHAUS_TOP_EXTRA_CSS = `
 & .sl-row-meta .sl-chip-locus::after   { background: var(--bh-yellow); }
 & .sl-row-news .sl-chip-caelum::before { background: var(--bh-blue); }
 & .sl-row-news .sl-chip-caelum::after  { background: var(--bh-red); }
-& .sl-row-news .sl-chip-praesentia::before { background: var(--bh-yellow); }
-& .sl-row-news .sl-chip-praesentia::after  { background: var(--bh-black); }
+& .sl-row-news .sl-chip-CANTUS::before { background: var(--bh-yellow); }
+& .sl-row-news .sl-chip-CANTUS::after  { background: var(--bh-black); }
 
 /* hover：上浮 + 黑色实心阴影 + 角标旋转，4 个模块统一 */
 & .sl-row .sl-chip:hover {
@@ -184,10 +184,10 @@ export const BAUHAUS_TOP_EXTRA_CSS = `
 }
 
 /* 音乐 chip：按钮绝对定位到右上角，避免占用 chip 列内空间 */
-& .sl-row-news .sl-chip-praesentia.sl-music-chip {
+& .sl-row-news .sl-chip-CANTUS.sl-music-chip {
   padding-right: 56px;
 }
-& .sl-row-news .sl-chip-praesentia .sl-music-btn {
+& .sl-row-news .sl-chip-CANTUS .sl-music-btn {
   position: absolute;
   top: 14px;
   right: 14px;
@@ -201,7 +201,7 @@ export const BAUHAUS_TOP_EXTRA_CSS = `
   font-weight: 900;
   z-index: 3;
 }
-& .sl-row-news .sl-chip-praesentia .sl-music-btn:hover {
+& .sl-row-news .sl-chip-CANTUS .sl-music-btn:hover {
   background: var(--bh-red);
   color: #FFFFFF;
   border-color: var(--bh-black);
@@ -375,6 +375,7 @@ export const BAUHAUS_BOTTOM_EXTRA_CSS = `
   grid-template-columns: 96px 1fr;
   gap: 12px;
   margin-bottom: 8px;
+  align-items: center;
 }
 & .sl-acc-body .sl-detail .sl-key {
   border: 0;
@@ -386,7 +387,7 @@ export const BAUHAUS_BOTTOM_EXTRA_CSS = `
   letter-spacing: 0.18em;
   font-weight: 900;
   text-transform: uppercase;
-  align-self: start;
+  align-self: center;
   text-align: center;
 }
 & .sl-acc-body .sl-thought {
@@ -497,6 +498,39 @@ export const BAUHAUS_BOTTOM_EXTRA_CSS = `
 & .sl-block-list .sl-block-body {
   font-size: 0.92em;
   line-height: 1.6;
+}
+
+/* —— list 按角色拆分:几何色块标题 —— */
+& .sl-block-list .sl-list-grid {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 6px;
+}
+& .sl-block-list .sl-list-char {
+  border: 2px solid var(--bh-black);
+  border-left: 8px solid var(--bh-black);
+  background: #FFFFFF;
+  padding: 6px 10px 8px;
+}
+& .sl-block-list .sl-list-char:nth-child(4n+1) { border-left-color: var(--bh-red); }
+& .sl-block-list .sl-list-char:nth-child(4n+2) { border-left-color: var(--bh-yellow); }
+& .sl-block-list .sl-list-char:nth-child(4n+3) { border-left-color: var(--bh-blue); }
+& .sl-block-list .sl-list-char:nth-child(4n+4) { border-left-color: var(--bh-black); }
+& .sl-block-list .sl-list-char-name {
+  font-family: var(--sl-font-display);
+  font-size: 0.74em;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  color: var(--bh-black);
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 2px solid var(--bh-black);
+  text-transform: uppercase;
+}
+& .sl-block-list .sl-list-char-items {
+  padding-left: 18px;
+  font-size: 0.92em;
+  color: var(--bh-black);
 }
 
 @media (max-width: 760px) {
@@ -654,6 +688,21 @@ export const BAUHAUS_BRANCH_EXTRA_CSS = `
 }
 
 @media (max-width: 760px) {
+  /* 窄屏：避免 OPTION 标题字符级折行 + Option 文字硬挤压 */
+  & .sl-card-head {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  & .sl-card-title {
+    font-size: 1em;
+    letter-spacing: 0.08em;
+    padding: 3px 10px;
+    white-space: nowrap;
+  }
+  & .sl-card-sub {
+    font-size: 0.7em;
+    letter-spacing: 0.08em;
+  }
   /* 窄屏：单列堆叠，避免长文本被 grid auto 1fr auto 挤压换行 */
   & .sl-branch-btn {
     grid-template-columns: 1fr;
@@ -672,4 +721,3 @@ export const BAUHAUS_BRANCH_EXTRA_CSS = `
   }
 }
 `;
-

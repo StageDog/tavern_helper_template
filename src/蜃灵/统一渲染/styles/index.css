@@ -295,24 +295,43 @@
   margin-bottom: 6px;
 }
 
-/* 默认主题（gjsz / gjsz-deep）专属：标签框垂直居中、内文字居中、内边距宽松。
-   news/bauhaus/graffiti 各自的 extraCss 优先级更高，不受影响。 */
-.sl-unified-card[data-theme-id="gjsz"] .sl-detail,
-.sl-unified-card[data-theme-id="gjsz-deep"] .sl-detail,
-.sl-unified-card.sl-theme-bottom-gjsz .sl-detail,
-.sl-unified-card.sl-theme-bottom-gjsz-deep .sl-detail {
+/* 默认主题（gjsz / gjsz-deep）专属：A2 变体「左右修饰线」杂志风
+   作用范围:仅 gjsz/gjsz-deep,不影响 news/bauhaus/graffiti */
+.sl-unified-card[data-theme-id="gjsz"] .sl-key,
+.sl-unified-card[data-theme-id="gjsz-deep"] .sl-key,
+.sl-unified-card[data-theme-id="gjsz"] .sl-block-title,
+.sl-unified-card[data-theme-id="gjsz-deep"] .sl-block-title {
+  display: inline-flex;
   align-items: center;
+  gap: 8px;
+  border: none;
+  background: transparent;
+  padding: 2px 0;
+  letter-spacing: 0.24em;
+  width: auto;
+  justify-content: flex-start;
 }
-.sl-unified-card[data-theme-id="gjsz"] .sl-detail .sl-key,
-.sl-unified-card[data-theme-id="gjsz-deep"] .sl-detail .sl-key,
-.sl-unified-card.sl-theme-bottom-gjsz .sl-detail .sl-key,
-.sl-unified-card.sl-theme-bottom-gjsz-deep .sl-detail .sl-key {
-  display: flex;
+.sl-unified-card[data-theme-id="gjsz"] .sl-key::before,
+.sl-unified-card[data-theme-id="gjsz"] .sl-key::after,
+.sl-unified-card[data-theme-id="gjsz-deep"] .sl-key::before,
+.sl-unified-card[data-theme-id="gjsz-deep"] .sl-key::after,
+.sl-unified-card[data-theme-id="gjsz"] .sl-block-title::before,
+.sl-unified-card[data-theme-id="gjsz"] .sl-block-title::after,
+.sl-unified-card[data-theme-id="gjsz-deep"] .sl-block-title::before,
+.sl-unified-card[data-theme-id="gjsz-deep"] .sl-block-title::after {
+  content: "";
+  display: block;
+  width: 18px;
+  height: 1px;
+  background-color: var(--sl-border-thin);
+  flex: 0 0 auto;
+}
+/* .sl-detail 中:列宽自适应,容纳 A2 标签(文字+左右细线)的实际宽度 */
+.sl-unified-card[data-theme-id="gjsz"] .sl-detail,
+.sl-unified-card[data-theme-id="gjsz-deep"] .sl-detail {
+  grid-template-columns: minmax(120px, max-content) 1fr;
   align-items: center;
-  justify-content: center;
-  width: 100%;
-  box-sizing: border-box;
-  padding: 4px 9px;
+  justify-items: start;
 }
 
 .sl-thought {
@@ -369,6 +388,41 @@
   color: var(--sl-muted);
   font-style: italic;
   padding: 8px 0;
+}
+
+/* —— list 按角色拆分:网格化排列 mini-block —— */
+.sl-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.sl-list-char {
+  border-left: 2px solid var(--sl-accent-soft);
+  padding: 4px 8px;
+  background: var(--sl-key-bg);
+}
+
+.sl-list-char-name {
+  font-family: var(--sl-font-label);
+  font-size: 0.78em;
+  letter-spacing: 0.12em;
+  color: var(--sl-accent);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.sl-list-char-items {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.95em;
+  line-height: 1.55;
+}
+
+.sl-list-char-items > li {
+  margin: 2px 0;
 }
 
 .sl-branch-list {
@@ -431,14 +485,50 @@
   display: none;
 }
 
-/* 音乐 chip：歌名/歌手 + 播放按钮 */
+/* 音乐 chip：歌词 + 歌名/歌手 + 播放按钮 */
 .sl-unified-card .sl-music-chip {
   align-items: center;
 }
 
 .sl-unified-card .sl-music-text {
+  display: block;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.sl-unified-card .sl-music-lyric {
+  display: block;
+  font-style: italic;
+  font-size: 0.88em;
+  opacity: 0.78;
+  line-height: 1.5;
+  text-align: left;
+  margin-bottom: 2px;
+}
+
+.sl-unified-card .sl-music-lyric::first-letter {
+  font-size: inherit;
+  float: none;
+  padding: 0;
+  line-height: inherit;
+  color: inherit;
+  font-weight: inherit;
+}
+
+.sl-unified-card .sl-music-meta {
+  display: block;
   font-style: italic;
   opacity: 0.92;
+  text-align: left;
+}
+
+.sl-unified-card .sl-music-meta::first-letter {
+  font-size: inherit;
+  float: none;
+  padding: 0;
+  line-height: inherit;
+  color: inherit;
+  font-weight: inherit;
 }
 
 .sl-unified-card .sl-music-btn {
@@ -632,6 +722,11 @@
     padding: 4px 9px;
   }
 
+  /* 窄屏:list mini-block 网格单列 */
+  .sl-list-grid {
+    grid-template-columns: 1fr;
+  }
+
   #sl-theme-modal {
     /* 手机端再次显式锁死全屏覆盖，避免被酒馆 transform 祖先压扁 */
     width: 100vw !important;
@@ -679,5 +774,40 @@
 
   #sl-theme-modal .sl-theme-hint {
     font-size: 0.85em;
+  }
+}
+
+/* 窄屏:确保 gjsz/gjsz-deep 的 A2 标签样式在 .sl-detail 单列下仍生效
+   (覆盖窄屏 @media 内 .sl-detail .sl-key 的 display: block) */
+@media (max-width: 760px) {
+  .sl-unified-card[data-theme-id="gjsz"] .sl-detail .sl-key,
+  .sl-unified-card[data-theme-id="gjsz-deep"] .sl-detail .sl-key,
+  .sl-unified-card[data-theme-id="gjsz"] .sl-chip .sl-key,
+  .sl-unified-card[data-theme-id="gjsz-deep"] .sl-chip .sl-key {
+    display: inline-flex;
+    width: auto;
+    text-align: left;
+    padding: 2px 0;
+    white-space: nowrap;
+  }
+  .sl-unified-card[data-theme-id="gjsz"] .sl-detail,
+  .sl-unified-card[data-theme-id="gjsz-deep"] .sl-detail {
+    justify-items: start;
+  }
+  .sl-unified-card[data-theme-id="gjsz"] .sl-key::before,
+  .sl-unified-card[data-theme-id="gjsz"] .sl-key::after,
+  .sl-unified-card[data-theme-id="gjsz-deep"] .sl-key::before,
+  .sl-unified-card[data-theme-id="gjsz-deep"] .sl-key::after {
+    width: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* 极窄屏:隐藏左右细线,只留文字,避免 key 把行挤换行 */
+  .sl-unified-card[data-theme-id="gjsz"] .sl-key::before,
+  .sl-unified-card[data-theme-id="gjsz"] .sl-key::after,
+  .sl-unified-card[data-theme-id="gjsz-deep"] .sl-key::before,
+  .sl-unified-card[data-theme-id="gjsz-deep"] .sl-key::after {
+    display: none;
   }
 }

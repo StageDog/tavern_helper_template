@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>标签样式优化参考</title>
+<style>
+  /* 基础氛围设定，模拟截图的牛皮纸/羊皮卷质感 */
+  body {
+    background-color: #E6DFCD; /* 浅卡其底色 */
+    color: #4A3F35; /* 深棕色正文 */
+    font-family: "Georgia", "Times New Roman", "Songti SC", "SimSun", serif; /* 衬线体组合 */
+    padding: 40px;
+    line-height: 1.8;
+  }
+
+  .container {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  /* 分隔线和标题栏 */
+  .section {
+    margin-bottom: 50px;
+    position: relative;
+  }
+  .section-title {
+    font-size: 13px;
+    color: #8C7D6B;
+    margin-bottom: 16px;
+    padding-bottom: 6px;
+    border-bottom: 1px dashed #CBBBA6;
+    font-family: sans-serif;
+  }
+
+  /* 模拟正文 */
+  .content {
+    font-size: 16px;
+    margin-top: 12px;
+    letter-spacing: 1px;
+  }
+
+  /* --- 标签公用基础样式 --- */
+  .label-base {
+    font-size: 12px;
+    color: #6C5D4D; /* 稍微弱化一点的棕色 */
+    letter-spacing: 4px; /* 拉大字距，增加呼吸感 */
+    text-transform: uppercase;
+  }
+
+  /* =========================================
+     原版样式 (全包围，做对比)
+     ========================================= */
+  .style-original .label {
+    display: inline-block;
+    border: 1px solid #736250;
+    padding: 2px 6px;
+    letter-spacing: 2px; /* 原版字距较小 */
+  }
+
+  /* =========================================
+     变体 A1：上下线 (复古印刷风)
+     只保留上下边框，横向贯通，有老式票据的感觉
+     ========================================= */
+  .style-3a1 .label {
+    display: inline-block;
+    border-top: 1px solid #A69785;
+    border-bottom: 1px solid #A69785;
+    padding: 4px 2px;
+  }
+
+  /* =========================================
+     变体 A2：左右修饰线 (杂志排版风)
+     文字在中间，两侧用细线延展，非常优雅
+     ========================================= */
+  .style-3a2 .label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px; /* 线与文字的距离 */
+  }
+  .style-3a2 .label::before,
+  .style-3a2 .label::after {
+    content: "";
+    display: block;
+    width: 20px; /* 线的长度 */
+    height: 1px; /* 线的粗细 */
+    background-color: #A69785;
+  }
+
+  /* =========================================
+     变体 B：左侧修饰线 (现代诗集风)
+     去掉边框，用一根稍微加粗的左边线做锚点
+     ========================================= */
+  .style-3b .label {
+    display: inline-block;
+    border-left: 2px solid #8C7D6B; /* 左线稍微粗一点点 */
+    padding-left: 10px;
+    line-height: 1.1; /* 让线和文字高度更贴合 */
+  }
+
+  /* =========================================
+     变体 C：四角折线/取景框 (定格记录风)
+     打破边框，只保留四个角的短线
+     ========================================= */
+  .style-3c .label {
+    position: relative;
+    display: inline-block;
+    padding: 6px 10px;
+  }
+  /* 四个角的通用样式 */
+  .style-3c .label .corner {
+    position: absolute;
+    width: 6px; /* 角的长度 */
+    height: 6px;
+    border-color: #8C7D6B;
+    border-style: solid;
+  }
+  /* 分别定位四个角并画线 */
+  .style-3c .label .tl { top: 0; left: 0; border-width: 1px 0 0 1px; }
+  .style-3c .label .tr { top: 0; right: 0; border-width: 1px 1px 0 0; }
+  .style-3c .label .bl { bottom: 0; left: 0; border-width: 0 0 1px 1px; }
+  .style-3c .label .br { bottom: 0; right: 0; border-width: 0 1px 1px 0; }
+
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- 原版对比 -->
+  <div class="section style-original">
+    <div class="section-title">Before：原版样式（全包围）</div>
+    <div class="label-base label">TEMPUS</div>
+    <div class="content">2025年6月7日 14:30 深秋</div>
+  </div>
+
+  <!-- 变体A1 -->
+  <div class="section style-3a1">
+    <div class="section-title">方案三 变体 A1：上下线 (复古印刷)</div>
+    <div class="label-base label">TEMPUS</div>
+    <div class="content">2025年6月7日 14:30 深秋</div>
+  </div>
+
+  <!-- 变体A2 -->
+  <div class="section style-3a2">
+    <div class="section-title">方案三 变体 A2：左右线 (杂志排版)</div>
+    <div class="label-base label">TEMPUS</div>
+    <div class="content">2025年6月7日 14:30 深秋</div>
+  </div>
+
+  <!-- 变体B -->
+  <div class="section style-3b">
+    <div class="section-title">方案三 变体 B：左侧修饰线 (诗集引言)</div>
+    <div class="label-base label">TEMPUS</div>
+    <div class="content">2025年6月7日 14:30 深秋</div>
+  </div>
+
+  <!-- 变体C -->
+  <div class="section style-3c">
+    <div class="section-title">方案三 变体 C：四角折线 (相机取景框)</div>
+    <div class="label-base label">
+      <!-- 绘制四个角的空标签 -->
+      <i class="corner tl"></i><i class="corner tr"></i>
+      <i class="corner bl"></i><i class="corner br"></i>
+      TEMPUS
+    </div>
+    <div class="content">2025年6月7日 14:30 深秋</div>
+  </div>
+
+</div>
+
+</body>
+</html>
