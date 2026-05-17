@@ -1,76 +1,120 @@
-蜃灵统一渲染不工作的根因分析
-===================================
+蜃灵统一渲染 — 音乐播放器 Bug 分析
+========================================
 
-版本对比: 184d882(旧) → defb6f3(新/当前)
+【现象】
+- 第一次点击播放偶尔正常
+- 切换歌曲后再点击：有时无任何反应（控制台无消息），有时 404 报错，
+  偶尔能播放成功（GD_API 有效时）
 
-## 1. 旧版方案（能渲染蜃灵,但破坏食为天）
+========================================
+BUG 1：re-render 导致 state.btn 幽灵引用 + audio.src 残留 → 点击无反应
+========================================
 
-旧版 processMessage 流程:
-  raw = getChatMessages(messageId).message
-  → 在 raw 文本里直接把 <SLstatusblock>/<memory>/<time>...<spatial> 替换成渲染后的 HTML 卡片
-  → formatAsDisplayedMessage(修改后的raw) 重新走一遍酒馆的 markdown+正则 渲染管线
-  → $display.html(结果) 整个替换 DOM
+【因果链】
+1. render.ts applyOrInsertCard（第27行）用 replaceWith(newHtml) 替换整张卡片 HTML，
+   旧 <button> DOM 被移除，但 state.btn 仍指向旧元素。
 
-问题: formatAsDisplayedMessage 会重新跑酒馆的显示正则(display regex),
-食为天的 `[界面]前端界面状态栏` 正则把 <StatusPlaceHolderImpl/> 替换成 ```<body><script>$('body').load(...)</script></body>```,
-本来酒馆渲染管线只跑一次这个正则,但蜃灵又调了一次 formatAsDisplayedMessage,
-导致食为天的状态栏 iframe 渲染出问题（可能是二次处理或上下文丢失）。
+2. 用户此时点击新按钮（DOM 中可见的那个），事件委托正常触发 onClick。
+   进入 "同首歌" 判断（第115行）：state.keyword === keyword && audio.src 为 true
+   （keyword 不变，audio.src 残留着上次的 URL——即使那个 URL 已 404 失效）。
 
-## 2. 新版方案（食为天正常,但蜃灵不渲染）
+3. sameBtn = state.btn === btn 为 false（旧幽灵 ≠ 新按钮），进入第129行 else 分支。
+   - 如果 audio.paused 为 true（因为上次 URL 404 导致加载失败）：
+     执行 audio.play()，试图播放一个已 404 的 src → 抛错 → catch 里设 btn 为 ▶。
+     全程无 console 输出、无网络请求，用户看到"点了没反应"。
+   - 如果 audio.paused 为 false（上次偶然成功了还在播）：
+     仅设 btn 文字为 ⏸，不会重新加载 → 表面正常但实际可能在播旧歌。
 
-新版 processMessage 流程:
-  raw = getChatMessages(messageId).message
-  → findTopTarget / findBottomTarget / findBranchTargets 在 raw 里查找蜃灵格式标签 ✓ 找到了
-  → 但不再替换 raw 并重新格式化
-  → 改为在已渲染的 DOM 里找 <pre> 元素 (collectPreCandidates)
-  → 用正则匹配 <pre> 的 textContent 来定位锚点
-  → 把 <pre> 替换成渲染后的卡片
+4. 关键：因为走了 "同首歌" 分支就直接 return 了，不会重新 fetch 新 URL，
+   所以用户无论怎么点都播不出来——除非 keyword 变了才会走 "新歌" 分支。
 
-问题所在: <SLstatusblock>/<memory> 在原始消息中 **没有被 ``` 包裹**,
-所以酒馆的 markdown 渲染器把它们渲染成普通 <p> 段落文本（HTML 标签被 strip）,
-而不是 <pre><code> 代码块。
+【佐证】
+检查运行时状态时发现：
+  audioPaused: false，但 stateBtnText: "▶"，statePlayId: 15
+  → UI 与实际音频状态完全脱节，且经历了大量重试。
 
-collectPreCandidates() 只搜索 <pre> 元素,永远找不到这些内容。
-findBottomAnchor() 返回空 jQuery,applyCard() 中 $anchor.length === 0 直接 return false。
-所以蜃灵的卡片从未被插入 DOM。
+========================================
+BUG 2：VK_API 返回的音乐 URL 失效（404）
+========================================
 
-控制台日志佐证:
-  processAll start lastId=2
-  processAll done lastId=2
-  （中间没有 "applied" 日志,说明没有任何卡片被成功渲染）
+控制台显示：
+  GET http://ws.stream.qqmusic.qq.com/RS02000Pm1t82hY9RC.mp3?... 404 (Not Found)
+  GET http://ws.stream.qqmusic.qq.com/RS020011x8D23CgKhh.mp3?... 404 (Not Found)
 
-## 3. 食为天状态栏为什么在新版正常
+这些 URL 来自 VK_API (api.vkeys.cn) 的返回结果。原因：
+- vkeys.cn 返回的 QQ 音乐 URL 包含临时 vkey，有效期很短（通常几分钟）
+- 拿到 URL 后如果没立即播放，或者 URL 本身就已过期，audio 加载时就 404
+- tryGD().catch(() => tryVK()) 的 fallback 链没有验证返回的 URL 是否真正可用
 
-食为天的正则 `[界面]前端界面状态栏` 把 <StatusPlaceHolderImpl/> 替换成:
-  ```
-  <body>
-  <script>
-  $('body').load('...')
-  </script>
-  </body>
-  ```
-注意外面包了 ```（三个反引号）,markdown 会把它渲染成 <pre><code>...</code></pre>。
-然后酒馆的 TavernHelper 再把这个 <pre> 处理成 iframe 执行里面的 script。
-这个流程不依赖蜃灵渲染,所以新版不影响它。
+这个问题和 BUG 1 叠加后效果更差：
+  - 第一次播放：走 "新歌" 路径 → tryGD 成功（或 tryVK 偶然拿到有效 URL）→ 播放成功
+  - 歌曲播着播着 URL 过期 → audio 进入错误状态，但 audio.src 仍然是那个失效 URL
+  - 用户再次点击 → 走 "同首歌" 路径 → 试图 play 那个失效 URL → 无声/报错
+  - audio.src 残留 truthy 值，永远不会走 "新歌" 路径重新 fetch
 
-## 4. 核心矛盾
+========================================
+【解决方案】
+========================================
 
-- 蜃灵的 <SLstatusblock>/<memory>/<time>...<spatial> 标签在 AI 输出中是裸标签（无 ``` 包裹）
-- markdown 渲染后变成普通文本/被 strip,不在 <pre> 里
-- 新版 render.ts 只在 <pre> 里找锚点 → 找不到 → 不渲染
-- 旧版直接改 raw 再重新格式化 → 能渲染蜃灵,但重新走管线会破坏食为天的 iframe
+核心思路：
+A. 不缓存 button DOM 引用，改为按 keyword 实时查 DOM
+B. 在 "同首歌" 路径中检测 audio 错误状态，如果失败则重新 fetch
 
-## 5. 修复方向（仅供参考）
+--- 具体修改 music-player.ts ---
 
-方案A: 不局限于 <pre>,在整个 mes_text 的 DOM 中搜索包含蜃灵标签文本内容的节点（可能是 <p>）,
-       用这些节点作为锚点进行替换。需要更灵活的锚点查找逻辑。
+1. 去掉 state.btn，改为实时查 DOM
+   interface SlMusicState {
+     keyword: string;
+     playId: number;
+     // 删除 btn
+   }
 
-方案B: 回到旧版"改 raw + formatAsDisplayedMessage"的思路,但在调用 formatAsDisplayedMessage 之前
-       先把食为天的 <StatusPlaceHolderImpl/> 保护起来（用占位符）,渲染完再还原,
-       避免二次处理食为天的正则。
+   新增辅助函数：
+   function findBtn(w: Window, keyword: string): HTMLButtonElement | null {
+     if (!keyword) return null;
+     return w.document.querySelector<HTMLButtonElement>(
+       `.sl-music-btn[data-sl-music-keyword="${CSS.escape(keyword)}"]`
+     );
+   }
 
-方案C: 混合方案 - 对蜃灵内容用旧版逻辑（改 raw 重新格式化）,但跳过/保护
-       非蜃灵的正则替换结果（如食为天的 iframe 代码块）。
+   audio 事件监听器改为实时查：
+   audio.addEventListener('pause', () => {
+     const s = w._slMusicState;
+     if (!s?.keyword || !audio.src) return;
+     const b = findBtn(w, s.keyword);
+     if (b) b.textContent = '▶';
+   });
+   audio.addEventListener('play', () => {
+     const s = w._slMusicState;
+     if (!s?.keyword) return;
+     const b = findBtn(w, s.keyword);
+     if (b) b.textContent = '⏸';
+   });
 
+2. "同首歌" 分支增加 audio 错误/失效检测
+   在第115行的 if (state.keyword === keyword && audio.src) 之后，增加：
 
+   // 如果 audio 处于错误状态或 networkState 表示加载失败，视为新歌重新 fetch
+   if (audio.error || audio.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
+     // 清除残留的失效 src，让后面走 "新歌" 路径
+     audio.src = '';
+     state.keyword = '';
+     // 不 return，继续执行下面的 "新歌" 逻辑
+   } else {
+     // 原有的暂停/继续逻辑...
+     ...
+     return;
+   }
 
+3. （可选）在 "新歌" 路径 fetch 成功后，增加 audio 加载验证
+   audio.src = url;
+   // 监听一次 error 事件，如果加载失败则提示
+   const onError = () => { ... };
+   audio.addEventListener('error', onError, { once: true });
+
+4. 增加 console.info 日志
+   在 onClick 的关键分支处增加日志，方便后续排查：
+   - 进入 "同首歌" 分支时 log
+   - 进入 "新歌" 分支时 log
+   - fetch 成功/失败时 log
+   - audio.play() 成功/失败时 log

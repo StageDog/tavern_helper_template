@@ -396,9 +396,9 @@ ${GR_VARS}
   color: var(--gr-text);
   padding: 3px 8px;
   font-family: var(--sl-font-label);
-  font-size: 0.82em;
-  letter-spacing: 0.18em;
-  font-weight: 900;
+  font-size: 0.92em;
+  letter-spacing: 0.15em;
+  font-weight: 400;
   text-transform: uppercase;
   align-self: center;
   text-align: center;

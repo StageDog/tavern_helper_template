@@ -3,7 +3,6 @@
 
 interface SlMusicState {
   keyword: string;
-  btn: HTMLButtonElement | null;
   playId: number;
 }
 
@@ -45,38 +44,58 @@ function tryVK(kw: string): Promise<string> {
 
 function getState(w: Window & typeof globalThis): SlMusicState {
   if (!w._slMusicState) {
-    w._slMusicState = { keyword: '', btn: null, playId: 0 };
+    w._slMusicState = { keyword: '', playId: 0 };
   }
   return w._slMusicState;
+}
+
+function findBtns(w: Window & typeof globalThis, keyword: string): HTMLButtonElement[] {
+  if (!keyword) return [];
+  return Array.from(
+    w.document.querySelectorAll<HTMLButtonElement>(
+      `.sl-music-btn[data-sl-music-keyword="${CSS.escape(keyword)}"]`,
+    ),
+  );
+}
+
+function setBtnsText(btns: HTMLButtonElement[], text: string): void {
+  btns.forEach(b => {
+    b.textContent = text;
+  });
+}
+
+function setBtnsDisabled(btns: HTMLButtonElement[], disabled: boolean): void {
+  btns.forEach(b => {
+    b.disabled = disabled;
+  });
 }
 
 function getAudio(w: Window & typeof globalThis): HTMLAudioElement {
   if (!w._slMusicAudio) {
     const audio = new w.Audio();
     audio.loop = true;
-    // audio 状态变化时,自动同步当前激活按钮的 UI
+    // 实时按 keyword 查 DOM 同步 UI,避免缓存 btn 引用在 re-render 后变成幽灵节点
     // 守卫 audio.src:加载新歌时 audio.src='' 引发的过渡 pause/emptied 不该当作用户暂停
     audio.addEventListener('pause', () => {
       const s = w._slMusicState;
-      if (s?.btn && audio.src) s.btn.textContent = '▶';
+      if (!s?.keyword || !audio.src) return;
+      setBtnsText(findBtns(w, s.keyword), '▶');
     });
     audio.addEventListener('play', () => {
       const s = w._slMusicState;
-      if (s?.btn) s.btn.textContent = '⏸';
+      if (!s?.keyword) return;
+      setBtnsText(findBtns(w, s.keyword), '⏸');
     });
     w._slMusicAudio = audio;
   }
   return w._slMusicAudio;
 }
 
-function setBtnText(btn: HTMLButtonElement | null, text: string): void {
-  if (btn) btn.textContent = text;
-}
-
-function resetOtherButtons(w: Window & typeof globalThis, currentBtn: HTMLButtonElement): void {
+function resetButtonsNotOfKeyword(w: Window & typeof globalThis, keepKeyword: string): void {
   const all = w.document.querySelectorAll<HTMLButtonElement>('.sl-music-btn[data-sl-music-keyword]');
   all.forEach(b => {
-    if (b !== currentBtn) {
+    const k = b.getAttribute('data-sl-music-keyword') ?? '';
+    if (k !== keepKeyword) {
       b.textContent = '▶';
       b.disabled = false;
     }
@@ -111,34 +130,39 @@ export function bindMusicPlayer(): { destroy: () => void } {
     const audio = getAudio(w);
     const state = getState(w);
 
-    // 同首歌:暂停/继续 或 切换激活按钮(同一 keyword 出现在多楼层时)
+    console.info(
+      `[蜃灵统一渲染][music] click keyword="${keyword}" stateKeyword="${state.keyword}" hasSrc=${!!audio.src} paused=${audio.paused} errorCode=${audio.error?.code ?? 'none'} networkState=${audio.networkState}`,
+    );
+
+    // 同首歌:暂停/继续。若 audio 处于错误/失效状态(URL 过期 404 等),清掉残留 src 走 "新歌" 路径重新 fetch
     if (state.keyword === keyword && audio.src) {
-      const sameBtn = state.btn === btn;
-      if (!sameBtn) {
-        resetOtherButtons(w, btn);
-      }
-      state.btn = btn;
-      if (audio.paused) {
-        try {
-          await audio.play(); // 'play' 事件设 ⏸
-        } catch {
-          setBtnText(btn, '▶');
-        }
-      } else if (sameBtn) {
-        audio.pause(); // 'pause' 事件设 ▶
+      const invalid = audio.error || audio.networkState === HTMLMediaElement.NETWORK_NO_SOURCE;
+      if (invalid) {
+        console.info('[蜃灵统一渲染][music] same keyword but audio invalid → refetch');
+        audio.src = '';
+        state.keyword = '';
+        // 不 return,继续走下面的 "新歌" 路径
       } else {
-        // 音乐已在响 + 用户点的是另一个同 keyword 按钮 → 只切 UI 焦点,不暂停
-        setBtnText(btn, '⏸');
+        if (audio.paused) {
+          try {
+            await audio.play(); // 'play' 事件设 ⏸
+          } catch (e) {
+            console.warn('[蜃灵统一渲染][music] resume failed', e);
+            setBtnsText(findBtns(w, keyword), '▶');
+          }
+        } else {
+          audio.pause(); // 'pause' 事件设 ▶
+        }
+        return;
       }
-      return;
     }
 
     // 新歌:占用 playId 序号,后续 await 后用它守卫,丢弃迟到的旧请求
     const myId = ++state.playId;
 
-    resetOtherButtons(w, btn);
-    // 临时让 audio 事件无目标,避免下面 audio.pause() 的事件回调把 '…' 改回 '▶'
-    state.btn = null;
+    resetButtonsNotOfKeyword(w, keyword);
+    // 临时清空 keyword,避免 audio.pause()/src='' 引发的事件回调误改 UI
+    state.keyword = '';
     try {
       audio.pause();
     } catch {
@@ -146,28 +170,34 @@ export function bindMusicPlayer(): { destroy: () => void } {
     }
     audio.src = '';
     state.keyword = keyword;
-    state.btn = btn;
-    btn.disabled = true;
-    setBtnText(btn, '…');
+    const btns = findBtns(w, keyword);
+    setBtnsDisabled(btns, true);
+    setBtnsText(btns, '…');
 
     try {
       const url = await tryGD(keyword).catch(() => tryVK(keyword));
       if (myId !== state.playId) return; // 已被更新的点击取代,丢弃
+      console.info(`[蜃灵统一渲染][music] fetched id=${myId} url=${String(url).slice(0, 120)}`);
       audio.src = url;
-      btn.disabled = false;
+      setBtnsDisabled(findBtns(w, keyword), false);
       try {
         await audio.play(); // 'play' 事件设 ⏸
         if (myId !== state.playId) return;
-      } catch {
+      } catch (e) {
         if (myId !== state.playId) return;
-        setBtnText(btn, '▶');
+        console.warn(`[蜃灵统一渲染][music] play failed id=${myId}`, e);
+        setBtnsText(findBtns(w, keyword), '▶');
+        // 防御:清掉 src 让下次点击走 "新歌" 路径重新 fetch,即使 audio.error 暂未设置
+        audio.src = '';
       }
-    } catch {
+    } catch (e) {
       if (myId !== state.playId) return; // 旧请求的失败不该污染新 UI
-      btn.disabled = false;
-      setBtnText(btn, '✕');
+      console.warn(`[蜃灵统一渲染][music] fetch failed id=${myId}`, e);
+      const errBtns = findBtns(w, keyword);
+      setBtnsDisabled(errBtns, false);
+      setBtnsText(errBtns, '✕');
       setTimeout(() => {
-        if (myId === state.playId) setBtnText(btn, '▶');
+        if (myId === state.playId) setBtnsText(findBtns(w, keyword), '▶');
       }, 1500);
     }
   };
