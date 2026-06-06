@@ -1,0 +1,42 @@
+:root {
+  --rcs-ink: #302a27;
+  --rcs-ink-soft: #675b55;
+  --rcs-pencil: rgba(61, 52, 48, 0.5);
+  --rcs-paper: #fff8df;
+  --rcs-paper-deep: #f4e6bd;
+  --rcs-paper-pink: #ffe4ec;
+  --rcs-paper-blue: #dcebf2;
+  --rcs-paper-green: #dfeccf;
+  --rcs-paper-lilac: #eee2ff;
+  --rcs-coral: #dd6f75;
+  --rcs-blue: #6a95b5;
+  --rcs-sage: #82976d;
+  --rcs-gold: #d4a142;
+  --rcs-line: rgba(76, 58, 48, 0.34);
+  --rcs-shadow: rgba(77, 52, 36, 0.2);
+  --rcs-shadow-soft: rgba(77, 52, 36, 0.12);
+  --rcs-font: 'Source Sans 3', 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
+  --rcs-font-title: 'Noto Serif SC', 'Songti SC', Georgia, serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: transparent;
+  color: var(--rcs-ink);
+  font-family: var(--rcs-font);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}

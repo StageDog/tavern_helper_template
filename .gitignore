@@ -11,6 +11,7 @@ pnpm-debug.log*
 
 auto-imports.d.ts
 components.d.ts
+.tmp-webpack-verify/
 
 # 自定义忽略目录
 00成品/
