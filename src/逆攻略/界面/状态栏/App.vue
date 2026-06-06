@@ -102,7 +102,7 @@
               <div class="affection-track" aria-hidden="true">
                 <div class="affection-fill" :style="{ width: `${Math.abs(char._user好感度)}%` }"></div>
               </div>
-              <p>{{ char.当前攻略行为 || '尚未行动' }}</p>
+              <p>{{ formatUserText(char.当前攻略行为, '尚未行动') }}</p>
             </article>
           </div>
         </div>
@@ -114,7 +114,11 @@
           <header class="card-header collapse-heading">
             <div>
               <h2>{{ name }}</h2>
-              <p>{{ char._性别 }} · {{ char._攻略动机 }} · 与{{ displayUserName }}：{{ char._与user的初始关系 }}</p>
+              <p>
+                {{ char._性别 }} · {{ char._攻略动机 }} · 与{{ displayUserName }}：{{
+                  formatUserText(char._与user的初始关系, '陌生人')
+                }}
+              </p>
             </div>
             <div class="heading-actions">
               <span class="stage-pill" :data-polarity="favorPolarity(char._user好感度)">
@@ -153,7 +157,7 @@
 
             <div class="current-task">
               <span>当前任务</span>
-              <p>{{ char.系统任务 || '暂无系统任务' }}</p>
+              <p>{{ formatUserText(char.系统任务, '暂无系统任务') }}</p>
             </div>
 
             <div class="control-board">
@@ -263,7 +267,7 @@
           <header class="item-header collapse-heading">
             <div>
               <h2>{{ name }}</h2>
-              <p>{{ task.描述 || '暂无描述' }}</p>
+              <p>{{ formatUserText(task.描述, '暂无描述') }}</p>
             </div>
             <div class="heading-actions">
               <span class="status-tag" :data-status="task.状态">{{ task.状态 }}</span>
@@ -280,7 +284,7 @@
           <div v-show="!isCollapsed(sectionKey('task', name))" class="collapsible-content">
             <div class="meta-line">
               <span>{{ task.难度 }} · 发布消耗 {{ TASK_COST[task.难度] }}</span>
-              <span>{{ task.奖励 || '无奖励' }}</span>
+              <span>{{ formatUserText(task.奖励, '无奖励') }}</span>
             </div>
             <div class="action-row">
               <select :value="task.状态" @change="setTaskStatus(name, $event)">
@@ -373,7 +377,7 @@
           <header class="item-header collapse-heading">
             <div>
               <h2>{{ name }}</h2>
-              <p>{{ product.描述 || '暂无描述' }}</p>
+              <p>{{ formatUserText(product.描述, '暂无描述') }}</p>
             </div>
             <div class="heading-actions">
               <span class="price-tag">{{ product.价格 }}</span>
@@ -433,7 +437,7 @@
             </button>
           </header>
           <div v-show="!isCollapsed(sectionKey('log', `${log.index}-${log.时间戳}`))" class="collapsible-content">
-            <p>{{ log.内容 }}</p>
+            <p>{{ formatUserText(log.内容) }}</p>
             <div class="action-row">
               <button
                 class="small-button ghost"
@@ -513,6 +517,29 @@ const SYSTEM_CATEGORY_OPTIONS = [
   '反派/夺运',
   '人生模拟器',
 ];
+const BLANK_TASK_CATEGORY_NAMES = new Set([
+  '共通',
+  '通用',
+  '面板',
+  '加点',
+  '面板/加点',
+  '签到',
+  '打卡',
+  '签到/打卡',
+  '神豪',
+  '败家',
+  '神豪/败家',
+  '情绪',
+  '声望',
+  '情绪/声望',
+  '神级选择',
+  '选择',
+  '反派',
+  '夺运',
+  '反派/夺运',
+  '人生模拟器',
+  '模拟器',
+]);
 
 const store = useDataStore();
 const { data } = storeToRefs(store);
@@ -559,7 +586,9 @@ const characterEntries = computed<[string, CharacterData][]>(() =>
   Object.entries(data.value.角色 as Record<string, CharacterData>).sort(([a], [b]) => a.localeCompare(b, 'zh-Hans-CN')),
 );
 const taskEntries = computed<[string, TaskData][]>(() =>
-  Object.entries(data.value.任务列表 as Record<string, TaskData>).sort(([a], [b]) => a.localeCompare(b, 'zh-Hans-CN')),
+  Object.entries(data.value.任务列表 as Record<string, TaskData>)
+    .filter(([name, task]) => !isBlankCategoryTask(name, task))
+    .sort(([a], [b]) => a.localeCompare(b, 'zh-Hans-CN')),
 );
 const shopEntries = computed<[string, ProductData][]>(() =>
   Object.entries(data.value.商城 as Record<string, ProductData>).sort(([a], [b]) => a.localeCompare(b, 'zh-Hans-CN')),
@@ -646,7 +675,14 @@ const activeTabHasSections = computed(() => activeSectionKeys.value.length > 0);
 
 onMounted(() => {
   void loadOpeningUserName();
+  pruneBlankCategoryTasks();
 });
+
+watch(
+  () => data.value.任务列表,
+  () => pruneBlankCategoryTasks(),
+  { deep: true },
+);
 
 watch(
   characterEntries,
@@ -712,6 +748,27 @@ function cleanText(value: unknown): string {
   return String(value ?? '').trim();
 }
 
+function normalizeTaskCategoryName(name: string): string {
+  return cleanText(name)
+    .replace(/[【】\[\]\s]/g, '')
+    .replace(/(?:系统|任务|类别)+$/g, '');
+}
+
+function isBlankCategoryTask(name: string, task: TaskData | undefined): boolean {
+  return (
+    BLANK_TASK_CATEGORY_NAMES.has(normalizeTaskCategoryName(name)) && !cleanText(task?.描述) && !cleanText(task?.奖励)
+  );
+}
+
+function pruneBlankCategoryTasks() {
+  const tasks = data.value.任务列表 as Record<string, TaskData>;
+  for (const [name, task] of Object.entries(tasks)) {
+    if (isBlankCategoryTask(name, task)) {
+      delete tasks[name];
+    }
+  }
+}
+
 function parseBlockValue(content: string, label: string): string {
   const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const match = content.match(new RegExp(`^\\s*${escapedLabel}:\\s*\\|-\\s*\\r?\\n((?:\\s{4}.*(?:\\r?\\n|$))*)`, 'm'));
@@ -756,6 +813,15 @@ function getTavernUserName(): string {
   }
   const context = (globalThis as any).SillyTavern ?? (window.parent as any)?.SillyTavern;
   return cleanText(context?.name1);
+}
+
+function formatUserText(value: unknown, fallback = ''): string {
+  const text = cleanText(value) || fallback;
+  const userName = displayUserName.value || '你';
+  return text
+    .replace(/<user>/g, () => userName)
+    .replace(/\{\{user\}\}/g, () => userName)
+    .replace(/(^|[^A-Za-z0-9_])user(?![A-Za-z0-9_])/g, (_match, prefix: string) => `${prefix}${userName}`);
 }
 
 function favorPolarity(value: number): 'positive' | 'negative' | 'neutral' {
