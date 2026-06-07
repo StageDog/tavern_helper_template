@@ -1,0 +1,24 @@
+{
+  "enabled": false,
+  "dist": "dist/你的脚本打包路径/index.js",
+  "outputDirectory": "release",
+  "fileBaseName": "your-script",
+  "remoteUrl": "https://testingcf.jsdelivr.net/gh/<owner>/<repo>@main/dist/你的脚本打包路径/index.js",
+  "script": {
+    "type": "script",
+    "enabled": true,
+    "baseName": "你的脚本名称",
+    "id": "请填写稳定的脚本 UUID",
+    "info": "请填写脚本说明、仓库链接、发布页链接等 info 内容",
+    "button": {
+      "enabled": true,
+      "buttons": [
+        {
+          "name": "⚙",
+          "visible": true
+        }
+      ]
+    },
+    "data": {}
+  }
+}

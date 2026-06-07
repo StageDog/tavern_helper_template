@@ -1,0 +1,41 @@
+name: release-script-json
+
+on:
+  push:
+    tags:
+      - v*
+
+permissions:
+  contents: write
+
+jobs:
+  release-script-json:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Check release tag
+        run: node scripts/package-tavern-helper-script.mjs --check-tag --tag "$GITHUB_REF_NAME"
+
+      - name: Build and package script JSON
+        run: pnpm release:script
+
+      - name: Create GitHub Release
+        if: ${{ hashFiles('release/*.json') != '' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*.json

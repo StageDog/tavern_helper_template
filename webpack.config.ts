@@ -19,6 +19,9 @@ import webpack from 'webpack';
 import WebpackObfuscator from 'webpack-obfuscator';
 const require = createRequire(import.meta.url);
 const HTMLInlineCSSWebpackPlugin = require('html-inline-css-webpack-plugin').default;
+const package_json = JSON.parse(fs.readFileSync(path.join(import.meta.dirname, 'package.json'), 'utf-8')) as {
+  name?: string;
+};
 
 interface Config {
   port: number;
@@ -78,6 +81,10 @@ const config: Config = {
   port: 6621,
   entries: glob_script_files().map(parse_entry),
 };
+
+function is_truthy(value: unknown) {
+  return value === true || value === 'true' || value === '1';
+}
 
 let io: Server;
 function watch_tavern_helper(compiler: webpack.Compiler) {
@@ -192,14 +199,14 @@ function parse_configuration(entry: Entry): (_env: any, argv: any) => webpack.Co
     experiments: {
       outputModule: true,
     },
-    devtool: argv.mode === 'production' ? 'source-map' : 'eval-source-map',
+    devtool: argv.mode === 'production' ? false : 'eval-source-map',
     watchOptions: {
       ignored: ['**/dist', '**/node_modules'],
     },
     entry: path.join(import.meta.dirname, entry.script),
     target: 'browserslist',
     output: {
-      devtoolNamespace: 'tavern_helper_template',
+      devtoolNamespace: package_json.name ?? 'tavern_helper_template',
       devtoolModuleFilenameTemplate: info => {
         const resource_path = decodeURIComponent(info.resourcePath.replace(/^\.\//, ''));
         const is_direct = info.allLoaders === '';
@@ -438,8 +445,9 @@ function parse_configuration(entry: Entry): (_env: any, argv: any) => webpack.Co
     )
       .concat(
         { apply: watch_tavern_helper },
-        { apply: schema_dump },
-        { apply: tavern_sync },
+        ...(is_truthy(_env?.buildOnly) || is_truthy(process.env.TAVERN_HELPER_BUILD_ONLY)
+          ? []
+          : [{ apply: schema_dump }, { apply: tavern_sync }]),
         new VueLoaderPlugin(),
         unpluginAutoImport({
           dts: true,
@@ -570,3 +578,5 @@ function parse_configuration(entry: Entry): (_env: any, argv: any) => webpack.Co
 }
 
 export default config.entries.map(parse_configuration);
+
+
