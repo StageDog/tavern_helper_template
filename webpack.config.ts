@@ -51,7 +51,7 @@ function common_path(lhs: string, rhs: string) {
 function glob_script_files() {
   const results: string[] = [];
 
-  fs.globSync(`{示例,src}/**/index.{ts,tsx,js,jsx}`)
+  fs.globSync(`src/**/index.{ts,tsx,js,jsx}`)
     .filter(
       file => process.env.CI !== 'true' || !fs.readFileSync(path.join(import.meta.dirname, file)).includes('@no-ci'),
     )
