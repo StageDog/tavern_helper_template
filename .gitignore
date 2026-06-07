@@ -1,4 +1,5 @@
 node_modules
+.template-sync-worktree
 
 .DS_Store
 Thumbs.db

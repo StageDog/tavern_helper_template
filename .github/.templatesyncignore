@@ -1,4 +1,5 @@
 .github/workflows
 @types
+src
 dist
 README.md
