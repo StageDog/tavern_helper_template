@@ -1,8 +1,12 @@
 {
   "scripts": {
     "build:dev": "webpack --mode development",
-    "build": "webpack --mode production",
+    "build:js": "webpack --mode production --env buildOnly=true",
+    "build": "pnpm build:js",
+    "build:all": "webpack --mode production",
     "watch": "webpack --mode development --watch --progress",
+    "package:script": "node scripts/package-tavern-helper-script.mjs",
+    "release:script": "pnpm build:js && pnpm package:script",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,css,scss,html,vue}\" --no-error-on-unmatched-pattern",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
@@ -109,15 +113,6 @@
     "yaml": "^2.9.0",
     "zod": "^4.4.3"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@parcel/watcher",
-      "@tailwindcss/oxide",
-      "electron",
-      "esbuild",
-      "javascript-obfuscator",
-      "unrs-resolver",
-      "vue-demi"
-    ]
-  }
+  "name": "tavern-helper-template",
+  "version": "0.1.0"
 }

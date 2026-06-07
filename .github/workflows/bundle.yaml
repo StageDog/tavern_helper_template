@@ -34,7 +34,7 @@ jobs:
         with:
           version: 10
 
-      - run: pnpm install && pnpm build
+      - run: pnpm install --frozen-lockfile && pnpm build:js
       - name: Only keep 角色卡示例 in dist for template upstream
         if: github.repository == 'StageDog/tavern_helper_template'
         run: |
@@ -52,12 +52,3 @@ jobs:
           default_author: github_actions
           message: '[bot] bundle'
 
-      # 自动打版本 tag, 从而让 jsdelivr 基于版本号在 12h 内更新缓存而不是用非版本号的 7d 缓存
-      - id: autotag
-        if: github.repository != 'StageDog/tavern_helper_template'
-        uses: phish108/autotag-action@v1.1.64
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          with-v: true
-      - if: ${{ github.repository != 'StageDog/tavern_helper_template' && steps.autotag.outputs.tag != '0.0.0' && steps.autotag.outputs.new-tag != steps.autotag.outputs.tag }}
-        run: git push --delete origin ${{ steps.autotag.outputs.tag }}
