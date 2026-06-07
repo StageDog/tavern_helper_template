@@ -23,6 +23,7 @@
   --rcs-desk: #ece6d8;
   --rcs-font: 'Noto Sans SC', 'Source Sans 3', 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
   --rcs-font-title: 'Noto Serif SC', 'Songti SC', Georgia, serif;
+  --rcs-font-mono: 'JetBrains Mono', 'Cascadia Code', 'Consolas', 'Microsoft YaHei', monospace;
 }
 
 * {
