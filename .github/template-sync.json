@@ -1,0 +1,11 @@
+{
+  "upstream": "https://github.com/jiozhaoyue/tavern_helper_template.git",
+  "upstreamBranch": "main",
+  "protectedPaths": [
+    "src/**",
+    "dist/**",
+    ".github/workflows/**",
+    "README.md",
+    "@types/**"
+  ]
+}

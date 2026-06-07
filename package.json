@@ -7,7 +7,10 @@
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "dump": "node dump_schema.ts",
-    "sync": "node tavern_sync.mjs"
+    "sync": "node tavern_sync.mjs",
+    "template:sync": "node scripts/template-sync.mjs",
+    "template:sync:ci": "node scripts/template-sync.mjs --mode=ci",
+    "test:template-sync": "node scripts/template-sync.test.mjs"
   },
   "browserslist": [
     "defaults and partially supports es6-module"
