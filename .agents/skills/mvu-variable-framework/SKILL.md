@@ -1,6 +1,6 @@
 ---
-description: 当用户输入中明确提及 MVU 时, 你应该参考本文件
-alwaysApply: false
+name: mvu-variable-framework
+description: mvu-variable-framework 是一个独立的酒馆助手脚本. 当我提及它时, 说明它已经在酒馆网页上加载好了, 且需要基于这个框架设计我自己的内容. 它作用于消息楼层变量, 允许酒馆角色卡作者在世界书中设置消息楼层变量, 在世界书或聊天记录中初始化消息楼层变量, 及用 AI 输出更新消息楼层变量. `@types/iframe/exported.mvu.d.ts` 中定义了 MVU 变量框架的接口. 如果提及到 "MVU 变量" 而非仅仅提及 "变量", 则应该优先参考本 skill, 使用 MVU 变量框架的接口.
 ---
 # MVU 变量框架
 

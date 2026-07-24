@@ -1,6 +1,6 @@
 ---
-description: 当用户输入中明确提及 MVU 时, 你应该参考本文件
-alwaysApply: false
+name: mvu-character-card
+description: 相比于只使用 MVU 变量框架来制作某个前端或脚本, MVU 变量框架使用者往往是要制作一整张角色卡, mvu-character-card 即定义了角色卡的 MVU 变量结构、世界书、脚本、前端界面等该如何存放和设置. 当涉及 MVU 时, 你应该分析我是不是想制作一整张角色卡, 来决定是否参考本 skill.
 ---
 # MVU 角色卡文件夹
 
