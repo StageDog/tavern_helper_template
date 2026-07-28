@@ -1,9 +1,13 @@
-import { waitUntil } from 'async-wait-until';
 import App from './App.vue';
 import './global.css';
+import { prepareMvuInterface, renderInterfaceError } from '../boot';
 
 $(async () => {
-  await waitGlobalInitialized('Mvu');
-  await waitUntil(() => _.has(getVariables({ type: 'message' }), 'stat_data'));
-  createApp(App).use(createPinia()).mount('#app');
+  try {
+    await prepareMvuInterface();
+    createApp(App).use(createPinia()).mount('#app');
+  } catch (error) {
+    console.error('[全女赌场/赌场大厅] 前端启动失败', error);
+    renderInterfaceError(error);
+  }
 });
