@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "主角": {
+      "type": "object",
+      "properties": {
+        "筹码": {
+          "default": 0,
+          "type": "number"
+        },
+        "欠债": {
+          "default": 0,
+          "type": "number"
+        },
+        "身份状态": {
+          "default": "赌客",
+          "type": "string",
+          "enum": [
+            "赌客",
+            "兔女郎"
+          ]
+        },
+        "扶她化状态": {
+          "default": "无",
+          "type": "string",
+          "enum": [
+            "无",
+            "生效中"
+          ]
+        },
+        "兔女郎工作进度": {
+          "default": 0,
+          "type": "number"
+        },
+        "物品栏": {
+          "default": {},
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "description": "物品名"
+          },
+          "additionalProperties": {
+            "type": "number",
+            "description": "数量"
+          }
+        },
+        "惩罚记录": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "赌场": {
+      "type": "object",
+      "properties": {
+        "当前位置": {
+          "default": "赌桌区",
+          "type": "string"
+        },
+        "今日事件": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "群友": {
+      "default": {},
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "description": "群友名"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "身份": {
+            "default": "赌客",
+            "type": "string"
+          },
+          "着装": {
+            "default": "待初始化",
+            "type": "string"
+          },
+          "身体状态": {
+            "default": {},
+            "type": "object",
+            "properties": {
+              "部位一": {
+                "default": "待初始化",
+                "type": "string"
+              },
+              "部位二": {
+                "default": "待初始化",
+                "type": "string"
+              },
+              "部位三": {
+                "default": "待初始化",
+                "type": "string"
+              },
+              "部位四": {
+                "default": "待初始化",
+                "type": "string"
+              }
+            }
+          },
+          "所在位置": {
+            "default": "赌桌区",
+            "type": "string"
+          },
+          "当前动作": {
+            "default": "待初始化",
+            "type": "string"
+          },
+          "内心": {
+            "default": "待初始化",
+            "type": "string"
+          },
+          "经济状态": {
+            "default": {},
+            "type": "object",
+            "properties": {
+              "总营收": {
+                "default": 1000,
+                "type": "number"
+              },
+              "本轮盈亏": {
+                "default": 0,
+                "type": "number"
+              }
+            }
+          },
+          "赎身进度": {
+            "default": 0,
+            "type": "number"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "主角",
+    "赌场"
+  ]
+}

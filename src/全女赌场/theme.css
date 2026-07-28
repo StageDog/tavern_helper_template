@@ -1,0 +1,120 @@
+@import url('https://fontsapi.zeoseven.com/292/main/result.css');
+
+/* 七段数码管字体：LED 计数窗专用 */
+@font-face {
+  font-family: 'DSEG7';
+  src: url('https://testingcf.jsdelivr.net/npm/dseg@0.46.0/fonts/DSEG7-Classic/DSEG7Classic-Bold.woff2') format('woff2');
+  font-display: swap;
+}
+
+/* ── 兔窟赌场 · 霓虹夜店主题（两个界面共用） ───────────────── */
+:root {
+  /* 基础层 */
+  --c-surface: #170f22;
+  --c-surface-alt: #221631;
+  --c-border: #4a3660;
+  --c-text: #f0e6f6;
+  --c-text-muted: #9d8bb0;
+
+  /* 功能色 */
+  --c-primary: #e8b04f; /* 金：筹码/高亮 */
+  --c-danger: #ff5c8a; /* 霓虹粉：欠债/兔女郎 */
+  --c-success: #4fe3a1; /* 霓虹绿：盈利 */
+
+  /* 霓虹点缀 */
+  --c-neon-pink: #ff5c8a;
+  --c-neon-cyan: #52d8ff;
+  --glow-gold: 0 0 6px rgba(232, 176, 79, 0.55), 0 0 18px rgba(232, 176, 79, 0.22);
+  --glow-pink: 0 0 6px rgba(255, 92, 138, 0.6), 0 0 16px rgba(255, 92, 138, 0.28);
+  --glow-green: 0 0 6px rgba(79, 227, 161, 0.6), 0 0 16px rgba(79, 227, 161, 0.28);
+
+  /* 卡片壳 */
+  --card-bg:
+    radial-gradient(ellipse 80% 60% at 20% -10%, rgba(255, 92, 138, 0.09), transparent 60%),
+    radial-gradient(ellipse 70% 50% at 90% 110%, rgba(82, 216, 255, 0.07), transparent 60%),
+    linear-gradient(165deg, #1d1329 0%, #170f22 55%, #1a0f26 100%);
+  --btn-gold: linear-gradient(180deg, #f5cd7a 0%, #e8b04f 45%, #c98f2e 100%);
+  --btn-green: linear-gradient(180deg, #7cf0bd 0%, #4fe3a1 45%, #2eb87c 100%);
+
+  --font-main: 'Sarasa Gothic SC', 'Microsoft YaHei', sans-serif;
+  --font-led: 'DSEG7', monospace;
+
+  /* LED 计数窗（签名元素） */
+  --led-bg: linear-gradient(180deg, #0a0510 0%, #120a1c 100%);
+  --led-inset:
+    inset 0 2px 6px rgba(0, 0, 0, 0.7),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+
+  /* 眉题小字 */
+  --eyebrow-size: 10px;
+  --eyebrow-spacing: 0.18em;
+}
+
+/* 眉题：次层信息统一用小号 letterspaced 灰字，不再包盒子 */
+.eyebrow {
+  font-size: var(--eyebrow-size);
+  letter-spacing: var(--eyebrow-spacing);
+  color: var(--c-text-muted);
+  text-transform: uppercase;
+}
+
+/* 发丝线分隔 */
+.hairline {
+  border: none;
+  height: 1px;
+  margin: 0;
+  background: linear-gradient(90deg, transparent, var(--c-border) 18%, var(--c-border) 82%, transparent);
+  opacity: 0.6;
+}
+
+/* 键盘聚焦可见 */
+:focus-visible {
+  outline: 2px solid var(--c-primary);
+  outline-offset: 2px;
+}
+
+/* 尊重系统级减少动效偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  margin: 0;
+  background: transparent;
+  font-family: var(--font-main);
+}
+
+/* ── 通用关键帧 ── */
+@keyframes neon-flicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.75; }
+  94% { opacity: 1; }
+  97% { opacity: 0.88; }
+  98% { opacity: 1; }
+}
+
+@keyframes win-flash {
+  0% { text-shadow: none; }
+  30% { text-shadow: var(--glow-green); transform: scale(1.12); }
+  100% { text-shadow: none; transform: scale(1); }
+}
+
+@keyframes lose-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-3px); }
+  40% { transform: translateX(3px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+}
+
+@keyframes shine-sweep {
+  from { transform: translateX(-120%) skewX(-18deg); }
+  to { transform: translateX(240%) skewX(-18deg); }
+}
