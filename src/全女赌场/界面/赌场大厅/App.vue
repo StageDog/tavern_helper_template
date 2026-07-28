@@ -1,5 +1,5 @@
 <template>
-  <div class="lobby-card">
+  <div class="lobby-card" :class="{ 'service-mode': active_id === 'workscore' }">
     <div class="header">
       <span class="title"><i class="fa-solid fa-spade"></i> 赌场大厅</span>
       <span class="led-mini" :class="chipsRoll.cls.value">
@@ -13,7 +13,7 @@
         v-for="entry in visibleEntries"
         :key="entry.id"
         class="tab-btn"
-        :class="{ active: active_id === entry.id }"
+        :class="{ active: active_id === entry.id, 'service-tab': entry.id === 'workscore' }"
         @click="active_id = active_id === entry.id ? null : entry.id"
       >
         <i :class="entry.icon"></i>
@@ -21,7 +21,7 @@
       </button>
     </div>
 
-    <div v-if="active_entry" class="game-area">
+    <div v-if="active_entry" class="game-area" :class="{ 'service-area': active_entry.id === 'workscore' }">
       <component :is="active_entry.component" />
     </div>
     <div v-else class="game-area placeholder">选择一张赌桌入座……</div>
@@ -80,6 +80,8 @@ watch(
 <style lang="scss" scoped>
 .lobby-card {
   position: relative;
+  box-sizing: border-box;
+  width: 100%;
   overflow: hidden;
   max-width: 640px;
   margin: 0 auto;
@@ -95,6 +97,20 @@ watch(
   flex-direction: column;
   gap: 10px;
   font-size: 13px;
+
+  &.service-mode {
+    background:
+      radial-gradient(circle at 86% 2%, rgba(244, 95, 152, 0.16), transparent 29%),
+      linear-gradient(155deg, rgba(50, 18, 40, 0.98), rgba(24, 12, 27, 0.98));
+    border-color: rgba(255, 181, 207, 0.42);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 231, 240, 0.08),
+      0 10px 34px rgba(54, 8, 33, 0.48);
+
+    .header .title {
+      color: #ffb5cf;
+    }
+  }
 }
 
 .header {
@@ -184,6 +200,21 @@ watch(
     border-color: var(--c-primary);
     box-shadow: var(--glow-gold);
   }
+
+  &.service-tab {
+    i {
+      color: #f683ad;
+    }
+
+    &.active {
+      color: #fff2f7;
+      background: linear-gradient(135deg, rgba(244, 95, 152, 0.34), rgba(90, 23, 55, 0.7));
+      border-color: #f683ad;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.09),
+        0 0 18px rgba(244, 95, 152, 0.18);
+    }
+  }
 }
 
 .game-area {
@@ -198,6 +229,13 @@ watch(
     color: var(--c-text-muted);
     font-style: italic;
     padding: 24px;
+  }
+
+  &.service-area {
+    overflow: hidden;
+    padding: 0;
+    background: #210f1d;
+    border-color: rgba(255, 181, 207, 0.42);
   }
 }
 </style>

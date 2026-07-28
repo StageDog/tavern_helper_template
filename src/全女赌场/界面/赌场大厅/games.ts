@@ -28,5 +28,5 @@ export const lobby_entries: LobbyEntry[] = [
   { id: 'crash', label: 'Crash', icon: 'fa-solid fa-rocket', component: Crash },
   { id: 'shop', label: '商店', icon: 'fa-solid fa-flask', component: Shop },
   { id: 'loan', label: '前台借贷', icon: 'fa-solid fa-hand-holding-dollar', component: Loan },
-  { id: 'workscore', label: '服务规则', icon: 'fa-solid fa-list-check', component: WorkScore, bunnyOnly: true },
+  { id: 'workscore', label: '服务规则', icon: 'fa-solid fa-bell-concierge', component: WorkScore, bunnyOnly: true },
 ];

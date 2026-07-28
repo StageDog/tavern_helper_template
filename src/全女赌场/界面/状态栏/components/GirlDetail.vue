@@ -1,137 +1,146 @@
 <template>
-  <div class="girl-detail">
-    <button class="back-btn" @click="emit('back')"><i class="fa-solid fa-angle-left"></i> 返回</button>
+  <article class="girl-detail">
+    <button type="button" class="back-btn" @click="emit('back')">
+      <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+      返回名册
+    </button>
 
-    <div class="detail-body">
-      <!-- 左列：竖版立绘（多张可点击循环切换） -->
+    <div class="profile-grid">
       <div class="portrait-col">
-        <div class="portrait-wrap" :class="{ switchable: list.length > 1 }" @click="next">
+        <button
+          type="button"
+          class="portrait-wrap"
+          :class="{ switchable: list.length > 1 }"
+          :aria-label="list.length > 1 ? `切换${name}的立绘` : `${name}的立绘`"
+          @click="next"
+        >
           <img v-if="current" class="portrait" :src="current" :alt="name" />
-          <div v-else class="portrait placeholder" :style="{ background: placeholderGradient(name) }">
-            <i class="fa-solid fa-user-large"></i>
-          </div>
-          <div v-if="list.length > 1" class="dots">
+          <span v-else class="portrait placeholder" :style="{ background: placeholderGradient(name) }">
+            <i class="fa-solid fa-user-large" aria-hidden="true"></i>
+          </span>
+          <span v-if="list.length > 1" class="dots" aria-hidden="true">
             <span v-for="(__, i) in list" :key="i" class="dot" :class="{ on: i === index }"></span>
-          </div>
-        </div>
-        <div class="identity-row">
-          <span class="name">{{ name }}</span>
-          <span class="badge" :class="{ bunny: isBunny }">{{ girl.身份 }}</span>
-        </div>
+          </span>
+        </button>
       </div>
 
-      <!-- 右列：信息区 -->
-      <div class="info-col">
-        <section>
-          <h4 class="sec-title"><i class="fa-solid fa-shirt"></i> 当前着装<span class="rule"></span></h4>
-          <p class="sec-text">{{ girl.着装 }}</p>
+      <div class="profile-content">
+        <header class="identity">
+          <div>
+            <h2>{{ name }}</h2>
+            <span class="badge" :class="{ bunny: isBunny }">{{ girl.身份 }}</span>
+          </div>
+          <span class="location"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> {{ girl.所在位置 }}</span>
+        </header>
+
+        <section class="action-lead">
+          <i class="fa-solid fa-masks-theater" aria-hidden="true"></i>
+          <p>{{ girl.当前动作 }}</p>
         </section>
 
-        <section>
-          <h4 class="sec-title"><i class="fa-solid fa-ribbon"></i> 身体状态<span class="rule"></span></h4>
-          <div class="body-list">
-            <div v-for="(desc, part) in girl.身体状态" :key="part" class="body-row">
-              <span class="body-part">{{ part }}</span>
-              <span class="body-desc">{{ desc }}</span>
+        <div class="snapshot-grid">
+          <section class="snapshot">
+            <h3><i class="fa-solid fa-shirt" aria-hidden="true"></i> 衣着</h3>
+            <p>{{ girl.着装 }}</p>
+          </section>
+          <section class="snapshot thought">
+            <h3><i class="fa-solid fa-comment" aria-hidden="true"></i> 心声</h3>
+            <p>{{ girl.内心 }}</p>
+          </section>
+        </div>
+
+        <details class="body-register">
+          <summary>
+            <span><i class="fa-solid fa-ribbon" aria-hidden="true"></i> 身体状态</span>
+            <span class="summary-meta">{{ bodyEntryCount }} 项记录</span>
+            <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i>
+          </summary>
+          <dl>
+            <div v-for="(desc, part) in girl.身体状态" :key="part">
+              <dt>{{ part }}</dt>
+              <dd>{{ desc }}</dd>
+            </div>
+          </dl>
+        </details>
+
+        <section class="ledger">
+          <header>
+            <h3><i class="fa-solid fa-chart-line" aria-hidden="true"></i> 账目</h3>
+          </header>
+
+          <div v-if="!isBunny" class="ledger-stats">
+            <div>
+              <span>总营收</span>
+              <strong>{{ girl.经济状态.总营收.toLocaleString() }}</strong>
+            </div>
+            <div>
+              <span>本轮</span>
+              <strong :class="roundClass">
+                {{ girl.经济状态.本轮盈亏 > 0 ? '+' : '' }}{{ girl.经济状态.本轮盈亏 }}
+              </strong>
+            </div>
+          </div>
+
+          <div v-else class="redeem">
+            <div class="redeem-copy">
+              <span>赎身进度</span>
+              <strong>{{ girl.赎身进度 }}/10</strong>
+            </div>
+            <div
+              class="redeem-pips"
+              role="progressbar"
+              aria-label="赎身进度"
+              :aria-valuenow="girl.赎身进度"
+              aria-valuemin="0"
+              aria-valuemax="10"
+            >
+              <span v-for="i in 10" :key="i" :class="{ filled: i <= girl.赎身进度 }"></span>
             </div>
           </div>
         </section>
 
-        <section>
-          <h4 class="sec-title"><i class="fa-solid fa-scroll"></i> 实时行为<span class="rule"></span></h4>
-          <div class="behavior">
-            <div class="behavior-row">
-              <span class="behavior-label"><i class="fa-solid fa-location-dot"></i> 所在位置</span>
-              <span class="behavior-loc">{{ girl.所在位置 }}</span>
-            </div>
-            <div class="behavior-block">
-              <span class="behavior-label"><i class="fa-solid fa-masks-theater"></i> 当前动作</span>
-              <p class="behavior-text">{{ girl.当前动作 }}</p>
-            </div>
-            <div class="behavior-block">
-              <span class="behavior-label"><i class="fa-solid fa-brain"></i> 内心活动</span>
-              <p class="behavior-text inner">{{ girl.内心 }}</p>
-            </div>
+        <section v-if="isBunny" class="service">
+          <div v-if="userIsBunny" class="service-blocked">
+            <i class="fa-solid fa-lock" aria-hidden="true"></i>
+            <span>兔女郎当班期间不能点单同事。</span>
           </div>
-        </section>
 
-        <!-- 经济状态 -->
-        <section class="economy-section">
-          <h4 class="sec-title"><i class="fa-solid fa-chart-line"></i> 经济状态<span class="rule"></span></h4>
-          <!-- 普通赌客：显示总营收 + 本轮盈亏 -->
-          <div v-if="!isBunny" class="econ-card">
-            <div class="econ-row">
-              <span class="econ-label">总营收</span>
-              <span class="econ-value">{{ girl.经济状态.总营收.toLocaleString() }}</span>
+          <div v-else-if="price !== null" class="service-ticket" :class="{ done: alreadyOrdered }">
+            <div class="service-copy">
+              <span>包夜服务</span>
+              <strong><i class="fa-solid fa-coins" aria-hidden="true"></i> {{ price }}</strong>
             </div>
-            <div class="econ-row">
-              <span class="econ-label">本轮盈亏</span>
-              <span
-                class="econ-value"
-                :class="girl.经济状态.本轮盈亏 > 0 ? 'profit' : girl.经济状态.本轮盈亏 < 0 ? 'loss' : ''"
-              >{{ girl.经济状态.本轮盈亏 > 0 ? '+' : '' }}{{ girl.经济状态.本轮盈亏 }}</span>
-            </div>
-          </div>
-          <!-- 兔女郎：显示赎身进度（10格格子） -->
-          <div v-else class="redeem-card">
-            <span class="econ-label">赎身进度</span>
-            <div class="redeem-pips">
-              <span
-                v-for="i in 10"
-                :key="i"
-                class="pip"
-                :class="{ filled: i <= girl.赎身进度 }"
-              ></span>
-            </div>
-            <span class="redeem-num">{{ girl.赎身进度 }}/10</span>
-          </div>
-        </section>
 
-        <!-- 点单区域：仅群友是兔女郎时显示 -->
-        <section v-if="isBunny" class="order-section">
-          <h4 class="sec-title"><i class="fa-solid fa-champagne-glasses"></i> 点单服务<span class="rule"></span></h4>
-          <div v-if="userIsBunny" class="bunny-block-notice">
-            <i class="fa-solid fa-triangle-exclamation"></i>
-            <span>你现在是兔女郎身份，不可以点单别的兔女郎同事哦—— 大家一起接客就好。</span>
-          </div>
-          <div v-else-if="price !== null" class="order-card" :class="{ 'order-card--done': alreadyOrdered }">
-            <div class="order-card-row">
-              <div class="order-info">
-                <span class="order-name">包夜服务</span>
-                <span class="order-price"><i class="fa-solid fa-coins"></i> {{ price }} 筹码</span>
+            <span v-if="alreadyOrdered" class="ordered-tag"><i class="fa-solid fa-check"></i> 已点单</span>
+            <template v-else>
+              <button v-if="!showConfirm" type="button" class="order-btn" @click="showConfirm = true">点单</button>
+              <div v-else class="confirm-group">
+                <button type="button" class="confirm-yes" @click="handleOrder">确认</button>
+                <button type="button" class="confirm-no" @click="showConfirm = false">取消</button>
               </div>
-              <!-- 已点单：封锁显示 -->
-              <span v-if="alreadyOrdered" class="ordered-tag">
-                <i class="fa-solid fa-check"></i> 已点单
-              </span>
-              <!-- 未点单：正常流程 -->
-              <template v-else>
-                <button v-if="!showConfirm" class="order-btn" @click="showConfirm = true">
-                  <i class="fa-solid fa-bell-concierge"></i> 点单
-                </button>
-                <div v-else class="confirm-group">
-                  <button class="confirm-yes" @click="handleOrder">确定</button>
-                  <button class="confirm-no" @click="showConfirm = false">取消</button>
-                </div>
-              </template>
+            </template>
+          </div>
+
+          <div v-else class="service-blocked">
+            <i class="fa-solid fa-clock" aria-hidden="true"></i>
+            <span>包夜价目待定</span>
+          </div>
+
+          <Transition name="tip-fade">
+            <div v-if="orderTip" class="order-tip" :class="{ fail: orderTip.startsWith('✗') }" role="status">
+              {{ orderTip }}
             </div>
-            <Transition name="tip-fade">
-              <span v-if="orderTip" class="order-tip" :class="{ fail: orderTip.startsWith('✗') }">{{ orderTip }}</span>
-            </Transition>
-          </div>
-          <div v-else class="order-card order-card--disabled">
-            <span class="no-price"><i class="fa-solid fa-clock"></i> 价目待定</span>
-          </div>
+          </Transition>
         </section>
       </div>
     </div>
-  </div>
+  </article>
 </template>
 
 <script setup lang="ts">
 import type { Schema } from '../../../schema';
 import { placeholderGradient, portraitList } from '../portraits';
-import { servicePrice, placeOrder, hasOrdered, type OrderResult } from '../services';
+import { hasOrdered, placeOrder, servicePrice, type OrderResult } from '../services';
 import { useDataStore } from '../store';
 
 const props = defineProps<{
@@ -140,25 +149,25 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{ back: [] }>();
-
 const store = useDataStore();
-const isBunny = computed(() => props.girl.身份.includes('兔女郎'));
-/** 玩家自己是否是兔女郎（限制点单功能） */
-const userIsBunny = computed(() => store.data.主角.身份状态 === '兔女郎');
 
-// 当前状态的立绘组；身份变化（如下海）时自动换组并回到第一张
+const isBunny = computed(() => props.girl.身份.includes('兔女郎'));
+const userIsBunny = computed(() => store.data.主角.身份状态 === '兔女郎');
+const bodyEntryCount = computed(() => Object.keys(props.girl.身体状态).length);
+const roundClass = computed(() => ({
+  profit: props.girl.经济状态.本轮盈亏 > 0,
+  loss: props.girl.经济状态.本轮盈亏 < 0,
+}));
+
 const list = computed(() => portraitList(props.name, props.girl.身份));
 const index = ref(0);
 watch(list, () => (index.value = 0));
 const current = computed(() => list.value[index.value]);
 
 function next() {
-  if (list.value.length > 1) {
-    index.value = (index.value + 1) % list.value.length;
-  }
+  if (list.value.length > 1) index.value = (index.value + 1) % list.value.length;
 }
 
-// ─── 点单逻辑 ───
 const price = computed(() => servicePrice(props.name));
 const alreadyOrdered = computed(() => hasOrdered(props.name));
 const showConfirm = ref(false);
@@ -170,15 +179,15 @@ function handleOrder() {
   showConfirm.value = false;
 
   if (result.ok) {
-    orderTip.value = `✓ 已花费 ${result.cost} 筹码包下「${props.name}」一夜`;
+    orderTip.value = `✓ 已花费 ${result.cost} 筹码`;
   } else if (result.reason === 'insufficient') {
-    orderTip.value = '✗ 筹码不足，赚够了再来吧';
+    orderTip.value = '✗ 筹码不足';
   } else {
-    orderTip.value = '✗ 无法点单';
+    orderTip.value = '✗ 当前无法点单';
   }
 
   clearTimeout(tipTimer);
-  tipTimer = window.setTimeout(() => (orderTip.value = ''), 4000);
+  tipTimer = window.setTimeout(() => (orderTip.value = ''), 3500);
 }
 </script>
 
@@ -186,489 +195,485 @@ function handleOrder() {
 .girl-detail {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .back-btn {
   align-self: flex-start;
-  background: var(--c-surface-alt);
-  border: 1px solid var(--c-border);
-  border-radius: 6px;
+  padding: 5px 2px;
   color: var(--c-text-muted);
-  padding: 4px 12px;
-  font-size: 12px;
-  cursor: pointer;
   font-family: inherit;
+  font-size: 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+
+  i {
+    margin-right: 6px;
+    color: var(--c-primary);
+  }
 
   &:hover {
-    color: var(--c-primary);
-    border-color: var(--c-primary);
+    color: var(--c-text);
   }
 }
 
-.detail-body {
-  display: flex;
-  gap: 12px;
-}
-
-.portrait-col {
-  flex: 0 0 38%;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
+.profile-grid {
+  display: grid;
+  grid-template-columns: minmax(150px, 34%) minmax(0, 1fr);
+  gap: 14px;
 }
 
 .portrait-wrap {
   position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  padding: 0;
+  overflow: hidden;
+  background: var(--c-surface-alt);
+  border: 1px solid var(--c-border);
+  border-radius: 11px;
 
   &.switchable {
     cursor: pointer;
+
+    &:hover {
+      border-color: var(--c-primary);
+    }
   }
 }
 
 .portrait {
-  width: 100%;
-  aspect-ratio: 2 / 3;
-  object-fit: cover;
-  border-radius: 8px;
-  border: 1px solid var(--c-border);
   display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 
   &.placeholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    place-items: center;
 
     i {
-      font-size: 52px;
-      color: rgba(255, 255, 255, 0.35);
+      color: rgba(255, 255, 255, 0.34);
+      font-size: 48px;
     }
   }
 }
 
 .dots {
   position: absolute;
-  bottom: 8px;
+  bottom: 9px;
   left: 50%;
-  transform: translateX(-50%);
   display: flex;
   gap: 5px;
-  padding: 3px 8px;
-  background: rgba(10, 6, 16, 0.55);
-  border-radius: 8px;
+  padding: 4px 7px;
+  background: rgba(14, 9, 17, 0.72);
+  border-radius: 999px;
+  transform: translateX(-50%);
 }
 
 .dot {
   width: 6px;
-  height: 6px;
-  border-radius: 50%;
+  aspect-ratio: 1;
   background: rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
 
   &.on {
     background: var(--c-primary);
   }
 }
 
-.identity-row {
+.profile-content {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
 }
 
-.name {
-  font-size: 16px;
-  font-weight: bold;
-  color: var(--c-text);
+.identity {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+
+  > div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  h2 {
+    margin: 0;
+    overflow: hidden;
+    font-family: var(--font-display);
+    font-size: 21px;
+    letter-spacing: 0.06em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 .badge {
-  font-size: 10px;
-  padding: 1px 8px;
-  border-radius: 8px;
-  border: 1px solid var(--c-border);
+  flex: none;
+  padding: 3px 8px;
   color: var(--c-text-muted);
+  font-size: 10px;
+  background: var(--c-surface-alt);
+  border: 1px solid var(--c-border);
+  border-radius: 999px;
 
   &.bunny {
     color: #fff;
-    border-color: var(--c-danger);
     background: var(--c-danger);
+    border-color: var(--c-danger);
   }
 }
 
-.info-col {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.sec-title {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0 0 6px;
-  font-size: 13px;
-  color: var(--c-primary);
-
-  .rule {
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, var(--c-border), transparent);
-  }
-}
-
-.sec-text {
-  margin: 0;
-  font-size: 12px;
-  color: var(--c-text);
-  line-height: 1.5;
-}
-
-.body-list {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.body-row {
-  display: flex;
-  gap: 8px;
-  background: var(--c-surface-alt);
-  border-left: 2px solid var(--c-danger);
-  border-radius: 0 6px 6px 0;
-  padding: 5px 8px;
-  font-size: 12px;
-}
-
-.body-part {
-  flex-shrink: 0;
-  font-weight: bold;
+.location {
+  flex: none;
+  max-width: 42%;
+  padding-top: 4px;
+  overflow: hidden;
   color: var(--c-text-muted);
-}
-
-.body-desc {
-  color: var(--c-text);
-  line-height: 1.45;
-}
-
-.behavior {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.behavior-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.behavior-label {
   font-size: 11px;
-  color: var(--c-text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
   i {
-    margin-right: 3px;
+    margin-right: 4px;
+    color: var(--c-primary);
   }
 }
 
-.behavior-loc {
-  font-size: 12px;
-  font-weight: bold;
-  color: var(--c-primary);
+.action-lead {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  align-items: start;
+  gap: 9px;
+  padding: 11px;
+  background: rgba(213, 164, 73, 0.08);
+  border-left: 3px solid var(--c-primary);
+  border-radius: 0 8px 8px 0;
+
+  > i {
+    display: grid;
+    width: 30px;
+    aspect-ratio: 1;
+    place-items: center;
+    color: var(--c-primary);
+    background: rgba(213, 164, 73, 0.1);
+    border-radius: 50%;
+  }
+
+  p {
+    margin: 2px 0 0;
+    font-size: 13px;
+    line-height: 1.55;
+  }
 }
 
-.behavior-block {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+.snapshot-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
 
-.behavior-text {
-  margin: 0;
-  font-size: 12px;
-  color: var(--c-text);
-  line-height: 1.55;
+.snapshot {
+  min-width: 0;
+  padding: 9px 10px;
   background: var(--c-surface-alt);
   border: 1px solid var(--c-border);
-  border-radius: 6px;
-  padding: 6px 9px;
+  border-radius: 8px;
 
-  &.inner {
-    font-style: italic;
+  h3 {
+    margin: 0 0 5px;
     color: var(--c-text-muted);
-    border-left: 2px solid var(--c-primary);
+    font-size: 11px;
+    font-weight: 500;
+
+    i {
+      margin-right: 5px;
+      color: var(--c-primary);
+    }
+  }
+
+  p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  &.thought p {
+    color: var(--c-text-muted);
+    font-style: italic;
   }
 }
 
-/* 窄屏：立绘上、信息下 */
-@media (max-width: 430px) {
-  .detail-body {
-    flex-direction: column;
+.body-register {
+  overflow: hidden;
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+
+  &[open] {
+    .chevron {
+      transform: rotate(180deg);
+    }
   }
 
-  .portrait-col {
-    flex: none;
-    flex-direction: row;
-    align-items: flex-end;
+  summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 38px;
+    padding: 0 10px;
+    color: var(--c-text);
+    font-size: 12px;
+    list-style: none;
+    cursor: pointer;
 
-    .portrait {
-      width: 45%;
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    > span:first-child {
+      flex: 1;
+      font-weight: 700;
+
+      i {
+        margin-right: 6px;
+        color: var(--c-primary);
+      }
+    }
+  }
+
+  dl {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    padding: 0 10px 10px;
+  }
+
+  dl > div {
+    display: grid;
+    grid-template-columns: minmax(46px, auto) 1fr;
+    gap: 9px;
+    padding-top: 7px;
+    border-top: 1px solid rgba(88, 64, 92, 0.65);
+  }
+
+  dt {
+    color: var(--c-primary);
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  dd {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+}
+
+.summary-meta {
+  color: var(--c-text-muted);
+  font-size: 10px;
+}
+
+.chevron {
+  color: var(--c-text-muted);
+  font-size: 9px;
+  transition: transform 150ms ease;
+}
+
+.ledger {
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.018);
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+
+  > header {
+    padding: 8px 10px 0;
+  }
+
+  h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+
+    i {
+      margin-right: 6px;
+      color: var(--c-primary);
+      font-size: 11px;
     }
   }
 }
 
-/* ─── 经济状态区域 ─── */
-.economy-section {
-  border-top: 1px solid var(--c-border);
-  padding-top: 10px;
-}
+.ledger-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
 
-.econ-card {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  background: var(--c-surface-alt);
-  border: 1px solid var(--c-border);
-  border-radius: 8px;
-  padding: 8px 12px;
-}
+  > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 10px 10px;
 
-.econ-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.econ-label {
-  font-size: 11px;
-  color: var(--c-text-muted);
-}
-
-.econ-value {
-  font-size: 13px;
-  font-weight: bold;
-  color: var(--c-text);
-
-  &.profit {
-    color: var(--c-success);
+    & + div {
+      border-left: 1px solid var(--c-border);
+    }
   }
 
-  &.loss {
+  span {
+    color: var(--c-text-muted);
+    font-size: 11px;
+  }
+
+  strong {
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+
+    &.profit {
+      color: var(--c-success);
+    }
+
+    &.loss {
+      color: var(--c-danger);
+    }
+  }
+}
+
+.redeem {
+  padding: 9px 10px 11px;
+}
+
+.redeem-copy {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 7px;
+
+  span {
+    color: var(--c-text-muted);
+    font-size: 11px;
+  }
+
+  strong {
+    color: var(--c-danger);
+    font-size: 12px;
+  }
+}
+
+.redeem-pips {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 3px;
+
+  span {
+    height: 7px;
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: 2px;
+
+    &.filled {
+      background: var(--c-danger);
+    }
+  }
+}
+
+.service {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.service-ticket,
+.service-blocked {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 8px 10px;
+  background: rgba(214, 87, 114, 0.07);
+  border: 1px solid rgba(214, 87, 114, 0.32);
+  border-radius: 8px;
+}
+
+.service-ticket {
+  gap: 10px;
+
+  &.done {
+    opacity: 0.72;
+  }
+}
+
+.service-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+
+  span {
+    color: var(--c-text-muted);
+    font-size: 11px;
+  }
+
+  strong {
+    color: var(--c-primary);
+    font-size: 14px;
+
+    i {
+      margin-right: 4px;
+      font-size: 10px;
+    }
+  }
+}
+
+.service-blocked {
+  gap: 8px;
+  color: var(--c-text-muted);
+  font-size: 12px;
+
+  i {
     color: var(--c-danger);
   }
 }
 
-.redeem-card {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--c-surface-alt);
-  border: 1px solid rgba(var(--c-danger-rgb, 220, 53, 69), 0.35);
-  border-radius: 8px;
-  padding: 8px 12px;
-}
-
-.redeem-pips {
-  display: flex;
-  gap: 4px;
-  flex: 1;
-}
-
-.pip {
-  width: 14px;
-  height: 14px;
-  border-radius: 3px;
-  background: var(--c-surface);
-  border: 1px solid var(--c-border);
-  transition: background 0.2s, border-color 0.2s;
-
-  &.filled {
-    background: var(--c-danger);
-    border-color: var(--c-danger);
-    box-shadow: var(--glow-pink);
-  }
-}
-
-.redeem-num {
-  font-size: 11px;
-  color: var(--c-text-muted);
-  white-space: nowrap;
-}
-
-/* ─── 点单区域 ─── */
-.order-section {
-  border-top: 1px solid var(--c-border);
-  padding-top: 10px;
-}
-
-.bunny-block-notice {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(220, 53, 69, 0.08);
-  border: 1px solid rgba(220, 53, 69, 0.35);
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 12px;
-  color: var(--c-danger);
-  line-height: 1.5;
-
-  i {
-    flex-shrink: 0;
-    font-size: 13px;
-  }
-}
-
-.order-card {
-  background: var(--c-surface-alt);
-  border: 1px solid var(--c-border);
-  border-radius: 8px;
-  padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  transition: border-color 0.15s;
-
-  &:hover {
-    border-color: var(--c-primary);
-  }
-
-  &--disabled {
-    opacity: 0.6;
-
-    &:hover {
-      border-color: var(--c-border);
-    }
-  }
-
-  &--done {
-    border-color: var(--c-border);
-    opacity: 0.75;
-
-    &:hover {
-      border-color: var(--c-border);
-    }
-  }
-}
-
-.ordered-tag {
-  flex-shrink: 0;
-  font-size: 11px;
-  font-weight: bold;
-  color: var(--c-text-muted);
-  border: 1px solid var(--c-border);
-  border-radius: 5px;
-  padding: 5px 12px;
-
-  i {
-    margin-right: 4px;
-    color: var(--c-success);
-  }
-}
-
-.order-card-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.order-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.order-name {
-  font-size: 12px;
-  color: var(--c-text-muted);
-}
-
-.order-price {
-  font-size: 14px;
-  font-weight: bold;
-  color: var(--c-primary);
-
-  i {
-    font-size: 11px;
-    margin-right: 3px;
-  }
-}
-
-.order-btn {
-  flex-shrink: 0;
-  background: var(--btn-gold);
-  border: none;
-  border-radius: 6px;
-  color: #1a1224;
-  font-size: 12px;
-  font-weight: bold;
-  padding: 7px 16px;
-  cursor: pointer;
+.order-btn,
+.confirm-yes,
+.confirm-no {
+  min-height: 31px;
+  padding: 5px 13px;
   font-family: inherit;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.4),
-    0 2px 4px rgba(0, 0, 0, 0.35);
-  transition: filter 0.15s, transform 0.1s;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 6px;
+  cursor: pointer;
+}
 
-  &:hover {
-    filter: brightness(1.12);
-  }
+.order-btn,
+.confirm-yes {
+  color: var(--c-ink);
+  background: var(--c-primary);
+  border: 1px solid var(--c-primary);
+}
 
-  &:active {
-    transform: translateY(1px);
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
-  }
+.confirm-no {
+  color: var(--c-text-muted);
+  background: transparent;
+  border: 1px solid var(--c-border);
 }
 
 .confirm-group {
   display: flex;
-  gap: 6px;
-  flex-shrink: 0;
+  gap: 5px;
 }
 
-.confirm-yes {
-  background: var(--c-danger);
-  border: none;
-  border-radius: 5px;
-  color: #fff;
+.ordered-tag {
+  color: var(--c-success);
   font-size: 11px;
-  font-weight: bold;
-  padding: 5px 14px;
-  cursor: pointer;
-  font-family: inherit;
-
-  &:hover {
-    filter: brightness(1.15);
-  }
-}
-
-.confirm-no {
-  background: transparent;
-  border: 1px solid var(--c-border);
-  border-radius: 5px;
-  color: var(--c-text-muted);
-  font-size: 11px;
-  padding: 5px 14px;
-  cursor: pointer;
-  font-family: inherit;
-
-  &:hover {
-    color: var(--c-text);
-    border-color: var(--c-text-muted);
-  }
-}
-
-.no-price {
-  font-size: 12px;
-  color: var(--c-text-muted);
-  font-style: italic;
 
   i {
     margin-right: 4px;
@@ -676,85 +681,47 @@ function handleOrder() {
 }
 
 .order-tip {
-  font-size: 11px;
+  padding: 7px 9px;
   color: var(--c-success);
+  font-size: 11px;
+  background: rgba(99, 198, 159, 0.1);
+  border-radius: 6px;
 
   &.fail {
     color: var(--c-danger);
+    background: rgba(214, 87, 114, 0.1);
   }
 }
 
 .tip-fade-enter-active,
 .tip-fade-leave-active {
-  transition: opacity 0.25s;
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease;
 }
 
 .tip-fade-enter-from,
 .tip-fade-leave-to {
   opacity: 0;
+  transform: translateY(-3px);
 }
 
-/* ─── 经济状态区块 ─── */
-.econ-section {
-  border-top: 1px solid var(--c-border);
-  padding-top: 10px;
-}
-
-.econ-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.econ-item {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-}
-
-.econ-val {
-  font-weight: bold;
-  font-size: 13px;
-  color: var(--c-text);
-
-  &.positive {
-    color: var(--c-success);
+@media (max-width: 470px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
   }
 
-  &.negative {
-    color: var(--c-danger);
+  .portrait-col {
+    display: flex;
+    justify-content: center;
   }
-}
 
-.redeem-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 4px;
-}
-
-.redeem-track {
-  display: flex;
-  gap: 3px;
-}
-
-.redeem-cell {
-  width: 16px;
-  height: 10px;
-  border-radius: 2px;
-  background: var(--c-surface-alt);
-  border: 1px solid var(--c-border);
-
-  &.filled {
-    background: var(--c-danger);
-    border-color: var(--c-danger);
-    box-shadow: var(--glow-pink);
+  .portrait-wrap {
+    width: min(58%, 210px);
   }
-}
 
-.redeem-num {
-  font-size: 11px;
-  color: var(--c-text-muted);
+  .snapshot-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
