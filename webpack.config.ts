@@ -421,6 +421,15 @@ function parse_configuration(entry: Entry): (_env: any, argv: any) => webpack.Co
     plugins: (entry.html === undefined
       ? [new MiniCssExtractPlugin()]
       : [
+          ...(entry.script.split(path.sep).includes('全女赌场')
+            ? [
+                new webpack.BannerPlugin({
+                  banner: 'var __webpack_require__ = {};',
+                  raw: true,
+                  entryOnly: true,
+                }),
+              ]
+            : []),
           new HtmlWebpackPlugin({
             template: path.join(import.meta.dirname, entry.html),
             filename: path.parse(entry.html).base,
