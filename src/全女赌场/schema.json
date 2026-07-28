@@ -92,19 +92,19 @@
             "default": {},
             "type": "object",
             "properties": {
-              "部位一": {
+              "胸部": {
                 "default": "待初始化",
                 "type": "string"
               },
-              "部位二": {
+              "小穴": {
                 "default": "待初始化",
                 "type": "string"
               },
-              "部位三": {
+              "臀部": {
                 "default": "待初始化",
                 "type": "string"
               },
-              "部位四": {
+              "嘴部": {
                 "default": "待初始化",
                 "type": "string"
               }
