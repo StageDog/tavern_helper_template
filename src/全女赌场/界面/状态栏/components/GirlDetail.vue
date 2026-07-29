@@ -24,7 +24,7 @@
         </button>
       </div>
 
-      <div class="profile-content">
+      <div class="profile-content" role="region" tabindex="0" :aria-label="`${name}的名册档案`">
         <header class="identity">
           <div>
             <h2>{{ name }}</h2>
@@ -219,9 +219,16 @@ function handleOrder() {
 }
 
 .profile-grid {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(150px, 34%) minmax(0, 1fr);
+  align-items: start;
   gap: 14px;
+}
+
+.portrait-col {
+  grid-column: 1;
+  min-width: 0;
 }
 
 .portrait-wrap {
@@ -285,17 +292,64 @@ function handleOrder() {
 }
 
 .profile-content {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
+  box-sizing: border-box;
+  width: calc(66% - 14px);
   flex-direction: column;
   gap: 10px;
   min-width: 0;
+  padding: 12px 8px 14px 12px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: linear-gradient(90deg, rgba(213, 164, 73, 0.055), transparent 24px), rgba(8, 5, 10, 0.26);
+  border: 1px solid rgba(213, 164, 73, 0.18);
+  border-radius: 11px;
+  box-shadow: inset 3px 0 0 rgba(213, 164, 73, 0.13);
+  scrollbar-color: rgba(213, 164, 73, 0.72) rgba(88, 64, 92, 0.24);
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar {
+    width: 7px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background:
+      linear-gradient(90deg, transparent 0 2px, rgba(213, 164, 73, 0.18) 2px 3px, transparent 3px),
+      rgba(88, 64, 92, 0.12);
+    border-radius: 999px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #e1b55d, #9f7430);
+    border: 1px solid rgba(243, 234, 223, 0.22);
+    border-radius: 999px;
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(213, 164, 73, 0.78);
+    outline-offset: 2px;
+  }
 }
 
 .identity {
+  position: sticky;
+  top: -12px;
+  z-index: 2;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
+  margin: -12px -1px 0;
+  padding: 12px 1px 10px;
+  background: linear-gradient(180deg, #140d17 0 76%, rgba(20, 13, 23, 0.96) 88%, rgba(20, 13, 23, 0.72) 100%);
+  border-bottom: 1px solid rgba(213, 164, 73, 0.16);
+  box-shadow: 0 8px 12px rgba(8, 5, 10, 0.18);
 
   > div {
     display: flex;
@@ -718,6 +772,21 @@ function handleOrder() {
 
   .portrait-wrap {
     width: min(58%, 210px);
+  }
+
+  .profile-content {
+    position: static;
+    width: 100%;
+    max-height: none;
+    padding: 12px;
+    overflow: visible;
+    scrollbar-gutter: auto;
+  }
+
+  .identity {
+    position: static;
+    margin: -12px -1px 0;
+    box-shadow: none;
   }
 
   .snapshot-grid {
