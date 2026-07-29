@@ -31,24 +31,26 @@
         <div class="hand dealer-hand">
           <div class="hand-heading">
             <span class="hand-label"><i class="fa-solid fa-user-tie"></i> 荷官手牌</span>
-            <span class="hand-total"
-              >{{ phase === 'player' ? '?' : handValue(dealer)
-              }}<template v-if="phase === 'done' && handValue(dealer) > 21">!</template></span
-            >
           </div>
-          <div class="cards">
-            <span
-              v-for="(card, i) in dealer"
-              :key="i"
-              class="card"
-              :class="{ red: isRed(card), back: phase === 'player' && i === 1 }"
-            >
-              <template v-if="phase === 'player' && i === 1"><span class="back-mark">♠</span></template>
-              <template v-else>
-                <span class="card-rank">{{ rankText(card) }}</span>
-                <span class="card-suit">{{ suitText(card) }}</span>
-              </template>
+          <div class="hand-row">
+            <span class="hand-total">
+              <span>{{ phase === 'player' ? '?' : handValue(dealer) }}</span>
+              <span v-if="phase === 'done' && handValue(dealer) > 21" class="hand-state" aria-label="爆牌">💥</span>
             </span>
+            <div class="cards">
+              <span
+                v-for="(card, i) in dealer"
+                :key="i"
+                class="card"
+                :class="{ red: isRed(card), back: phase === 'player' && i === 1 }"
+              >
+                <template v-if="phase === 'player' && i === 1"><span class="back-mark">♠</span></template>
+                <template v-else>
+                  <span class="card-rank">{{ rankText(card) }}</span>
+                  <span class="card-suit">{{ suitText(card) }}</span>
+                </template>
+              </span>
+            </div>
           </div>
         </div>
 
@@ -57,16 +59,19 @@
         <div class="hand player-hand">
           <div class="hand-heading">
             <span class="hand-label"><i class="fa-solid fa-carrot"></i> 你的手牌</span>
-            <span class="hand-total"
-              >{{ handValue(player) }}<template v-if="playerBusted">!</template
-              ><template v-else-if="isNatural">★</template></span
-            >
           </div>
-          <div class="cards">
-            <span v-for="(card, i) in player" :key="i" class="card" :class="{ red: isRed(card) }">
-              <span class="card-rank">{{ rankText(card) }}</span>
-              <span class="card-suit">{{ suitText(card) }}</span>
+          <div class="hand-row">
+            <span class="hand-total">
+              <span>{{ handValue(player) }}</span>
+              <span v-if="playerBusted" class="hand-state" aria-label="爆牌">💥</span>
+              <span v-else-if="isNatural" class="hand-state" aria-label="Blackjack">😼</span>
             </span>
+            <div class="cards">
+              <span v-for="(card, i) in player" :key="i" class="card" :class="{ red: isRed(card) }">
+                <span class="card-rank">{{ rankText(card) }}</span>
+                <span class="card-suit">{{ suitText(card) }}</span>
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -303,8 +308,6 @@ function reset() {
 .hand-heading {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
   margin-bottom: 8px;
 }
 
@@ -324,23 +327,31 @@ function reset() {
 .hand-total {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  min-width: 46px;
-  height: 46px;
-  padding: 0 7px;
-  color: #24142b;
-  background: radial-gradient(circle, var(--game-ivory) 0 56%, var(--game-gold) 57% 66%, #5c3a25 67% 100%);
-  border: 2px dashed rgba(36, 20, 43, 0.48);
-  border-radius: 50%;
-  font-family: var(--font-led);
-  font-size: 17px;
+  flex: 0 0 58px;
+  gap: 3px;
+  min-width: 0;
+  color: var(--game-ivory);
+  font-size: 30px;
   font-weight: 700;
-  box-shadow: 0 2px 7px rgba(5, 2, 9, 0.34);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.hand-state {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.hand-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
 }
 
 .cards {
   display: flex;
+  min-width: 0;
+  flex: 1;
   gap: 7px;
   flex-wrap: wrap;
 }
@@ -460,6 +471,15 @@ function reset() {
 }
 
 @media (max-width: 350px) {
+  .hand-total {
+    flex-basis: 50px;
+    font-size: 27px;
+  }
+
+  .hand-state {
+    font-size: 16px;
+  }
+
   .card {
     width: 44px;
     height: 60px;

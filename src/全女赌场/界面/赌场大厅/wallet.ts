@@ -20,11 +20,7 @@ export function useWallet() {
 
   /** 下海硬触发：欠满额度且 token 归零（借无可借、输无可输）→ 直接切身份，AI 只演出 */
   function checkBankruptcy() {
-    if (
-      store.data.主角.身份状态 === '赌客' &&
-      store.data.主角.欠债 >= DEBT_LIMIT &&
-      store.data.主角.筹码 <= 0
-    ) {
+    if (store.data.主角.身份状态 === '赌客' && store.data.主角.欠债 >= DEBT_LIMIT && store.data.主角.筹码 <= 0) {
       store.data.主角.身份状态 = '兔女郎';
       store.data.主角.兔女郎工作进度 = 0;
       pushEvent(`破产：欠债${store.data.主角.欠债}且 token 归零，被赌场收编为兔女郎，开始下海抵债`);
@@ -57,14 +53,30 @@ export function useWallet() {
     return true;
   }
 
-  /** 向赌场借款：到手 N 筹码，记账 N×(1+手续费)。超出额度返回 false */
+  /**
+   * 向赌场借款：到手 N 筹码，记账 N×(1+手续费)。
+   * 到手金额最低 10 且必须是 10 的倍数；最后一笔允许越过剩余额度，
+   * 欠债实际写入时封顶到 DEBT_LIMIT，避免永远卡在额度上限前。
+   */
   function borrow(amount: number): boolean {
-    const booked = Math.round(amount * (1 + LOAN_FEE_RATE));
-    if (!Number.isFinite(amount) || amount <= 0 || store.data.主角.欠债 + booked > DEBT_LIMIT) {
+    const principal = Math.round(amount);
+    const remainingDebt = DEBT_LIMIT - store.data.主角.欠债;
+    const maxPrincipal = Math.ceil(remainingDebt / (1 + LOAN_FEE_RATE) / 10) * 10;
+
+    if (
+      !Number.isFinite(amount) ||
+      amount !== principal ||
+      principal < 10 ||
+      principal % 10 !== 0 ||
+      remainingDebt <= 0 ||
+      principal > maxPrincipal
+    ) {
       return false;
     }
-    store.data.主角.欠债 += booked;
-    store.data.主角.筹码 += Math.round(amount);
+
+    const booked = Math.round(principal * (1 + LOAN_FEE_RATE));
+    store.data.主角.欠债 = Math.min(DEBT_LIMIT, store.data.主角.欠债 + booked);
+    store.data.主角.筹码 += principal;
     return true;
   }
 

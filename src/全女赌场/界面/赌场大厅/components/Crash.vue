@@ -7,7 +7,13 @@
       </div>
 
       <div class="display">
-        <span class="multiplier">×{{ current.toFixed(2) }}</span>
+        <span class="multiplier">
+          <span class="multiplier-symbol">×</span>
+          <span class="multiplier-number">
+            <span>{{ formattedCurrent[0] }}</span>
+            <span class="multiplier-decimal">.{{ formattedCurrent[1] }}</span>
+          </span>
+        </span>
         <span class="rocket" aria-hidden="true">{{ crashed ? '💥' : cashed ? '🪙' : '🚀' }}</span>
         <span v-if="crashed" class="crash-tag">火箭炸掉了</span>
         <span v-else-if="cashed" class="cash-tag">筹码安全落袋</span>
@@ -82,6 +88,7 @@ let rafId = 0;
 
 const progressPercent = computed(() => Math.min(100, (current.value / MAX_DISPLAY) * 100));
 const potentialProfit = computed(() => Math.max(0, Math.floor(bet.value * current.value) - bet.value));
+const formattedCurrent = computed(() => current.value.toFixed(2).split('.'));
 
 /**
  * 早爆几率 + 恒定 RTP 分布：
@@ -153,6 +160,7 @@ onUnmounted(() => cancelAnimationFrame(rafId));
   display: flex;
   flex-direction: column;
   gap: 12px;
+  font-family: var(--font-main);
 }
 
 .crash-stage {
@@ -195,9 +203,9 @@ onUnmounted(() => cancelAnimationFrame(rafId));
   align-items: center;
   justify-content: space-between;
   color: var(--c-text-muted);
-  font-family: var(--game-display-font);
   font-size: 13px;
-  letter-spacing: 0.08em;
+  font-weight: 500;
+  letter-spacing: 0.05em;
 }
 
 .flight-state {
@@ -221,12 +229,35 @@ onUnmounted(() => cancelAnimationFrame(rafId));
   padding: 10px;
 
   .multiplier {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.12em;
     color: var(--game-ivory);
-    font-family: var(--font-led);
     font-size: clamp(44px, 10vw, 58px);
-    font-weight: bold;
-    letter-spacing: -0.04em;
     line-height: 1;
+  }
+
+  .multiplier-symbol {
+    display: inline-flex;
+    align-items: center;
+    align-self: center;
+    font-family: var(--font-main);
+    font-size: 0.78em;
+    font-weight: 400;
+    line-height: 1;
+  }
+
+  .multiplier-number {
+    display: inline-flex;
+    align-items: baseline;
+    font-family: var(--font-led);
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .multiplier-decimal {
+    margin-left: 0.08em;
   }
 
   .rocket {

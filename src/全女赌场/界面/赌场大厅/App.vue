@@ -92,6 +92,11 @@ watch(
   --game-gold: #d6a64a;
   --game-ivory: #f2e5d2;
   --game-mint: #6fd3a5;
+  --game-machine-surface: #aa98c5;
+  --game-machine-edge: #ded5ed;
+  --game-machine-shadow: #675371;
+  --game-action-alt: #b9a7dc;
+  --game-action-alt-hover: #c8b9e6;
   --game-display-font: 'STSong', 'Songti SC', 'Noto Serif SC', serif;
 
   position: relative;

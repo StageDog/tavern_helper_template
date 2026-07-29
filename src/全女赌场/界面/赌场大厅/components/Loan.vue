@@ -1,6 +1,5 @@
 <template>
   <div class="loan">
-    <!-- 欠债总览 -->
     <div class="debt-panel" :class="level.cls">
       <div class="debt-main">
         <span class="debt-label">当前欠债</span>
@@ -18,7 +17,6 @@
 
     <div v-if="toast" class="toast" :class="toastClass">{{ toast }}</div>
 
-    <!-- 兔女郎抵债模式 -->
     <div v-if="wallet.isBunny.value" class="bunny-panel">
       <div class="bunny-head">🐰 抵债工作中…</div>
       <div class="bunny-progress">
@@ -29,42 +27,63 @@
         <span class="bunny-num">{{ wallet.store.data.主角.兔女郎工作进度 }}/100</span>
       </div>
       <p class="bunny-info">
-        每攒满 100 进度可以抵掉 {{ wallet.REDEMPTION_UNIT.toLocaleString() }} 欠债，
-        离赎身还要打满 <b>{{ unitsLeft }}</b> 档工作…加油哦
+        每攒满 100 进度可以抵掉 {{ wallet.REDEMPTION_UNIT.toLocaleString() }} 欠债， 离赎身还要打满
+        <b>{{ unitsLeft }}</b> 档工作…加油哦
       </p>
-      <!-- 兔女郎也可直接用筹码还款 -->
-      <div class="bunny-repay">
-        <span class="bunny-repay-label">💰 手头有筹码也可以直接还款加速赎身</span>
-        <div class="op-row">
-          <span class="op-label">金额</span>
-          <div class="amount-wrap">
-            <button v-for="q in QUICK" :key="q" :class="{ sel: amount === q }" @click="amount = q">
-              {{ q.toLocaleString() }}
-            </button>
-          </div>
-        </div>
-        <button class="main-btn repay bunny-repay-btn" :disabled="!canRepay" @click="doRepay">
-          <i class="fa-solid fa-circle-check"></i> 还款 {{ amount.toLocaleString() }}
-        </button>
-      </div>
     </div>
 
-    <!-- 赌客借还操作 -->
-    <template v-else>
-      <div class="op-row">
-        <span class="op-label">金额</span>
-        <div class="amount-wrap">
-          <button v-for="q in QUICK" :key="q" :class="{ sel: amount === q }" @click="amount = q">
+    <div class="amount-panel">
+      <div class="amount-heading">
+        <span class="amount-title">{{ wallet.isBunny.value ? '还款金额' : '借还金额' }}</span>
+        <span class="amount-rule">10 起 · 仅限 10 的倍数</span>
+      </div>
+      <div class="amount-row">
+        <div class="amount-input-wrap">
+          <button aria-label="减少金额" @click="adjustAmount(-AMOUNT_STEP)">−</button>
+          <label>
+            <span class="sr-only">借还金额</span>
+            <input
+              v-model.number="amount"
+              type="number"
+              inputmode="numeric"
+              :min="MIN_AMOUNT"
+              :max="wallet.DEBT_LIMIT"
+              :step="AMOUNT_STEP"
+              @blur="normalizeAmount"
+              @change="normalizeAmount"
+            />
+          </label>
+          <button aria-label="增加金额" @click="adjustAmount(AMOUNT_STEP)">＋</button>
+        </div>
+        <div class="quick-amounts" aria-label="快捷金额">
+          <button v-for="q in QUICK" :key="q" :class="{ sel: amount === q }" @click="setAmount(q)">
             {{ q.toLocaleString() }}
+          </button>
+          <button class="fill-limit" :disabled="fillAmount <= 0" @click="setAmount(fillAmount)">
+            {{ wallet.isBunny.value ? '尽量还清' : '补满额度' }}
           </button>
         </div>
       </div>
+      <span v-if="!validAmount" class="amount-error">请输入 10～5,000 之间、且为 10 倍数的整数。</span>
+    </div>
 
-      <p class="fee-preview">
-        到手 <b>{{ amount.toLocaleString() }}</b> ｜ 记账
-        <b class="fee">{{ booked.toLocaleString() }}</b>（含 {{ wallet.LOAN_FEE_RATE * 100 }}% 手续费）
-      </p>
+    <div v-if="!wallet.isBunny.value" class="fee-preview">
+      <span>
+        <small>实际到手</small>
+        <b>{{ safeAmount.toLocaleString() }}</b>
+      </span>
+      <span>
+        <small>{{ willCapDebt ? '额度封顶' : `含 ${wallet.LOAN_FEE_RATE * 100}% 手续费` }}</small>
+        <b class="fee">
+          <template v-if="willCapDebt"
+            >{{ booked.toLocaleString() }} → {{ wallet.DEBT_LIMIT.toLocaleString() }}</template
+          >
+          <template v-else>记账 {{ booked.toLocaleString() }}</template>
+        </b>
+      </span>
+    </div>
 
+    <template v-if="!wallet.isBunny.value">
       <div class="actions">
         <button class="main-btn borrow" :disabled="!canBorrow" @click="doBorrow">
           <i class="fa-solid fa-hand-holding-dollar"></i> 借款
@@ -74,8 +93,10 @@
         </button>
       </div>
     </template>
+    <button v-else class="main-btn repay bunny-repay-btn" :disabled="!canRepay" @click="doRepay">
+      <i class="fa-solid fa-circle-check"></i> 还款 {{ repayAmount.toLocaleString() }}
+    </button>
 
-    <!-- 借还流水 -->
     <details v-if="records.length" class="records">
       <summary>借还流水（最近 {{ records.length }} 笔）</summary>
       <div class="record-list">
@@ -88,8 +109,7 @@
     </details>
 
     <p class="hint">
-      💡 找前台小姐借 token 只收一点点手续费，但欠着不还的话……会被请去后台「谈心」的哦。
-      额度用完、token 又输光的话，就只能穿上兔女郎制服下海打工抵债啦～
+      💡 最后一笔借款会把欠债封顶到 5,000。额度用完、token 又归零时，就会被请去后台换上兔女郎制服抵债啦～
     </p>
   </div>
 </template>
@@ -97,8 +117,9 @@
 <script setup lang="ts">
 import { useWallet } from '../wallet';
 
-// 4500×1.1=4950，正好贴着 5000 额度上限
-const QUICK = [500, 1000, 2000, 4500];
+const MIN_AMOUNT = 10;
+const AMOUNT_STEP = 10;
+const QUICK = [100, 500, 1000];
 
 // 惩罚等级（按欠债/上限比例）
 const LEVELS = [
@@ -115,7 +136,7 @@ interface LoanRecord {
 }
 
 const wallet = useWallet();
-const amount = ref(1000);
+const amount = ref<number>(500);
 const toast = ref('');
 const toastClass = ref('');
 let toastTimer = 0;
@@ -125,9 +146,34 @@ const records = useLocalStorage<LoanRecord[]>('casino_loan:records', []);
 const debtRatio = computed(() => Math.min(1, wallet.debt.value / wallet.DEBT_LIMIT));
 const level = computed(() => LEVELS.find(l => debtRatio.value < l.max) ?? LEVELS[LEVELS.length - 1]);
 
-const booked = computed(() => Math.round(amount.value * (1 + wallet.LOAN_FEE_RATE)));
-const canBorrow = computed(() => wallet.debt.value + booked.value <= wallet.DEBT_LIMIT);
-const canRepay = computed(() => wallet.debt.value > 0 && wallet.chips.value > 0);
+const safeAmount = computed(() => (Number.isFinite(amount.value) ? Math.round(amount.value) : 0));
+const validAmount = computed(
+  () =>
+    safeAmount.value === amount.value &&
+    safeAmount.value >= MIN_AMOUNT &&
+    safeAmount.value <= wallet.DEBT_LIMIT &&
+    safeAmount.value % AMOUNT_STEP === 0,
+);
+const remainingDebt = computed(() => Math.max(0, wallet.DEBT_LIMIT - wallet.debt.value));
+const maxBorrowAmount = computed(() =>
+  remainingDebt.value <= 0
+    ? 0
+    : Math.ceil(remainingDebt.value / (1 + wallet.LOAN_FEE_RATE) / AMOUNT_STEP) * AMOUNT_STEP,
+);
+const booked = computed(() => Math.round(safeAmount.value * (1 + wallet.LOAN_FEE_RATE)));
+const willCapDebt = computed(() => validAmount.value && remainingDebt.value > 0 && booked.value > remainingDebt.value);
+const canBorrow = computed(
+  () => validAmount.value && remainingDebt.value > 0 && safeAmount.value <= maxBorrowAmount.value,
+);
+const canRepay = computed(() => validAmount.value && wallet.debt.value > 0 && wallet.chips.value > 0);
+const repayAmount = computed(() => Math.min(safeAmount.value, wallet.debt.value, wallet.chips.value));
+const fillAmount = computed(() => {
+  if (wallet.isBunny.value) {
+    if (wallet.debt.value <= 0 || wallet.chips.value <= 0) return 0;
+    return Math.max(MIN_AMOUNT, Math.ceil(Math.min(wallet.debt.value, wallet.chips.value) / AMOUNT_STEP) * AMOUNT_STEP);
+  }
+  return maxBorrowAmount.value;
+});
 
 const unitsLeft = computed(() => Math.ceil(wallet.debt.value / wallet.REDEMPTION_UNIT));
 
@@ -135,22 +181,58 @@ function addRecord(type: '借' | '还', recordAmount: number) {
   records.value = [{ type, amount: recordAmount, after: wallet.debt.value }, ...records.value].slice(0, 8);
 }
 
+function normalizeAmount() {
+  const normalized = Number.isFinite(amount.value) ? Math.round(amount.value / AMOUNT_STEP) * AMOUNT_STEP : MIN_AMOUNT;
+  amount.value = _.clamp(normalized, MIN_AMOUNT, wallet.DEBT_LIMIT);
+}
+
+function adjustAmount(delta: number) {
+  normalizeAmount();
+  amount.value = _.clamp(amount.value + delta, MIN_AMOUNT, wallet.DEBT_LIMIT);
+}
+
+function setAmount(value: number) {
+  amount.value = _.clamp(value, MIN_AMOUNT, wallet.DEBT_LIMIT);
+}
+
 function doBorrow() {
-  if (wallet.borrow(amount.value)) {
-    addRecord('借', amount.value);
-    showToast(`借到 ${amount.value.toLocaleString()} token！账上记了 ${booked.value.toLocaleString()} 哦～`, 'ok');
-    wallet.pushEvent(`借贷：借款${amount.value}（含手续费记账${booked.value}），当前欠债${wallet.debt.value}`);
+  if (!validAmount.value) {
+    showToast('借款金额必须是 10 的倍数。', 'fail');
+    return;
+  }
+
+  const principal = safeAmount.value;
+  const nominalBooked = booked.value;
+  const capped = willCapDebt.value;
+  if (wallet.borrow(principal)) {
+    addRecord('借', principal);
+    showToast(
+      capped
+        ? `借到 ${principal.toLocaleString()} token，欠债封顶 ${wallet.DEBT_LIMIT.toLocaleString()}。`
+        : `借到 ${principal.toLocaleString()} token，记账 ${nominalBooked.toLocaleString()}。`,
+      'ok',
+    );
+    wallet.pushEvent(
+      `借贷：借款${principal}（含手续费原记账${nominalBooked}${capped ? `，封顶${wallet.DEBT_LIMIT}` : ''}），当前欠债${wallet.debt.value}`,
+    );
   } else {
-    showToast('超出额度上限，前台小姐摇了摇头…', 'fail');
+    showToast('这笔会超过可借额度，试试“补满额度”。', 'fail');
   }
 }
 
 function doRepay() {
-  const actual = wallet.repay(amount.value);
+  if (!validAmount.value) {
+    showToast('还款金额必须是 10 的倍数。', 'fail');
+    return;
+  }
+
+  const actual = wallet.repay(safeAmount.value);
   if (actual > 0) {
     addRecord('还', actual);
     showToast(
-      wallet.debt.value === 0 ? '还清了！全部债务一笔勾销🎉' : `还了 ${actual.toLocaleString()}，还欠 ${wallet.debt.value.toLocaleString()}`,
+      wallet.debt.value === 0
+        ? '还清了！全部债务一笔勾销🎉'
+        : `还了 ${actual.toLocaleString()}，还欠 ${wallet.debt.value.toLocaleString()}`,
       'ok',
     );
     wallet.pushEvent(`借贷：还款${actual}，当前欠债${wallet.debt.value}`);
@@ -171,17 +253,19 @@ function showToast(text: string, cls: string) {
 .loan {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
+  font-family: var(--font-main);
 }
 
 .debt-panel {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  background: var(--c-surface);
-  border: 1px solid var(--c-border);
-  border-radius: 8px;
-  padding: 10px 12px;
+  gap: 11px;
+  padding: 14px;
+  background: linear-gradient(145deg, rgba(114, 41, 74, 0.13), transparent 52%), var(--game-felt);
+  border: 1px solid rgba(242, 229, 210, 0.14);
+  border-radius: 11px;
+  box-shadow: inset 0 1px 0 rgba(242, 229, 210, 0.04);
 
   &.warn {
     border-color: var(--c-primary);
@@ -199,28 +283,33 @@ function showToast(text: string, cls: string) {
 
 .debt-main {
   display: flex;
-  align-items: baseline;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
 .debt-label {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--c-text-muted);
 }
 
 .debt-value {
-  font-size: 26px;
-  font-weight: bold;
-  color: var(--c-text);
+  color: var(--game-ivory);
+  font-size: 30px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
 }
 
 .level-badge {
-  font-size: 11px;
-  font-weight: bold;
-  padding: 2px 8px;
-  border-radius: 10px;
+  min-height: 28px;
+  box-sizing: border-box;
+  padding: 4px 10px;
+  color: var(--c-text);
   border: 1px solid var(--c-border);
-  color: var(--c-text-muted);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
 
   &.safe {
     color: var(--c-success);
@@ -245,34 +334,40 @@ function showToast(text: string, cls: string) {
 }
 
 .debt-bar {
-  height: 8px;
-  background: var(--c-surface-alt);
-  border-radius: 4px;
-  overflow: hidden;
+  height: 9px;
   flex: 1;
+  overflow: hidden;
+  background: var(--c-surface-alt);
+  border-radius: 999px;
 }
 
 .debt-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--c-primary), var(--c-danger));
   box-shadow: var(--glow-pink);
-  transition: width 0.4s;
+  transition: width 0.3s;
 }
 
 .debt-meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
   color: var(--c-text-muted);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .level-desc {
   font-style: italic;
+  text-align: right;
 }
 
 .toast {
+  min-height: 22px;
+  color: var(--game-ivory);
+  font-size: 14px;
   text-align: center;
-  font-weight: bold;
+  font-weight: 700;
 
   &.ok {
     color: var(--c-success);
@@ -286,16 +381,17 @@ function showToast(text: string, cls: string) {
 .bunny-panel {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  background: var(--c-surface);
-  border: 1px solid var(--c-danger);
-  border-radius: 8px;
-  padding: 10px 12px;
+  gap: 11px;
+  padding: 13px;
+  background: rgba(255, 92, 138, 0.055);
+  border: 1px solid rgba(255, 92, 138, 0.54);
+  border-radius: 10px;
 }
 
 .bunny-head {
-  font-weight: bold;
   color: var(--c-danger);
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .bunny-progress {
@@ -306,8 +402,8 @@ function showToast(text: string, cls: string) {
 
 .bunny-label,
 .bunny-num {
-  font-size: 11px;
   color: var(--c-text-muted);
+  font-size: 13px;
   white-space: nowrap;
 }
 
@@ -319,97 +415,197 @@ function showToast(text: string, cls: string) {
 
 .bunny-info {
   margin: 0;
-  font-size: 12px;
   color: var(--c-text);
+  font-size: 14px;
+  line-height: 1.6;
 
   b {
     color: var(--c-danger);
   }
 }
 
-.bunny-repay {
+.amount-panel {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-top: 8px;
-  margin-top: 2px;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(242, 229, 210, 0.035);
+  border: 1px solid rgba(214, 166, 74, 0.25);
+  border-radius: 10px;
 }
 
-.bunny-repay-label {
-  font-size: 11px;
+.amount-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.amount-title {
+  color: var(--game-ivory);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.amount-rule {
   color: var(--c-text-muted);
+  font-size: 13px;
+  text-align: right;
 }
 
-.bunny-repay-btn {
-  width: 100%;
-}
-
-.op-row {
+.amount-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
-.op-label {
-  font-size: 12px;
-  color: var(--c-text-muted);
-}
-
-.amount-wrap {
+.amount-input-wrap {
   display: flex;
-  gap: 6px;
+  height: 44px;
+  overflow: hidden;
+  border: 1px solid rgba(214, 166, 74, 0.55);
+  border-radius: 8px;
+  box-shadow: 0 3px 9px rgba(5, 2, 9, 0.24);
 
   button {
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: 6px;
-    color: var(--c-text-muted);
-    padding: 5px 12px;
-    font-size: 12px;
+    width: 42px;
+    padding: 0;
+    color: var(--game-ivory);
+    background: #2c1a34;
+    border: 0;
     cursor: pointer;
     font-family: inherit;
+    font-size: 20px;
 
-    &.sel {
-      color: var(--c-primary);
-      border-color: var(--c-primary);
+    &:hover {
+      color: var(--game-gold);
+      background: #3a2343;
+    }
+  }
+
+  label {
+    display: block;
+  }
+
+  input {
+    box-sizing: border-box;
+    width: 104px;
+    height: 44px;
+    padding: 0 8px;
+    color: #2b1931;
+    background: repeating-linear-gradient(0deg, transparent 0 4px, rgba(41, 24, 49, 0.025) 4px 5px), var(--game-ivory);
+    border: 0;
+    border-right: 1px solid rgba(214, 166, 74, 0.46);
+    border-left: 1px solid rgba(214, 166, 74, 0.46);
+    font-family: var(--font-led);
+    font-size: 17px;
+    font-weight: 700;
+    text-align: center;
+    appearance: textfield;
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      appearance: none;
     }
   }
 }
 
-.fee-preview {
-  margin: 0;
-  font-size: 12px;
-  color: var(--c-text-muted);
+.quick-amounts {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  gap: 7px;
+  flex-wrap: wrap;
 
-  b {
-    color: var(--c-text);
+  button {
+    min-height: 44px;
+    padding: 0 12px;
+    color: var(--c-text-muted);
+    background: rgba(242, 229, 210, 0.035);
+    border: 1px solid var(--c-border);
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+
+    &.sel,
+    &:hover:not(:disabled) {
+      color: var(--c-primary);
+      border-color: var(--c-primary);
+    }
+
+    &.fill-limit {
+      color: var(--game-ivory);
+      border-color: rgba(185, 167, 220, 0.6);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.amount-error {
+  color: var(--c-danger);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.fee-preview {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+
+  > span {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 10px 12px;
+    background: rgba(242, 229, 210, 0.035);
+    border-left: 2px solid rgba(214, 166, 74, 0.5);
   }
 
-  .fee {
+  small {
+    color: var(--c-text-muted);
+    font-size: 13px;
+  }
+
+  b {
+    color: var(--game-ivory);
+    font-size: 16px;
+    line-height: 1.4;
+  }
+
+  b.fee {
     color: var(--c-primary);
   }
 }
 
 .actions {
-  display: flex;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .main-btn {
-  flex: 1;
+  min-height: 46px;
+  padding: 9px 16px;
+  color: #1a1224;
   border: none;
-  border-radius: 6px;
-  font-weight: bold;
-  padding: 8px 16px;
+  border-radius: 8px;
   cursor: pointer;
   font-family: inherit;
-  font-size: 13px;
-  color: #1a1224;
+  font-size: 15px;
+  font-weight: 700;
 
   &.borrow {
     background: var(--btn-gold);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.35);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      0 2px 4px rgba(0, 0, 0, 0.35);
   }
 
   &.repay {
@@ -422,31 +618,40 @@ function showToast(text: string, cls: string) {
   }
 }
 
+.bunny-repay-btn {
+  width: 100%;
+}
+
 .records {
-  font-size: 12px;
   color: var(--c-text-muted);
+  font-size: 13px;
 
   summary {
+    min-height: 30px;
+    color: var(--game-ivory);
     cursor: pointer;
+    line-height: 30px;
   }
 }
 
 .record-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-top: 6px;
+  gap: 6px;
+  margin-top: 8px;
 }
 
 .record-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 24px minmax(60px, auto) 1fr;
   gap: 10px;
   align-items: center;
+  padding: 6px 8px;
+  background: rgba(242, 229, 210, 0.025);
 }
 
 .record-type {
-  font-weight: bold;
-  width: 18px;
+  font-weight: 700;
 
   &.r-borrow {
     color: var(--c-primary);
@@ -464,7 +669,80 @@ function showToast(text: string, cls: string) {
 
 .hint {
   margin: 0;
-  font-size: 11px;
+  padding-top: 10px;
   color: var(--c-text-muted);
+  border-top: 1px solid rgba(242, 229, 210, 0.08);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 480px) {
+  .amount-input-wrap {
+    width: 100%;
+
+    label {
+      flex: 1;
+    }
+
+    input {
+      width: 100%;
+    }
+  }
+
+  .quick-amounts {
+    width: 100%;
+
+    button {
+      flex: 1;
+      padding: 0 8px;
+    }
+  }
+}
+
+@media (max-width: 380px) {
+  .debt-meta {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .level-desc {
+    text-align: left;
+  }
+
+  .amount-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .amount-rule {
+    text-align: left;
+  }
+
+  .quick-amounts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    button {
+      width: 100%;
+      white-space: nowrap;
+    }
+  }
+
+  .fee-preview {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

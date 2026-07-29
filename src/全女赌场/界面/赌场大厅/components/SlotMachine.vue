@@ -6,8 +6,6 @@
         <small>三列 · 八线</small>
       </div>
       <div class="reel-window">
-        <span class="payline-arrow left" aria-hidden="true">▶</span>
-        <span class="payline-arrow right" aria-hidden="true">◀</span>
         <div class="grid">
           <!-- 按 3 列组织：每列一条纵向滚动带，依次停轮 -->
           <div v-for="col in 3" :key="col" class="reel-col" :class="{ rolling: rollingCols[col - 1] }">
@@ -28,7 +26,7 @@
     <div v-if="resultText" class="game-result-ticket" :class="resultClass">{{ resultText }}</div>
 
     <BetControl v-model="bet" :disabled="spinning" />
-    <button class="game-primary" :disabled="spinning || bet <= 0 || bet > wallet.chips.value" @click="spin">
+    <button class="game-primary spin-button" :disabled="spinning || bet <= 0 || bet > wallet.chips.value" @click="spin">
       <i class="fa-solid" :class="spinning ? 'fa-spinner fa-spin' : 'fa-play'"></i>
       {{ spinning ? '转轮滚动中' : '拉下摇杆' }}
     </button>
@@ -220,12 +218,17 @@ function setResult(text: string, cls: string) {
   margin: 0 auto;
   padding: 10px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.16), transparent 22%),
-    linear-gradient(180deg, #b88738, var(--game-gold) 46%, #805225 100%);
-  border: 2px solid #efcf85;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.24), transparent 22%),
+    linear-gradient(
+      180deg,
+      var(--game-machine-edge) 0%,
+      var(--game-machine-surface) 48%,
+      var(--game-machine-shadow) 100%
+    );
+  border: 2px solid var(--game-machine-edge);
   border-radius: 14px;
   box-shadow:
-    inset 0 0 0 2px rgba(70, 39, 25, 0.44),
+    inset 0 0 0 2px rgba(54, 39, 63, 0.42),
     0 7px 18px rgba(5, 2, 9, 0.42);
 }
 
@@ -262,35 +265,19 @@ function setResult(text: string, cls: string) {
   border: 3px double rgba(242, 229, 210, 0.68);
   border-radius: 9px;
   box-shadow: inset 0 0 18px rgba(5, 2, 9, 0.72);
-
-  &::after {
-    position: absolute;
-    top: 50%;
-    right: 12px;
-    left: 12px;
-    z-index: 3;
-    height: 1px;
-    content: '';
-    background: rgba(114, 41, 74, 0.82);
-    box-shadow: 0 0 4px rgba(114, 41, 74, 0.7);
-    pointer-events: none;
-  }
 }
 
-.payline-arrow {
-  position: absolute;
-  top: 50%;
-  z-index: 4;
-  color: var(--game-gold);
-  font-size: 13px;
-  transform: translateY(-50%);
+.slot > .spin-button {
+  margin-top: 6px;
+  color: #24152c;
+  background: linear-gradient(180deg, var(--game-machine-edge) 0%, var(--game-action-alt) 55%, #8f7aaf 100%);
+  border-color: rgba(222, 213, 237, 0.86);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 3px 8px rgba(5, 2, 9, 0.28);
 
-  &.left {
-    left: 2px;
-  }
-
-  &.right {
-    right: 2px;
+  &:hover:not(:disabled) {
+    background: linear-gradient(180deg, #e7e0f2 0%, var(--game-action-alt-hover) 55%, #9b88b8 100%);
   }
 }
 
@@ -347,10 +334,15 @@ function setResult(text: string, cls: string) {
   box-shadow: inset 0 0 0 1px rgba(70, 39, 25, 0.16);
 
   &.hit {
-    border-color: var(--game-mint);
+    border: 2px solid var(--game-mint);
+    background:
+      linear-gradient(rgba(111, 211, 165, 0.12), rgba(111, 211, 165, 0.12)),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.7), transparent 28%, transparent 72%, rgba(81, 52, 36, 0.12)),
+      var(--game-ivory);
     box-shadow:
-      inset 0 0 0 2px rgba(111, 211, 165, 0.7),
-      0 0 12px rgba(111, 211, 165, 0.5);
+      inset 0 0 0 2px rgba(244, 255, 250, 0.88),
+      0 0 0 2px rgba(111, 211, 165, 0.34),
+      0 0 14px rgba(111, 211, 165, 0.58);
     animation: win-flash 0.7s ease-out;
   }
 }

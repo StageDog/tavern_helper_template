@@ -51,8 +51,8 @@ function setQuick(q: (typeof quicks)[number]) {
 .bet-control {
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  padding: 10px 11px 11px;
+  gap: 12px;
+  padding: 11px 11px 13px;
   background: linear-gradient(180deg, rgba(114, 41, 74, 0.22), rgba(9, 5, 13, 0.24)), var(--game-felt);
   border: 1px solid rgba(214, 166, 74, 0.34);
   border-radius: 10px;
@@ -69,9 +69,10 @@ function setQuick(q: (typeof quicks)[number]) {
 
 .bet-label {
   color: var(--game-ivory);
-  font-family: var(--game-display-font);
-  font-size: 13px;
-  letter-spacing: 0.08em;
+  font-family: var(--font-main);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   white-space: nowrap;
 
   i {
@@ -148,28 +149,30 @@ function setQuick(q: (typeof quicks)[number]) {
 
 .quick-btns {
   display: flex;
-  gap: 7px;
+  gap: 8px;
   flex: 1;
   flex-wrap: wrap;
 
   button {
     position: relative;
-    min-width: 44px;
-    height: 44px;
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
     background:
-      radial-gradient(circle, #4d3156 0 46%, transparent 47%),
-      repeating-conic-gradient(from 0deg, var(--game-gold) 0 9deg, #6e4b26 9deg 18deg);
-    border: 2px solid rgba(242, 229, 210, 0.38);
+      radial-gradient(circle, #4d3156 0 47%, transparent 48%),
+      repeating-conic-gradient(from -8deg, var(--game-machine-edge) 0 11deg, var(--game-machine-shadow) 11deg 45deg);
+    border: 2px solid rgba(222, 213, 237, 0.82);
     border-radius: 50%;
     color: var(--game-ivory);
-    padding: 0 8px;
+    padding: 0;
     font-size: 13px;
     font-weight: 700;
     text-shadow: 0 1px 2px #120918;
     cursor: pointer;
     font-family: inherit;
     box-shadow:
-      inset 0 0 0 2px rgba(20, 10, 25, 0.48),
+      inset 0 0 0 2px rgba(20, 10, 25, 0.62),
+      inset 0 0 0 5px rgba(185, 167, 220, 0.22),
       0 2px 5px rgba(5, 2, 9, 0.3);
     transition:
       transform 0.12s,
@@ -178,11 +181,6 @@ function setQuick(q: (typeof quicks)[number]) {
     &:hover:not(:disabled) {
       filter: brightness(1.14);
       transform: translateY(-1px);
-    }
-
-    &:nth-child(n + 3) {
-      min-width: 50px;
-      border-radius: 22px;
     }
   }
 }
@@ -223,6 +221,18 @@ button:disabled {
 
   .quick-btns {
     justify-content: space-between;
+  }
+}
+
+@media (max-width: 350px) {
+  .quick-btns {
+    gap: 6px;
+
+    button {
+      width: 44px;
+      min-width: 44px;
+      height: 44px;
+    }
   }
 }
 </style>

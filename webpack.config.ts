@@ -74,6 +74,25 @@ function glob_script_files() {
   return results;
 }
 
+function inject_casino_runtime_banner(): webpack.WebpackPluginInstance {
+  const pluginName = 'CasinoRuntimeBannerPlugin';
+
+  return {
+    apply(compiler) {
+      compiler.hooks.compilation.tap(pluginName, compilation => {
+        HtmlWebpackPlugin.getHooks(compilation).alterAssetTags.tap({ name: pluginName, stage: 100 }, data => {
+          for (const tag of data.assetTags.scripts) {
+            if (tag.tagName === 'script' && tag.innerHTML && !tag.innerHTML.startsWith('var __webpack_require__')) {
+              tag.innerHTML = `var __webpack_require__ = {};\n${tag.innerHTML}`;
+            }
+          }
+          return data;
+        });
+      });
+    },
+  };
+}
+
 const config: Config = {
   port: 6621,
   entries: glob_script_files().map(parse_entry),
@@ -421,15 +440,6 @@ function parse_configuration(entry: Entry): (_env: any, argv: any) => webpack.Co
     plugins: (entry.html === undefined
       ? [new MiniCssExtractPlugin()]
       : [
-          ...(entry.script.split(path.sep).includes('全女赌场')
-            ? [
-                new webpack.BannerPlugin({
-                  banner: 'var __webpack_require__ = {};',
-                  raw: true,
-                  entryOnly: true,
-                }),
-              ]
-            : []),
           new HtmlWebpackPlugin({
             template: path.join(import.meta.dirname, entry.html),
             filename: path.parse(entry.html).base,
@@ -437,6 +447,7 @@ function parse_configuration(entry: Entry): (_env: any, argv: any) => webpack.Co
             cache: false,
           }),
           new HtmlInlineScriptWebpackPlugin(),
+          ...(entry.script.split(path.sep).includes('全女赌场') ? [inject_casino_runtime_banner()] : []),
           new MiniCssExtractPlugin(),
           new HTMLInlineCSSWebpackPlugin({
             styleTagFactory({ style }: { style: string }) {
