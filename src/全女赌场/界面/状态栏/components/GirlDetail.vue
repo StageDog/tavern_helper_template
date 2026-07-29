@@ -24,7 +24,14 @@
         </button>
       </div>
 
-      <div class="profile-content" role="region" tabindex="0" :aria-label="`${name}的名册档案`">
+      <div
+        ref="profileContent"
+        class="profile-content"
+        role="region"
+        tabindex="0"
+        :aria-label="`${name}的名册档案`"
+        @scroll="syncScrollRail"
+      >
         <header class="identity">
           <div>
             <h2>{{ name }}</h2>
@@ -133,6 +140,16 @@
           </Transition>
         </section>
       </div>
+
+      <div
+        v-show="showScrollRail"
+        ref="scrollRail"
+        class="profile-scrollbar"
+        aria-hidden="true"
+        @pointerdown="jumpToRailPosition"
+      >
+        <span class="profile-scrollbar-thumb" :style="scrollThumbStyle" @pointerdown.stop="beginThumbDrag"></span>
+      </div>
     </div>
   </article>
 </template>
@@ -167,6 +184,118 @@ const current = computed(() => list.value[index.value]);
 function next() {
   if (list.value.length > 1) index.value = (index.value + 1) % list.value.length;
 }
+
+const profileContent = ref<HTMLElement | null>(null);
+const scrollRail = ref<HTMLElement | null>(null);
+const showScrollRail = ref(false);
+const scrollThumbHeight = ref(40);
+const scrollThumbOffset = ref(0);
+const scrollThumbStyle = computed(() => ({
+  height: `${scrollThumbHeight.value}px`,
+  transform: `translateY(${scrollThumbOffset.value}px)`,
+}));
+
+let scrollResizeObserver: ResizeObserver | null = null;
+let scrollMutationObserver: MutationObserver | null = null;
+let scrollSyncFrame = 0;
+let dragCleanup: (() => void) | null = null;
+
+function syncScrollRail() {
+  const content = profileContent.value;
+  const rail = scrollRail.value;
+  if (!content || !rail) return;
+
+  const maxScroll = Math.max(0, content.scrollHeight - content.clientHeight);
+  const wasVisible = showScrollRail.value;
+  showScrollRail.value = maxScroll > 2;
+  if (!showScrollRail.value) {
+    scrollThumbOffset.value = 0;
+    return;
+  }
+  if (!wasVisible) {
+    nextTick(syncScrollRail);
+    return;
+  }
+
+  const railHeight = rail.clientHeight;
+  const nextThumbHeight = Math.max(34, Math.round((content.clientHeight / content.scrollHeight) * railHeight));
+  const maxThumbTravel = Math.max(0, railHeight - nextThumbHeight);
+  scrollThumbHeight.value = nextThumbHeight;
+  scrollThumbOffset.value = maxScroll ? Math.round((content.scrollTop / maxScroll) * maxThumbTravel) : 0;
+}
+
+function scheduleScrollRailSync() {
+  cancelAnimationFrame(scrollSyncFrame);
+  scrollSyncFrame = requestAnimationFrame(syncScrollRail);
+}
+
+function jumpToRailPosition(event: PointerEvent) {
+  const content = profileContent.value;
+  const rail = scrollRail.value;
+  if (!content || !rail) return;
+
+  const railRect = rail.getBoundingClientRect();
+  const maxThumbTravel = Math.max(1, rail.clientHeight - scrollThumbHeight.value);
+  const target = Math.min(maxThumbTravel, Math.max(0, event.clientY - railRect.top - scrollThumbHeight.value / 2));
+  content.scrollTop = (target / maxThumbTravel) * (content.scrollHeight - content.clientHeight);
+}
+
+function beginThumbDrag(event: PointerEvent) {
+  const content = profileContent.value;
+  const rail = scrollRail.value;
+  if (!content || !rail) return;
+
+  event.preventDefault();
+  dragCleanup?.();
+
+  const startY = event.clientY;
+  const startScrollTop = content.scrollTop;
+  const maxScroll = Math.max(0, content.scrollHeight - content.clientHeight);
+  const maxThumbTravel = Math.max(1, rail.clientHeight - scrollThumbHeight.value);
+
+  const handleMove = (moveEvent: PointerEvent) => {
+    content.scrollTop = startScrollTop + ((moveEvent.clientY - startY) / maxThumbTravel) * maxScroll;
+  };
+  const handleEnd = () => dragCleanup?.();
+
+  dragCleanup = () => {
+    window.removeEventListener('pointermove', handleMove);
+    window.removeEventListener('pointerup', handleEnd);
+    window.removeEventListener('pointercancel', handleEnd);
+    dragCleanup = null;
+  };
+
+  window.addEventListener('pointermove', handleMove);
+  window.addEventListener('pointerup', handleEnd);
+  window.addEventListener('pointercancel', handleEnd);
+}
+
+onMounted(() => {
+  nextTick(() => {
+    const content = profileContent.value;
+    if (!content) return;
+
+    scrollResizeObserver = new ResizeObserver(scheduleScrollRailSync);
+    scrollResizeObserver.observe(content);
+
+    scrollMutationObserver = new MutationObserver(scheduleScrollRailSync);
+    scrollMutationObserver.observe(content, {
+      attributes: true,
+      characterData: true,
+      childList: true,
+      subtree: true,
+    });
+
+    scheduleScrollRailSync();
+  });
+});
+
+onBeforeUnmount(() => {
+  cancelAnimationFrame(scrollSyncFrame);
+  scrollResizeObserver?.disconnect();
+  scrollMutationObserver?.disconnect();
+  dragCleanup?.();
+});
 
 const price = computed(() => servicePrice(props.name));
 const alreadyOrdered = computed(() => hasOrdered(props.name));
@@ -302,7 +431,7 @@ function handleOrder() {
   flex-direction: column;
   gap: 10px;
   min-width: 0;
-  padding: 12px 8px 14px 12px;
+  padding: 12px 20px 14px 12px;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -310,30 +439,55 @@ function handleOrder() {
   border: 1px solid rgba(213, 164, 73, 0.18);
   border-radius: 11px;
   box-shadow: inset 3px 0 0 rgba(213, 164, 73, 0.13);
-  scrollbar-color: rgba(213, 164, 73, 0.72) rgba(88, 64, 92, 0.24);
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
+  scrollbar-width: none;
 
   &::-webkit-scrollbar {
-    width: 7px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background:
-      linear-gradient(90deg, transparent 0 2px, rgba(213, 164, 73, 0.18) 2px 3px, transparent 3px),
-      rgba(88, 64, 92, 0.12);
-    border-radius: 999px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, #e1b55d, #9f7430);
-    border: 1px solid rgba(243, 234, 223, 0.22);
-    border-radius: 999px;
+    width: 0;
+    height: 0;
   }
 
   &:focus-visible {
     outline: 2px solid rgba(213, 164, 73, 0.78);
     outline-offset: 2px;
+  }
+}
+
+.profile-scrollbar {
+  position: absolute;
+  top: 10px;
+  right: 5px;
+  bottom: 10px;
+  z-index: 4;
+  width: 9px;
+  overflow: hidden;
+  touch-action: none;
+  background:
+    linear-gradient(90deg, transparent 0 3px, rgba(213, 164, 73, 0.3) 3px 5px, transparent 5px), rgba(88, 64, 92, 0.22);
+  border: 1px solid rgba(213, 164, 73, 0.24);
+  border-radius: 999px;
+  box-shadow: 0 0 0 2px rgba(8, 5, 10, 0.3);
+  cursor: pointer;
+}
+
+.profile-scrollbar-thumb {
+  position: absolute;
+  top: 0;
+  left: 1px;
+  display: block;
+  width: 5px;
+  min-height: 34px;
+  touch-action: none;
+  background: linear-gradient(180deg, #edc56d, #b47c28);
+  border: 1px solid rgba(243, 234, 223, 0.34);
+  border-radius: 999px;
+  box-shadow:
+    0 0 8px rgba(213, 164, 73, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  cursor: grab;
+  will-change: transform;
+
+  &:active {
+    cursor: grabbing;
   }
 }
 
@@ -780,7 +934,10 @@ function handleOrder() {
     max-height: none;
     padding: 12px;
     overflow: visible;
-    scrollbar-gutter: auto;
+  }
+
+  .profile-scrollbar {
+    display: none;
   }
 
   .identity {
