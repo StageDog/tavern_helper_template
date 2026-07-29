@@ -8,7 +8,7 @@
       <div class="bankroll">
         <span class="bankroll-label">桌面筹码</span>
         <span class="led-mini" :class="chipsRoll.cls.value">
-          <span class="led-mini-ghost">888888</span>
+          <span class="led-mini-ghost">888888888</span>
           <span class="led-mini-value">{{ chipsRoll.text.value.replace(/,/g, '') }}</span>
         </span>
       </div>

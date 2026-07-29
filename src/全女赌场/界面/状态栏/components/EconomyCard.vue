@@ -4,7 +4,7 @@
       <div class="balance-copy">
         <span class="balance-label">可用筹码</span>
         <div class="balance-number" aria-live="polite">
-          <span class="balance-ghost" aria-hidden="true">888888</span>
+          <span class="balance-ghost" aria-hidden="true">888888888</span>
           <span class="balance-value">{{ ledText }}</span>
         </div>
       </div>
@@ -224,6 +224,7 @@ function useActiveItem() {
 .balance-number {
   position: relative;
   align-self: flex-start;
+  max-width: 100%;
   font-family: var(--font-led);
   font-size: clamp(30px, 8vw, 45px);
   line-height: 1;
@@ -558,6 +559,10 @@ function useActiveItem() {
   .balance-card {
     min-height: 96px;
     padding: 14px;
+  }
+
+  .balance-number {
+    font-size: clamp(26px, 8.5vw, 34px);
   }
 
   .chip-seal {

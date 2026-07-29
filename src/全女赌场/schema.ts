@@ -1,6 +1,6 @@
 export const Schema = z.object({
   主角: z.object({
-    筹码: z.coerce.number().transform(value => _.clamp(Math.round(value), 0, 9999999)).prefault(0),
+    筹码: z.coerce.number().transform(value => _.clamp(Math.round(value), 0, 999999999)).prefault(0),
     欠债: z.coerce.number().transform(value => _.clamp(Math.round(value), 0, 999999)).prefault(0),
     $经济版本: z.coerce.number().transform(value => Math.max(1, Math.round(value))).prefault(1),
     身份状态: z.enum(['赌客', '兔女郎']).prefault('赌客'),
