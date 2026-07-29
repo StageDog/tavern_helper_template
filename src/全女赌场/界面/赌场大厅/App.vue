@@ -104,7 +104,7 @@ watch(
   box-sizing: border-box;
   width: 100%;
   overflow: hidden;
-  max-width: 640px;
+  max-width: 720px;
   margin: 0 auto;
   background:
     radial-gradient(circle at 88% -20%, rgba(114, 41, 74, 0.2), transparent 38%),
