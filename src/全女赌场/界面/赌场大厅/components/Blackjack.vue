@@ -1,49 +1,84 @@
 <template>
   <div class="blackjack">
     <div class="session-stats">
-      <span>总盈亏
-        <b :class="stats.profit >= 0 ? 'pos' : 'neg'">{{ stats.profit >= 0 ? '+' : '' }}{{ stats.profit.toLocaleString() }}</b>
+      <span
+        ><small>总盈亏</small>
+        <b :class="stats.profit >= 0 ? 'pos' : 'neg'"
+          >{{ stats.profit >= 0 ? '+' : '' }}{{ stats.profit.toLocaleString() }}</b
+        >
       </span>
-      <span>胜率 <b>{{ winRate }}%</b></span>
-      <span>总场次 <b>{{ stats.games }}</b></span>
+      <span
+        ><small>胜率</small><b>{{ winRate }}%</b></span
+      >
+      <span
+        ><small>总场次</small><b>{{ stats.games }}</b></span
+      >
     </div>
 
     <template v-if="phase === 'bet'">
       <BetControl v-model="bet" />
-      <button class="main-btn" :disabled="bet <= 0 || bet > wallet.chips.value" @click="deal">发牌！</button>
-      <p class="hint">要牌到 5 张不爆算「过五关」直接获胜～ Blackjack 赔 1.5 倍哦</p>
+      <button class="game-primary" :disabled="bet <= 0 || bet > wallet.chips.value" @click="deal">
+        <i class="fa-solid fa-diamond"></i> 发牌
+      </button>
+      <div class="table-rules">
+        <span><b>Blackjack</b><small>盈利 1.5 倍</small></span>
+        <span><b>过五关</b><small>五张不爆直接获胜</small></span>
+      </div>
     </template>
 
     <template v-else>
-      <div class="hand">
-        <span class="hand-label">🎰 荷官手牌</span>
-        <div class="hand-row">
-          <span class="hand-total">{{ phase === 'player' ? '?' : handValue(dealer) }}<template v-if="phase === 'done' && handValue(dealer) > 21">💥</template></span>
+      <div class="table-stage">
+        <div class="hand dealer-hand">
+          <div class="hand-heading">
+            <span class="hand-label"><i class="fa-solid fa-user-tie"></i> 荷官手牌</span>
+            <span class="hand-total"
+              >{{ phase === 'player' ? '?' : handValue(dealer)
+              }}<template v-if="phase === 'done' && handValue(dealer) > 21">!</template></span
+            >
+          </div>
           <div class="cards">
-            <span v-for="(card, i) in dealer" :key="i" class="card" :class="{ red: isRed(card), back: phase === 'player' && i === 1 }">
-              {{ phase === 'player' && i === 1 ? '🂠' : cardText(card) }}
+            <span
+              v-for="(card, i) in dealer"
+              :key="i"
+              class="card"
+              :class="{ red: isRed(card), back: phase === 'player' && i === 1 }"
+            >
+              <template v-if="phase === 'player' && i === 1"><span class="back-mark">♠</span></template>
+              <template v-else>
+                <span class="card-rank">{{ rankText(card) }}</span>
+                <span class="card-suit">{{ suitText(card) }}</span>
+              </template>
             </span>
           </div>
         </div>
-      </div>
-      <div class="hand">
-        <span class="hand-label">🐰 你的手牌</span>
-        <div class="hand-row">
-          <span class="hand-total">{{ handValue(player) }}<template v-if="playerBusted">💥</template><template v-else-if="isNatural">😼</template></span>
+
+        <div class="table-divider"><span>兔窟牌桌</span></div>
+
+        <div class="hand player-hand">
+          <div class="hand-heading">
+            <span class="hand-label"><i class="fa-solid fa-carrot"></i> 你的手牌</span>
+            <span class="hand-total"
+              >{{ handValue(player) }}<template v-if="playerBusted">!</template
+              ><template v-else-if="isNatural">★</template></span
+            >
+          </div>
           <div class="cards">
-            <span v-for="(card, i) in player" :key="i" class="card" :class="{ red: isRed(card) }">{{ cardText(card) }}</span>
+            <span v-for="(card, i) in player" :key="i" class="card" :class="{ red: isRed(card) }">
+              <span class="card-rank">{{ rankText(card) }}</span>
+              <span class="card-suit">{{ suitText(card) }}</span>
+            </span>
           </div>
         </div>
       </div>
 
       <div v-if="phase === 'player'" class="actions">
-        <button class="main-btn" @click="hit">要牌！</button>
-        <button class="main-btn" @click="stand">停牌～</button>
+        <button class="game-primary" @click="hit"><i class="fa-solid fa-plus"></i> 要牌</button>
+        <button class="game-secondary" @click="stand"><i class="fa-solid fa-hand"></i> 停牌</button>
       </div>
 
-      <div v-if="phase === 'done'" class="result" :class="resultClass">
-        {{ resultText }}
-        <button class="main-btn" @click="reset">再来一局！</button>
+      <div v-if="phase === 'done'" class="settlement">
+        <div class="game-result-ticket" :class="resultClass">{{ resultText }}</div>
+        <button class="game-primary" @click="reset"><i class="fa-solid fa-rotate-right"></i> 再来一局</button>
       </div>
     </template>
   </div>
@@ -70,13 +105,19 @@ let deck: Card[] = [];
 
 // 本地会话战绩（仅前端展示，不进 MVU）
 const stats = useLocalStorage('casino_blackjack:stats', { games: 0, wins: 0, profit: 0 });
-const winRate = computed(() => (stats.value.games === 0 ? 0 : Math.round((stats.value.wins / stats.value.games) * 1000) / 10));
+const winRate = computed(() =>
+  stats.value.games === 0 ? 0 : Math.round((stats.value.wins / stats.value.games) * 1000) / 10,
+);
 
 const SUITS = ['♠', '♥', '♦', '♣'];
 const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 
-function cardText(card: Card) {
-  return `${SUITS[card.suit]}${RANKS[card.rank - 1]}`;
+function rankText(card: Card) {
+  return RANKS[card.rank - 1];
+}
+
+function suitText(card: Card) {
+  return SUITS[card.suit];
 }
 
 function isRed(card: Card) {
@@ -208,21 +249,36 @@ function reset() {
 .blackjack {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .session-stats {
-  display: flex;
-  gap: 14px;
-  font-size: 11px;
-  color: var(--c-text-muted);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+
+  > span {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 8px 5px;
+    background: rgba(242, 229, 210, 0.04);
+    border-top: 1px solid rgba(214, 166, 74, 0.24);
+  }
+
+  small {
+    color: var(--c-text-muted);
+    font-size: 13px;
+  }
 
   b {
-    color: var(--c-text);
+    color: var(--game-ivory);
+    font-size: 15px;
   }
 
   .pos {
-    color: var(--c-success);
+    color: var(--game-mint);
   }
 
   .neg {
@@ -230,97 +286,183 @@ function reset() {
   }
 }
 
-.hand-label {
-  font-size: 12px;
-  color: var(--c-text-muted);
+.table-stage {
+  padding: 12px;
+  background: radial-gradient(ellipse at center, rgba(114, 41, 74, 0.22), transparent 68%), var(--game-felt);
+  border: 1px solid rgba(214, 166, 74, 0.36);
+  border-radius: 12px;
+  box-shadow:
+    inset 0 0 28px rgba(5, 2, 9, 0.35),
+    0 3px 10px rgba(5, 2, 9, 0.2);
 }
 
-.hand-row {
+.hand {
+  min-height: 88px;
+}
+
+.hand-heading {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 4px;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.hand-label {
+  color: var(--game-ivory);
+  font-family: var(--game-display-font);
+  font-size: 14px;
+  letter-spacing: 0.06em;
+
+  i {
+    width: 18px;
+    color: var(--game-gold);
+    text-align: center;
+  }
 }
 
 .hand-total {
-  font-size: 30px;
-  font-weight: bold;
-  min-width: 52px;
-  color: var(--c-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 46px;
+  height: 46px;
+  padding: 0 7px;
+  color: #24142b;
+  background: radial-gradient(circle, var(--game-ivory) 0 56%, var(--game-gold) 57% 66%, #5c3a25 67% 100%);
+  border: 2px dashed rgba(36, 20, 43, 0.48);
+  border-radius: 50%;
+  font-family: var(--font-led);
+  font-size: 17px;
+  font-weight: 700;
+  box-shadow: 0 2px 7px rgba(5, 2, 9, 0.34);
 }
 
 .cards {
   display: flex;
-  gap: 6px;
+  gap: 7px;
   flex-wrap: wrap;
 }
 
 .card {
-  background: #f5f0e8;
-  color: #222;
-  border-radius: 5px;
-  padding: 6px 8px;
-  font-size: 15px;
-  font-weight: bold;
-  min-width: 32px;
-  text-align: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  box-sizing: border-box;
+  width: 48px;
+  height: 64px;
+  padding: 5px 6px;
+  color: #211729;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.5), transparent 38%), var(--game-ivory);
+  border: 1px solid #fff8ec;
+  border-radius: 6px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow:
+    0 3px 7px rgba(5, 2, 9, 0.38),
+    inset 0 0 0 1px rgba(85, 54, 39, 0.12);
 
   &.red {
-    color: #c0392b;
+    color: #b42e43;
   }
 
   &.back {
-    background: var(--c-border);
-    color: var(--c-text-muted);
+    align-items: center;
+    justify-content: center;
+    color: var(--game-gold);
+    background: repeating-linear-gradient(45deg, transparent 0 5px, rgba(214, 166, 74, 0.14) 5px 7px), var(--game-wine);
+    border: 3px double rgba(242, 229, 210, 0.6);
+  }
+}
+
+.card-rank {
+  font-size: 17px;
+}
+
+.card-suit {
+  align-self: flex-end;
+  font-size: 23px;
+}
+
+.back-mark {
+  font-size: 24px;
+}
+
+.table-divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 9px 0;
+  color: rgba(214, 166, 74, 0.62);
+  font-family: var(--game-display-font);
+  font-size: 13px;
+  letter-spacing: 0.16em;
+
+  &::before,
+  &::after {
+    height: 1px;
+    flex: 1;
+    content: '';
+    background: linear-gradient(90deg, transparent, rgba(214, 166, 74, 0.38));
+  }
+
+  &::after {
+    background: linear-gradient(90deg, rgba(214, 166, 74, 0.38), transparent);
   }
 }
 
 .actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
 
-.main-btn {
-  background: var(--btn-gold);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.35);
-  border: none;
-  border-radius: 6px;
-  color: #1a1224;
-  font-weight: bold;
-  padding: 7px 16px;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 13px;
-
-  &:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-}
-
-.result {
+.settlement {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 10px;
-  font-weight: bold;
-  flex-wrap: wrap;
+}
 
-  &.win {
-    color: var(--c-success);
+.table-rules {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+
+  span {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 9px 10px;
+    background: rgba(242, 229, 210, 0.035);
+    border-left: 2px solid rgba(214, 166, 74, 0.54);
   }
 
-  &.lose {
-    color: var(--c-danger);
+  b {
+    color: var(--game-gold);
+    font-family: var(--game-display-font);
+    font-size: 14px;
   }
 
-  &.push {
+  small {
     color: var(--c-text-muted);
+    font-size: 13px;
   }
 }
 
-.hint {
-  margin: 0;
-  font-size: 11px;
-  color: var(--c-text-muted);
+@media (max-width: 480px) {
+  .actions {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 350px) {
+  .card {
+    width: 44px;
+    height: 60px;
+  }
 }
 </style>

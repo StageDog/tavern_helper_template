@@ -1,46 +1,71 @@
 <template>
   <div class="slot">
-    <div class="grid">
-      <!-- 按 3 列组织：每列一条纵向滚动带，依次停轮 -->
-      <div v-for="col in 3" :key="col" class="reel-col" :class="{ rolling: rollingCols[col - 1] }">
-        <div class="reel-strip" :style="rollingCols[col - 1] ? {} : { transform: 'translateY(0)' }">
-          <span
-            v-for="row in 3"
-            :key="row"
-            class="cell"
-            :class="{ hit: hitCells.has((row - 1) * 3 + (col - 1)) }"
-          >{{ display[(row - 1) * 3 + (col - 1)] }}</span>
+    <div class="machine">
+      <div class="machine-marquee">
+        <span><i class="fa-solid fa-star"></i> 兔窟幸运机</span>
+        <small>三列 · 八线</small>
+      </div>
+      <div class="reel-window">
+        <span class="payline-arrow left" aria-hidden="true">▶</span>
+        <span class="payline-arrow right" aria-hidden="true">◀</span>
+        <div class="grid">
+          <!-- 按 3 列组织：每列一条纵向滚动带，依次停轮 -->
+          <div v-for="col in 3" :key="col" class="reel-col" :class="{ rolling: rollingCols[col - 1] }">
+            <div class="reel-strip" :style="rollingCols[col - 1] ? {} : { transform: 'translateY(0)' }">
+              <span
+                v-for="row in 3"
+                :key="row"
+                class="cell"
+                :class="{ hit: hitCells.has((row - 1) * 3 + (col - 1)) }"
+                >{{ display[(row - 1) * 3 + (col - 1)] }}</span
+              >
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div v-if="resultText" class="result" :class="resultClass">{{ resultText }}</div>
+    <div v-if="resultText" class="game-result-ticket" :class="resultClass">{{ resultText }}</div>
 
     <BetControl v-model="bet" :disabled="spinning" />
-    <button class="main-btn" :disabled="spinning || bet <= 0 || bet > wallet.chips.value" @click="spin">
-      <i class="fa-solid fa-play"></i> 拉杆！
+    <button class="game-primary" :disabled="spinning || bet <= 0 || bet > wallet.chips.value" @click="spin">
+      <i class="fa-solid" :class="spinning ? 'fa-spinner fa-spin' : 'fa-play'"></i>
+      {{ spinning ? '转轮滚动中' : '拉下摇杆' }}
     </button>
 
     <details class="paytable">
-      <summary>赔率表（点开看看～）</summary>
+      <summary><i class="fa-solid fa-receipt"></i> 查看赔率表</summary>
       <div class="pay-section">
-        <b>符号倍数</b>
-        <table>
-          <tbody>
-            <tr v-for="s in SYMBOLS" :key="s.icon">
-              <td>{{ s.icon }} {{ s.name }}</td>
-              <td>×{{ s.multiplier }}</td>
-            </tr>
-          </tbody>
-        </table>
-        <b>获胜线（连 3 个相同符号）</b>
-        <table>
-          <tbody>
-            <tr><td>横线 / 竖线（共6条）</td><td>符号倍数 ×7.0</td></tr>
-            <tr><td>对角线（共2条）</td><td>符号倍数 ×3.8</td></tr>
-            <tr><td>🌟 全屏 9 个相同</td><td>符号倍数 ×250！</td></tr>
-          </tbody>
-        </table>
+        <div class="pay-column">
+          <b>符号倍数</b>
+          <table>
+            <tbody>
+              <tr v-for="s in SYMBOLS" :key="s.icon">
+                <td>{{ s.icon }} {{ s.name }}</td>
+                <td>×{{ s.multiplier }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pay-column">
+          <b>获胜线</b>
+          <table>
+            <tbody>
+              <tr>
+                <td>横线 / 竖线</td>
+                <td>符号 ×7.0</td>
+              </tr>
+              <tr>
+                <td>两条对角线</td>
+                <td>符号 ×3.8</td>
+              </tr>
+              <tr>
+                <td>🌟 全屏相同</td>
+                <td>符号 ×250</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
         <span class="pay-note">最终奖励 = 下注 × 线倍数 × 符号倍数，多线中奖可以叠加哦</span>
       </div>
     </details>
@@ -187,14 +212,93 @@ function setResult(text: string, cls: string) {
 .slot {
   display: flex;
   flex-direction: column;
+  gap: 12px;
+}
+
+.machine {
+  max-width: 360px;
+  margin: 0 auto;
+  padding: 10px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.16), transparent 22%),
+    linear-gradient(180deg, #b88738, var(--game-gold) 46%, #805225 100%);
+  border: 2px solid #efcf85;
+  border-radius: 14px;
+  box-shadow:
+    inset 0 0 0 2px rgba(70, 39, 25, 0.44),
+    0 7px 18px rgba(5, 2, 9, 0.42);
+}
+
+.machine-marquee {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 10px;
+  padding: 5px 6px 10px;
+  color: #2b1931;
+  font-family: var(--game-display-font);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+
+  i {
+    color: var(--game-wine);
+    margin-right: 3px;
+  }
+
+  small {
+    font-family: var(--font-main);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+}
+
+.reel-window {
+  position: relative;
+  padding: 10px 17px;
+  background:
+    linear-gradient(180deg, rgba(5, 2, 9, 0.28), transparent 12%, transparent 88%, rgba(5, 2, 9, 0.3)), #211329;
+  border: 3px double rgba(242, 229, 210, 0.68);
+  border-radius: 9px;
+  box-shadow: inset 0 0 18px rgba(5, 2, 9, 0.72);
+
+  &::after {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    left: 12px;
+    z-index: 3;
+    height: 1px;
+    content: '';
+    background: rgba(114, 41, 74, 0.82);
+    box-shadow: 0 0 4px rgba(114, 41, 74, 0.7);
+    pointer-events: none;
+  }
+}
+
+.payline-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 4;
+  color: var(--game-gold);
+  font-size: 13px;
+  transform: translateY(-50%);
+
+  &.left {
+    left: 2px;
+  }
+
+  &.right {
+    right: 2px;
+  }
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  max-width: 250px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  width: min(300px, 74vw);
   margin: 0 auto;
 }
 
@@ -213,13 +317,19 @@ function setResult(text: string, cls: string) {
 .reel-strip {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 7px;
 }
 
 @keyframes reel-roll {
-  from { transform: translateY(-4px); }
-  50% { transform: translateY(3px); }
-  to { transform: translateY(-4px); }
+  from {
+    transform: translateY(-4px);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+  to {
+    transform: translateY(-4px);
+  }
 }
 
 .cell {
@@ -227,91 +337,110 @@ function setResult(text: string, cls: string) {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 30px;
+  box-sizing: border-box;
+  font-size: clamp(28px, 8vw, 38px);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 30%, transparent 70%, rgba(0, 0, 0, 0.25)),
-    var(--c-surface);
-  border: 1px solid var(--c-border);
-  border-radius: 8px;
+    linear-gradient(180deg, rgba(255, 255, 255, 0.7), transparent 28%, transparent 72%, rgba(81, 52, 36, 0.12)),
+    var(--game-ivory);
+  border: 1px solid #fff8ed;
+  border-radius: 7px;
+  box-shadow: inset 0 0 0 1px rgba(70, 39, 25, 0.16);
 
   &.hit {
-    border-color: var(--c-primary);
-    box-shadow: var(--glow-gold);
+    border-color: var(--game-mint);
+    box-shadow:
+      inset 0 0 0 2px rgba(111, 211, 165, 0.7),
+      0 0 12px rgba(111, 211, 165, 0.5);
     animation: win-flash 0.7s ease-out;
   }
 }
 
-.main-btn {
-  background: var(--btn-gold);
-  border: none;
-  border-radius: 6px;
-  color: #1a1224;
-  font-weight: bold;
-  padding: 7px 16px;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 13px;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.4),
-    0 2px 4px rgba(0, 0, 0, 0.35);
-  transition: filter 0.15s, transform 0.1s;
-
-  &:hover:not(:disabled) {
-    filter: brightness(1.12);
-  }
-
-  &:active:not(:disabled) {
-    transform: translateY(1px);
-  }
-
-  &:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-}
-
-.result {
-  text-align: center;
-  font-weight: bold;
-
-  &.win {
-    color: var(--c-success);
-  }
-
-  &.lose {
-    color: var(--c-danger);
-  }
-
-  &.push {
-    color: var(--c-text-muted);
-  }
-}
-
 .paytable {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--c-text-muted);
+  border-top: 1px solid rgba(242, 229, 210, 0.1);
 
   summary {
+    padding: 9px 2px 2px;
+    color: var(--game-ivory);
     cursor: pointer;
-  }
+    font-size: 14px;
 
-  .pay-section {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-top: 6px;
-
-    b {
-      color: var(--c-text);
+    i {
+      color: var(--game-gold);
+      margin-right: 4px;
     }
   }
 
+  .pay-section {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 10px;
+    padding: 11px;
+    background: rgba(242, 229, 210, 0.035);
+    border: 1px solid rgba(214, 166, 74, 0.2);
+    border-radius: 8px;
+
+    b {
+      color: var(--game-gold);
+      font-family: var(--game-display-font);
+      font-size: 14px;
+    }
+  }
+
+  .pay-column {
+    min-width: 0;
+  }
+
+  table {
+    width: 100%;
+    margin-top: 5px;
+    border-collapse: collapse;
+  }
+
   table td {
-    padding: 1px 10px 1px 0;
+    padding: 3px 8px 3px 0;
+    border-bottom: 1px solid rgba(242, 229, 210, 0.06);
+
+    &:last-child {
+      color: var(--game-ivory);
+      text-align: right;
+      white-space: nowrap;
+    }
   }
 
   .pay-note {
-    font-size: 11px;
+    grid-column: 1 / -1;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+}
+
+@media (max-width: 480px) {
+  .machine {
+    padding: 8px;
+  }
+
+  .reel-window {
+    padding: 8px 14px;
+  }
+
+  .grid {
+    width: min(280px, 75vw);
+    gap: 5px;
+  }
+
+  .reel-strip {
+    gap: 5px;
+  }
+
+  .paytable .pay-section {
+    grid-template-columns: 1fr;
+  }
+
+  .paytable .pay-note {
+    grid-column: 1;
   }
 }
 </style>

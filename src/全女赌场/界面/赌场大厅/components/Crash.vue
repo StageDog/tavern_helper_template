@@ -1,43 +1,60 @@
 <template>
   <div class="crash">
-    <div class="display" :class="{ flying, crashed }">
-      <span class="multiplier">×{{ current.toFixed(2) }} <span class="rocket">{{ crashed ? '💥' : '🚀' }}</span></span>
-      <span v-if="crashed" class="crash-tag">砰！火箭炸掉了…</span>
-      <span v-else-if="cashed" class="cash-tag">安全落袋！🎉</span>
-    </div>
-
-    <div class="progress-wrap">
-      <div class="progress-bar">
-        <div class="progress-fill" :class="{ crashed }" :style="{ width: `${progressPercent}%` }"></div>
-        <span class="progress-mark" :style="{ left: `${(MIN_CASHOUT / MAX_DISPLAY) * 100}%` }"></span>
+    <div class="crash-stage" :class="{ flying, crashed, cashed }">
+      <div class="stage-heading">
+        <span>赔率轨道</span>
+        <span class="flight-state">{{ crashed ? '已崩盘' : cashed ? '已落袋' : flying ? '飞行中' : '等待起飞' }}</span>
       </div>
-      <div class="progress-labels">
-        <span>1x</span>
-        <span>{{ MAX_DISPLAY }}x</span>
+
+      <div class="display">
+        <span class="multiplier">×{{ current.toFixed(2) }}</span>
+        <span class="rocket" aria-hidden="true">{{ crashed ? '💥' : cashed ? '🪙' : '🚀' }}</span>
+        <span v-if="crashed" class="crash-tag">火箭炸掉了</span>
+        <span v-else-if="cashed" class="cash-tag">筹码安全落袋</span>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-bar">
+          <div class="progress-fill" :class="{ crashed }" :style="{ width: `${progressPercent}%` }"></div>
+          <span class="progress-mark" :style="{ left: `${(MIN_CASHOUT / MAX_DISPLAY) * 100}%` }"></span>
+        </div>
+        <div class="progress-labels">
+          <span>×1.00</span>
+          <span class="cashout-mark">最低提现 ×{{ MIN_CASHOUT.toFixed(2) }}</span>
+          <span>×{{ MAX_DISPLAY }}</span>
+        </div>
       </div>
     </div>
 
     <div v-if="flying || cashed" class="info-row">
-      <span>下注 <b>{{ bet.toLocaleString() }}</b></span>
-      <span>{{ cashed ? '获利' : '潜在获利' }} <b class="pos">+{{ potentialProfit.toLocaleString() }}</b></span>
+      <span
+        ><small>本局下注</small><b>{{ bet.toLocaleString() }}</b></span
+      >
+      <span
+        ><small>{{ cashed ? '已获利' : '潜在获利' }}</small
+        ><b class="pos">+{{ potentialProfit.toLocaleString() }}</b></span
+      >
     </div>
 
-    <div v-if="resultText" class="result" :class="resultClass">{{ resultText }}</div>
+    <div v-if="resultText" class="game-result-ticket" :class="resultClass">{{ resultText }}</div>
 
     <template v-if="!flying">
       <BetControl v-model="bet" />
-      <button class="main-btn" :disabled="bet <= 0 || bet > wallet.chips.value" @click="start">
-        <i class="fa-solid fa-rocket"></i> 起飞！
+      <button class="game-primary" :disabled="bet <= 0 || bet > wallet.chips.value" @click="start">
+        <i class="fa-solid fa-rocket"></i> 起飞
       </button>
     </template>
-    <button v-else class="main-btn cashout" :disabled="current < MIN_CASHOUT" @click="cashOut">
+    <button v-else class="game-primary cashout" :disabled="current < MIN_CASHOUT" @click="cashOut">
       <i class="fa-solid fa-sack-dollar"></i>
-      {{ current < MIN_CASHOUT ? `到 ×${MIN_CASHOUT.toFixed(2)} 才能提现哦` : `提现 ×${current.toFixed(2)}` }}
+      {{ current < MIN_CASHOUT ? `到 ×${MIN_CASHOUT.toFixed(2)} 才能提现` : `提现 ×${current.toFixed(2)}` }}
     </button>
 
-    <p class="hint">
-      ⚠️ 最低提现倍率 ×1.15 ｜ 3% 概率起飞就炸，任何时候提现期望都是 97%——飞多高全看你的胆量！
-    </p>
+    <div class="rule-strip">
+      <span><b>×1.15</b><small>最低提现</small></span>
+      <span><b>3%</b><small>起飞即爆</small></span>
+      <span><b>97%</b><small>任意倍率期望</small></span>
+    </div>
+    <p class="hint">提现时机不改变期望，飞多高只看你的胆量。</p>
   </div>
 </template>
 
@@ -135,7 +152,63 @@ onUnmounted(() => cancelAnimationFrame(rafId));
 .crash {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+}
+
+.crash-stage {
+  position: relative;
+  overflow: hidden;
+  padding: 12px 14px 14px;
+  background: linear-gradient(180deg, rgba(242, 229, 210, 0.035), transparent 42%), var(--game-felt);
+  border: 1px solid rgba(214, 166, 74, 0.36);
+  border-radius: 10px;
+  box-shadow: inset 0 0 24px rgba(5, 2, 9, 0.35);
+
+  &::after {
+    position: absolute;
+    right: -35px;
+    bottom: 20px;
+    width: 150px;
+    height: 1px;
+    content: '';
+    background: linear-gradient(90deg, transparent, rgba(214, 166, 74, 0.34));
+    transform: rotate(-25deg);
+    transform-origin: right;
+  }
+
+  &.flying .multiplier {
+    color: var(--game-mint);
+    text-shadow: 0 0 16px rgba(111, 211, 165, 0.3);
+  }
+
+  &.crashed .multiplier {
+    color: var(--c-danger);
+  }
+
+  &.cashed {
+    border-color: rgba(111, 211, 165, 0.5);
+  }
+}
+
+.stage-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--c-text-muted);
+  font-family: var(--game-display-font);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+
+.flight-state {
+  padding: 3px 8px;
+  color: var(--game-ivory);
+  background: rgba(242, 229, 210, 0.05);
+  border: 1px solid rgba(242, 229, 210, 0.12);
+  border-radius: 999px;
+  font-family: var(--font-main);
+  font-size: 13px;
+  letter-spacing: 0;
 }
 
 .display {
@@ -143,28 +216,21 @@ onUnmounted(() => cancelAnimationFrame(rafId));
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 16px;
-  background: var(--c-surface);
-  border: 1px solid var(--c-border);
-  border-radius: 8px;
+  gap: 5px;
+  min-height: 122px;
+  padding: 10px;
 
   .multiplier {
-    font-size: 32px;
+    color: var(--game-ivory);
+    font-family: var(--font-led);
+    font-size: clamp(44px, 10vw, 58px);
     font-weight: bold;
-    color: var(--c-text);
+    letter-spacing: -0.04em;
+    line-height: 1;
   }
 
   .rocket {
-    font-size: 24px;
-  }
-
-  &.flying .multiplier {
-    color: var(--c-success);
-  }
-
-  &.crashed .multiplier {
-    color: var(--c-danger);
+    font-size: 25px;
   }
 }
 
@@ -181,22 +247,22 @@ onUnmounted(() => cancelAnimationFrame(rafId));
 .progress-wrap {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 5px;
 }
 
 .progress-bar {
   position: relative;
-  height: 14px;
-  background: var(--c-surface);
-  border: 1px solid var(--c-border);
-  border-radius: 7px;
+  height: 17px;
+  background: repeating-linear-gradient(90deg, transparent 0 9%, rgba(242, 229, 210, 0.1) 9% 9.4%), #0f0915;
+  border: 1px solid rgba(214, 166, 74, 0.34);
+  border-radius: 4px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--c-success), var(--c-primary));
-  box-shadow: var(--glow-green);
+  background: linear-gradient(90deg, #4a9e79, var(--game-mint), var(--game-gold));
+  box-shadow: 0 0 10px rgba(111, 211, 165, 0.3);
   transition: width 0.1s linear;
 
   &.crashed {
@@ -206,73 +272,102 @@ onUnmounted(() => cancelAnimationFrame(rafId));
 
 .progress-mark {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: var(--c-text-muted);
-  opacity: 0.7;
+  top: -2px;
+  bottom: -2px;
+  width: 3px;
+  background: var(--game-ivory);
+  box-shadow: 0 0 5px rgba(242, 229, 210, 0.5);
+  opacity: 0.85;
 }
 
 .progress-labels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  font-size: 13px;
   color: var(--c-text-muted);
+
+  span:last-child {
+    text-align: right;
+  }
+
+  .cashout-mark {
+    color: var(--game-ivory);
+  }
 }
 
 .info-row {
-  display: flex;
-  gap: 16px;
-  font-size: 12px;
-  color: var(--c-text-muted);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+
+  > span {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 10px;
+    background: rgba(242, 229, 210, 0.04);
+    border: 1px solid rgba(242, 229, 210, 0.1);
+    border-radius: 7px;
+  }
+
+  small {
+    color: var(--c-text-muted);
+    font-size: 13px;
+  }
 
   b {
-    color: var(--c-text);
+    color: var(--game-ivory);
+    font-size: 16px;
   }
 
   .pos {
-    color: var(--c-success);
+    color: var(--game-mint);
   }
 }
 
-.main-btn {
-  background: var(--btn-gold);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.35);
-  border: none;
-  border-radius: 6px;
-  color: #1a1224;
-  font-weight: bold;
-  padding: 8px 16px;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 14px;
+.rule-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
 
-  &.cashout {
-    background: var(--btn-green);
+  span {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 8px 4px;
+    background: rgba(242, 229, 210, 0.035);
+    border-top: 1px solid rgba(214, 166, 74, 0.24);
   }
 
-  &:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-}
-
-.result {
-  text-align: center;
-  font-weight: bold;
-
-  &.win {
-    color: var(--c-success);
+  b {
+    color: var(--game-gold);
+    font-family: var(--font-led);
+    font-size: 14px;
   }
 
-  &.lose {
-    color: var(--c-danger);
+  small {
+    color: var(--c-text-muted);
+    font-size: 13px;
   }
 }
 
 .hint {
   margin: 0;
-  font-size: 11px;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
   color: var(--c-text-muted);
+}
+
+@media (max-width: 380px) {
+  .display {
+    min-height: 110px;
+  }
+
+  .progress-labels .cashout-mark {
+    font-size: 13px;
+  }
 }
 </style>

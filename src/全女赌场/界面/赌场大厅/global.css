@@ -1,1 +1,96 @@
 @import url('../../theme.css');
+
+/* 赌场大厅内部的公共游戏控件。限定在 lobby-card，避免改变状态栏和其他界面。 */
+.lobby-card .game-primary,
+.lobby-card .game-secondary {
+  box-sizing: border-box;
+  min-height: 44px;
+  border-radius: 8px;
+  padding: 9px 18px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  transition:
+    filter 0.15s,
+    transform 0.1s,
+    border-color 0.15s;
+}
+
+.lobby-card .game-primary {
+  color: #1a1022;
+  background: linear-gradient(180deg, #efd184 0%, var(--game-gold) 50%, #b77e2c 100%);
+  border: 1px solid #f1cf79;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    0 3px 8px rgba(5, 2, 9, 0.32);
+}
+
+.lobby-card .game-primary.cashout {
+  background: linear-gradient(180deg, #a3e7c8 0%, var(--game-mint) 52%, #48a77d 100%);
+  border-color: #bcebd5;
+}
+
+.lobby-card .game-secondary {
+  color: var(--game-ivory);
+  background: rgba(242, 229, 210, 0.06);
+  border: 1px solid rgba(214, 166, 74, 0.46);
+}
+
+.lobby-card .game-primary:hover:not(:disabled),
+.lobby-card .game-secondary:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.lobby-card .game-primary:active:not(:disabled),
+.lobby-card .game-secondary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.lobby-card .game-primary:disabled,
+.lobby-card .game-secondary:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+  opacity: 0.42;
+}
+
+.lobby-card .game-result-ticket {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px 12px;
+  color: var(--game-ivory);
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0 9px,
+      rgba(242, 229, 210, 0.04) 9px calc(100% - 9px),
+      transparent calc(100% - 9px)
+    ),
+    rgba(8, 4, 12, 0.32);
+  border-top: 1px dashed rgba(242, 229, 210, 0.2);
+  border-bottom: 1px dashed rgba(242, 229, 210, 0.2);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.lobby-card .game-result-ticket.win {
+  color: var(--game-mint);
+}
+
+.lobby-card .game-result-ticket.lose {
+  color: var(--c-danger);
+}
+
+.lobby-card .game-result-ticket.push {
+  color: var(--game-ivory);
+}
+
+@media (max-width: 480px) {
+  .lobby-card .game-primary,
+  .lobby-card .game-secondary {
+    width: 100%;
+  }
+}
