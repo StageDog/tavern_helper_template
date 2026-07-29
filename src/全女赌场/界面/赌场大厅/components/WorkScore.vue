@@ -73,7 +73,7 @@
 
     <footer class="service-footer">
       <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
-      <span>进度由 AI 根据剧情演出自动结算，账房实时同步。</span>
+      <span>浮动档由 AI 按公开程度、参与人数、持续时间与整体强度判定，账房实时同步。</span>
     </footer>
   </div>
 </template>
@@ -84,7 +84,8 @@ import { WORK_PAYOUT_UNIT } from '../wallet';
 const SCORE_ROWS = [
   { level: '前戏', desc: '被客人舔弄、玩弄乳房等', score: 10 },
   { level: '单人插入', desc: '被一位扶她客人插入式行为', score: 20 },
-  { level: '多人插入', desc: '被多位扶她客人同时插入', score: 50 },
+  { level: '多人插入', desc: '被多位扶她客人同时插入', score: 40 },
+  { level: '激烈自定义', desc: '公开调教等高强度玩法，由 AI 按程度判定', score: '60~80' },
 ];
 </script>
 
@@ -370,7 +371,7 @@ const SCORE_ROWS = [
   display: flex;
   align-items: flex-end;
   flex-direction: column;
-  min-width: 47px;
+  min-width: 72px;
 
   b {
     color: var(--pink-soft);
