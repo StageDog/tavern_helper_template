@@ -269,16 +269,6 @@ function setResult(text: string, cls: string) {
 
 .slot > .spin-button {
   margin-top: 6px;
-  color: #24152c;
-  background: linear-gradient(180deg, var(--game-machine-edge) 0%, var(--game-action-alt) 55%, #8f7aaf 100%);
-  border-color: rgba(222, 213, 237, 0.86);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.4),
-    0 3px 8px rgba(5, 2, 9, 0.28);
-
-  &:hover:not(:disabled) {
-    background: linear-gradient(180deg, #e7e0f2 0%, var(--game-action-alt-hover) 55%, #9b88b8 100%);
-  }
 }
 
 .grid {

@@ -31,7 +31,16 @@
             <strong>{{ row.level }}</strong>
             <span>{{ row.desc }}</span>
           </div>
-          <span class="ticket-score"><b>+{{ row.score }}</b><small>进度</small></span>
+          <span class="ticket-score">
+            <b>
+              <span class="score-value">+{{ row.score }}</span>
+              <template v-if="row.scoreMax">
+                <span class="score-range-mark">～</span>
+                <span class="score-value">{{ row.scoreMax }}</span>
+              </template>
+            </b>
+            <small>进度</small>
+          </span>
         </article>
       </div>
     </section>
@@ -81,11 +90,18 @@
 <script setup lang="ts">
 import { WORK_PAYOUT_UNIT } from '../wallet';
 
-const SCORE_ROWS = [
+interface ScoreRow {
+  level: string;
+  desc: string;
+  score: number;
+  scoreMax?: number;
+}
+
+const SCORE_ROWS: ScoreRow[] = [
   { level: '前戏', desc: '被客人舔弄、玩弄乳房等', score: 10 },
   { level: '单人插入', desc: '被一位扶她客人插入式行为', score: 20 },
   { level: '多人插入', desc: '被多位扶她客人同时插入', score: 40 },
-  { level: '激烈自定义', desc: '公开调教等高强度玩法，由 AI 按程度判定', score: '60~80' },
+  { level: '激烈行为', desc: '公开调教等高强度玩法，由 AI 按程度判定', score: 60, scoreMax: 80 },
 ];
 </script>
 
@@ -371,14 +387,29 @@ const SCORE_ROWS = [
   display: flex;
   align-items: flex-end;
   flex-direction: column;
-  min-width: 72px;
+  min-width: 92px;
 
   b {
+    display: inline-flex;
+    align-items: center;
     color: var(--pink-soft);
-    font-family: var(--font-led);
     font-size: 21px;
     line-height: 1;
     text-shadow: 0 0 14px rgba(244, 95, 152, 0.35);
+  }
+
+  .score-value {
+    font-family: var(--font-led);
+  }
+
+  .score-range-mark {
+    margin-inline: 2px;
+    color: var(--pink-soft);
+    font-family: var(--font-main);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    transform: translateY(-1px);
   }
 
   small {
