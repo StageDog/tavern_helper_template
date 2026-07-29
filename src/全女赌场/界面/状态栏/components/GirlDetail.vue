@@ -450,6 +450,10 @@ function handleOrder() {
     outline: 2px solid rgba(213, 164, 73, 0.78);
     outline-offset: 2px;
   }
+
+  > * {
+    flex-shrink: 0;
+  }
 }
 
 .profile-scrollbar {
