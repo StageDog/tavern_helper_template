@@ -76,7 +76,7 @@ const girlCount = computed(() => Object.keys(store.data.群友).length);
   flex-direction: column;
   gap: 12px;
   box-sizing: border-box;
-  width: min(100%, 640px);
+  width: min(100%, 720px);
   margin: 0 auto;
   padding: 14px;
   overflow: hidden;
