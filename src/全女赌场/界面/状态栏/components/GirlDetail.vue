@@ -350,7 +350,7 @@ function handleOrder() {
 .profile-grid {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(150px, 34%) minmax(0, 1fr);
+  grid-template-columns: minmax(180px, 40%) minmax(0, 1fr);
   align-items: start;
   gap: 14px;
 }
@@ -427,7 +427,7 @@ function handleOrder() {
   bottom: 0;
   display: flex;
   box-sizing: border-box;
-  width: calc(66% - 14px);
+  width: calc(60% - 14px);
   flex-direction: column;
   gap: 10px;
   min-width: 0;
