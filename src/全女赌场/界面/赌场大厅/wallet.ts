@@ -1,11 +1,12 @@
 import { useDataStore } from './store';
 
 /** 债务上限：欠到这个数赌场就不再借了（数值草案，随时可调） */
-export const DEBT_LIMIT = 5000;
-/** 借款手续费率：借 1000 到手 1000，记账 1100 */
+export const DEBT_LIMIT = 50000;
+/** 借款手续费率：借 10000 到手 10000，记账 11000 */
 export const LOAN_FEE_RATE = 0.1;
-/** 兔女郎抵债：工作进度满 100 清偿一档的额度 */
-export const REDEMPTION_UNIT = 2500;
+/** 兔女郎工资：工作进度满 100 发放一档的筹码 */
+export const WORK_PAYOUT_UNIT = 25000;
+const LOAN_AMOUNT_STEP = 100;
 
 /**
  * 钱包：所有小游戏/商店统一通过这里读写 MVU 变量。
@@ -55,19 +56,19 @@ export function useWallet() {
 
   /**
    * 向赌场借款：到手 N 筹码，记账 N×(1+手续费)。
-   * 到手金额最低 10 且必须是 10 的倍数；最后一笔允许越过剩余额度，
+   * 到手金额最低 100 且必须是 100 的倍数；最后一笔允许越过剩余额度，
    * 欠债实际写入时封顶到 DEBT_LIMIT，避免永远卡在额度上限前。
    */
   function borrow(amount: number): boolean {
     const principal = Math.round(amount);
     const remainingDebt = DEBT_LIMIT - store.data.主角.欠债;
-    const maxPrincipal = Math.ceil(remainingDebt / (1 + LOAN_FEE_RATE) / 10) * 10;
+    const maxPrincipal = Math.ceil(remainingDebt / (1 + LOAN_FEE_RATE) / LOAN_AMOUNT_STEP) * LOAN_AMOUNT_STEP;
 
     if (
       !Number.isFinite(amount) ||
       amount !== principal ||
-      principal < 10 ||
-      principal % 10 !== 0 ||
+      principal < LOAN_AMOUNT_STEP ||
+      principal % LOAN_AMOUNT_STEP !== 0 ||
       remainingDebt <= 0 ||
       principal > maxPrincipal
     ) {
@@ -101,7 +102,7 @@ export function useWallet() {
     isBunny,
     DEBT_LIMIT,
     LOAN_FEE_RATE,
-    REDEMPTION_UNIT,
+    WORK_PAYOUT_UNIT,
     placeBet,
     payout,
     purchase,

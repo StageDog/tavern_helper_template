@@ -11,7 +11,7 @@ import { useDataStore } from './store';
  */
 export const servicePrices: Record<string, number> = {
   // ─── 在这里填入群友名和对应价格 ───
-  '阿汐': 1000,
+  '阿汐': 10000,
 };
 
 /** 本 session 已点单的群友名（响应式，页面刷新前不会重置） */

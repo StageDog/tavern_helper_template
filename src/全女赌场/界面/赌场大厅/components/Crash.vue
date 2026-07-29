@@ -74,7 +74,7 @@ const MIN_CASHOUT = 1.15; // 最低提现倍率
 const MAX_DISPLAY = 20; // 进度条上限
 
 const wallet = useWallet();
-const bet = ref(100);
+const bet = ref(1000);
 const current = ref(1);
 const flying = ref(false);
 const crashed = ref(false);

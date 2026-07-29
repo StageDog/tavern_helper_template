@@ -18,7 +18,7 @@
     <div v-if="toast" class="toast" :class="toastClass">{{ toast }}</div>
 
     <div v-if="wallet.isBunny.value" class="bunny-panel">
-      <div class="bunny-head">🐰 抵债工作中…</div>
+      <div class="bunny-head">🐰 工作赚钱中…</div>
       <div class="bunny-progress">
         <span class="bunny-label">本档进度</span>
         <div class="debt-bar">
@@ -27,15 +27,15 @@
         <span class="bunny-num">{{ wallet.store.data.主角.兔女郎工作进度 }}/100</span>
       </div>
       <p class="bunny-info">
-        每攒满 100 进度可以抵掉 {{ wallet.REDEMPTION_UNIT.toLocaleString() }} 欠债， 离赎身还要打满
-        <b>{{ unitsLeft }}</b> 档工作…加油哦
+        每攒满 100 进度发放 {{ wallet.WORK_PAYOUT_UNIT.toLocaleString() }} 筹码工资，到账后可在下方直接还款；
+        按当前缺口约需 <b>{{ unitsLeft }}</b> 档工资。
       </p>
     </div>
 
     <div class="amount-panel">
       <div class="amount-heading">
         <span class="amount-title">{{ wallet.isBunny.value ? '还款金额' : '借还金额' }}</span>
-        <span class="amount-rule">10 起 · 仅限 10 的倍数</span>
+        <span class="amount-rule">100 起 · 仅限 100 的倍数</span>
       </div>
       <div class="amount-row">
         <div class="amount-input-wrap">
@@ -64,7 +64,10 @@
           </button>
         </div>
       </div>
-      <span v-if="!validAmount" class="amount-error">请输入 10～5,000 之间、且为 10 倍数的整数。</span>
+      <span v-if="!validAmount" class="amount-error">
+        请输入 {{ MIN_AMOUNT.toLocaleString() }}～{{ wallet.DEBT_LIMIT.toLocaleString() }} 之间、且为
+        {{ AMOUNT_STEP.toLocaleString() }} 倍数的整数。
+      </span>
     </div>
 
     <div v-if="!wallet.isBunny.value" class="fee-preview">
@@ -109,7 +112,8 @@
     </details>
 
     <p class="hint">
-      💡 最后一笔借款会把欠债封顶到 5,000。额度用完、token 又归零时，就会被请去后台换上兔女郎制服抵债啦～
+      💡 最后一笔借款会把欠债封顶到 {{ wallet.DEBT_LIMIT.toLocaleString() }}。额度用完、token
+      又归零时，就会被请去后台换上兔女郎制服抵债啦～
     </p>
   </div>
 </template>
@@ -117,9 +121,9 @@
 <script setup lang="ts">
 import { useWallet } from '../wallet';
 
-const MIN_AMOUNT = 10;
-const AMOUNT_STEP = 10;
-const QUICK = [100, 500, 1000];
+const MIN_AMOUNT = 100;
+const AMOUNT_STEP = 100;
+const QUICK = [1000, 5000, 10000];
 
 // 惩罚等级（按欠债/上限比例）
 const LEVELS = [
@@ -136,7 +140,7 @@ interface LoanRecord {
 }
 
 const wallet = useWallet();
-const amount = ref<number>(500);
+const amount = ref<number>(5000);
 const toast = ref('');
 const toastClass = ref('');
 let toastTimer = 0;
@@ -175,7 +179,9 @@ const fillAmount = computed(() => {
   return maxBorrowAmount.value;
 });
 
-const unitsLeft = computed(() => Math.ceil(wallet.debt.value / wallet.REDEMPTION_UNIT));
+const unitsLeft = computed(() =>
+  Math.ceil(Math.max(0, wallet.debt.value - wallet.chips.value) / wallet.WORK_PAYOUT_UNIT),
+);
 
 function addRecord(type: '借' | '还', recordAmount: number) {
   records.value = [{ type, amount: recordAmount, after: wallet.debt.value }, ...records.value].slice(0, 8);
@@ -197,7 +203,7 @@ function setAmount(value: number) {
 
 function doBorrow() {
   if (!validAmount.value) {
-    showToast('借款金额必须是 10 的倍数。', 'fail');
+    showToast(`借款金额必须是 ${AMOUNT_STEP.toLocaleString()} 的倍数。`, 'fail');
     return;
   }
 
@@ -222,7 +228,7 @@ function doBorrow() {
 
 function doRepay() {
   if (!validAmount.value) {
-    showToast('还款金额必须是 10 的倍数。', 'fail');
+    showToast(`还款金额必须是 ${AMOUNT_STEP.toLocaleString()} 的倍数。`, 'fail');
     return;
   }
 

@@ -40,7 +40,7 @@
 <script setup lang="ts">
 import { useCountUp } from '../../countup';
 import { lobby_entries } from './games';
-import { REDEMPTION_UNIT, useWallet } from './wallet';
+import { useWallet, WORK_PAYOUT_UNIT } from './wallet';
 
 const wallet = useWallet();
 const chipsRoll = useCountUp(() => wallet.chips.value);
@@ -57,16 +57,17 @@ watch(
   () => wallet.checkBankruptcy(),
 );
 
-// ── 抵债环（全局单实例，不放 Loan.vue 以免 tab 未打开时失效） ──
-// 工作进度满 100 → 自动清偿一档欠债、进度归零
+// ── 发薪环（全局单实例，不放 Loan.vue 以免 tab 未打开时失效） ──
+// 工作进度满 100 → 自动发放一档筹码工资、进度归零；欠债仍需主动偿还
 watch(
   () => wallet.store.data.主角.兔女郎工作进度,
   progress => {
     if (wallet.isBunny.value && progress >= 100) {
-      const cleared = Math.min(REDEMPTION_UNIT, wallet.store.data.主角.欠债);
-      wallet.store.data.主角.欠债 -= cleared;
+      wallet.store.data.主角.筹码 += WORK_PAYOUT_UNIT;
       wallet.store.data.主角.兔女郎工作进度 = 0;
-      wallet.pushEvent(`抵债：兔女郎工作抵满一档，清偿欠债${cleared}，剩余欠债${wallet.store.data.主角.欠债}`);
+      wallet.pushEvent(
+        `发薪：兔女郎工作进度满档，发放工资${WORK_PAYOUT_UNIT}筹码，当前筹码${wallet.store.data.主角.筹码}，当前欠债${wallet.store.data.主角.欠债}`,
+      );
     }
   },
 );

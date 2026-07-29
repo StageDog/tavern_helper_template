@@ -12,7 +12,7 @@
           <p>兔女郎工作计分契约</p>
         </div>
       </div>
-      <p class="cover-copy">每一次服务都记入当班账目，完成演出即可累积抵债进度。</p>
+      <p class="cover-copy">每一次服务都记入当班账目，完成演出即可累积工作进度。</p>
     </header>
 
     <section class="score-book" aria-labelledby="score-book-title">
@@ -55,8 +55,10 @@
         <div class="settle-note payoff">
           <span class="note-icon"><i class="fa-solid fa-stamp"></i></span>
           <div>
-            <strong>每满 100 自动抵债</strong>
-            <p>清偿 <b>{{ REDEMPTION_UNIT.toLocaleString() }}</b> 欠债后，进度归零并开始下一档。</p>
+            <strong>每满 100 自动发薪</strong>
+            <p>
+              发放 <b>{{ WORK_PAYOUT_UNIT.toLocaleString() }}</b> 筹码工资，进度归零并开始下一档；到账后可去前台还债。
+            </p>
           </div>
         </div>
         <div class="settle-note penalty">
@@ -77,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-import { REDEMPTION_UNIT } from '../wallet';
+import { WORK_PAYOUT_UNIT } from '../wallet';
 
 const SCORE_ROWS = [
   { level: '前戏', desc: '被客人舔弄、玩弄乳房等', score: 10 },

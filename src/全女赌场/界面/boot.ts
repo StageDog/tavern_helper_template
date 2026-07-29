@@ -2,6 +2,8 @@ import { INITIAL_STAT_DATA } from '../initial-data';
 import { Schema } from '../schema';
 
 const MVU_READY_TIMEOUT_MS = 10_000;
+const CURRENT_ECONOMY_VERSION = 2;
+const ECONOMY_INFLATION_MULTIPLIER = 10;
 
 function getHost(): HTMLElement {
   const host = document.querySelector<HTMLElement>('#app');
@@ -61,11 +63,36 @@ export async function prepareMvuInterface(): Promise<void> {
   const mvuData = Mvu.getMvuData(option);
   const currentStatData = _.get(mvuData, 'stat_data', {});
   const currentResult = Schema.safeParse(currentStatData);
+  const hasExistingEconomy =
+    _.has(currentStatData, '主角.筹码') || _.has(currentStatData, '主角.欠债');
+  const storedEconomyVersion = Number(_.get(currentStatData, '主角.$经济版本', 1));
+  let nextStatData = currentResult.success
+    ? currentResult.data
+    : Schema.parse(_.merge({}, INITIAL_STAT_DATA, currentStatData), { reportInput: true });
+  let shouldReplace = !currentResult.success;
 
   if (!currentResult.success) {
     renderMessage('兔窟赌场前端启动中', '检测到变量缺失，正在按角色卡初始值安全补齐…');
-    const repairedStatData = Schema.parse(_.merge({}, INITIAL_STAT_DATA, currentStatData), { reportInput: true });
-    await Mvu.replaceMvuData({ ...mvuData, stat_data: repairedStatData }, option);
+  }
+
+  if (hasExistingEconomy && storedEconomyVersion < CURRENT_ECONOMY_VERSION) {
+    renderMessage('兔窟赌场前端启动中', '检测到旧版经济存档，正在执行一次性面额升级…');
+    nextStatData = {
+      ...nextStatData,
+      主角: {
+        ...nextStatData.主角,
+        筹码: nextStatData.主角.筹码 * ECONOMY_INFLATION_MULTIPLIER,
+        欠债: nextStatData.主角.欠债 * ECONOMY_INFLATION_MULTIPLIER,
+        $经济版本: CURRENT_ECONOMY_VERSION,
+      },
+    };
+    shouldReplace = true;
+  } else if (!hasExistingEconomy) {
+    nextStatData.主角.$经济版本 = CURRENT_ECONOMY_VERSION;
+  }
+
+  if (shouldReplace) {
+    await Mvu.replaceMvuData({ ...mvuData, stat_data: Schema.parse(nextStatData) }, option);
   }
 }
 

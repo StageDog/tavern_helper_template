@@ -13,6 +13,10 @@
           "default": 0,
           "type": "number"
         },
+        "$经济版本": {
+          "default": 1,
+          "type": "number"
+        },
         "身份状态": {
           "default": "赌客",
           "type": "string",

@@ -100,7 +100,7 @@ interface Card {
 }
 
 const wallet = useWallet();
-const bet = ref(100);
+const bet = ref(1000);
 const phase = ref<'bet' | 'player' | 'done'>('bet');
 const player = ref<Card[]>([]);
 const dealer = ref<Card[]>([]);

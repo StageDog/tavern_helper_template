@@ -9,7 +9,7 @@
         <button class="adj" aria-label="减少下注" :disabled="disabled" @click="adjust(-step)">−</button>
         <label>
           <span class="sr-only">下注金额</span>
-          <input v-model.number="amount" type="number" :disabled="disabled" min="1" />
+          <input v-model.number="amount" type="number" :disabled="disabled" min="10" />
         </label>
         <button class="adj" aria-label="增加下注" :disabled="disabled" @click="adjust(step)">＋</button>
       </div>
@@ -29,21 +29,21 @@ const amount = defineModel<number>({ required: true });
 defineProps<{ disabled?: boolean }>();
 
 const wallet = useWallet();
-const step = 50;
+const step = 500;
 
 const quicks = [
-  { label: '100', value: () => 100 },
-  { label: '500', value: () => 500 },
+  { label: '1,000', value: () => 1000 },
+  { label: '5,000', value: () => 5000 },
   { label: '半仓', value: () => Math.floor(wallet.chips.value / 2) },
   { label: '梭哈', value: () => wallet.chips.value },
 ];
 
 function adjust(delta: number) {
-  amount.value = _.clamp((amount.value || 0) + delta, 1, Math.max(1, wallet.chips.value));
+  amount.value = _.clamp((amount.value || 0) + delta, 10, Math.max(10, wallet.chips.value));
 }
 
 function setQuick(q: (typeof quicks)[number]) {
-  amount.value = Math.max(1, q.value());
+  amount.value = Math.max(10, q.value());
 }
 </script>
 

@@ -2,8 +2,9 @@ import type { Schema as SchemaData } from './schema';
 
 export const INITIAL_STAT_DATA = {
   主角: {
-    筹码: 5000,
+    筹码: 50000,
     欠债: 0,
+    $经济版本: 2,
     身份状态: '赌客',
     扶她化状态: '无',
     兔女郎工作进度: 0,

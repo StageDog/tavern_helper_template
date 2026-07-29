@@ -101,7 +101,7 @@ const LINES: { cells: [number, number, number]; multiplier: number }[] = [
 const FULLSCREEN_MULTIPLIER = 250;
 
 const wallet = useWallet();
-const bet = ref(100);
+const bet = ref(1000);
 const display = ref<string[]>(['7️⃣', '🍀', '💎', '🔔', '🍒', '🍇', '🍉', '🍋', '7️⃣']);
 const spinning = ref(false);
 const resultText = ref('');

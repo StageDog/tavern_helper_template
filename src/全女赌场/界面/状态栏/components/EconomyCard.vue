@@ -29,7 +29,7 @@
           aria-label="欠债额度"
           :aria-valuenow="store.data.主角.欠债"
           aria-valuemin="0"
-          aria-valuemax="5000"
+          aria-valuemax="50000"
         >
           <span :style="{ width: `${debtRatio * 100}%` }"></span>
         </div>
@@ -109,7 +109,7 @@ import { useDataStore } from '../store';
 const store = useDataStore();
 const isBunny = computed(() => store.data.主角.身份状态 === '兔女郎');
 const isFuta = computed(() => store.data.主角.扶她化状态 === '生效中');
-const debtRatio = computed(() => Math.min(store.data.主角.欠债 / 5000, 1));
+const debtRatio = computed(() => Math.min(store.data.主角.欠债 / 50000, 1));
 
 const chips = useCountUp(() => store.data.主角.筹码);
 const debt = useCountUp(() => store.data.主角.欠债);
