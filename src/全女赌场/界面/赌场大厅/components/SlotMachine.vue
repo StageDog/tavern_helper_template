@@ -6,7 +6,7 @@
         <small>三列 · 八线</small>
       </div>
       <div class="reel-window">
-        <div class="grid">
+        <div class="grid" :class="{ 'has-win': hitCells.size > 0 }">
           <!-- 按 3 列组织：每列一条纵向滚动带，依次停轮 -->
           <div v-for="col in 3" :key="col" class="reel-col" :class="{ rolling: rollingCols[col - 1] }">
             <div class="reel-strip" :style="rollingCols[col - 1] ? {} : { transform: 'translateY(0)' }">
@@ -277,6 +277,11 @@ function setResult(text: string, cls: string) {
   gap: 7px;
   width: min(300px, 74vw);
   margin: 0 auto;
+
+  &.has-win .cell:not(.hit) {
+    filter: grayscale(0.68) saturate(0.42) brightness(0.4);
+    opacity: 0.7;
+  }
 }
 
 .reel-col {
@@ -310,6 +315,7 @@ function setResult(text: string, cls: string) {
 }
 
 .cell {
+  position: relative;
   aspect-ratio: 1;
   display: flex;
   align-items: center;
@@ -322,17 +328,23 @@ function setResult(text: string, cls: string) {
   border: 1px solid #fff8ed;
   border-radius: 7px;
   box-shadow: inset 0 0 0 1px rgba(70, 39, 25, 0.16);
+  transition:
+    filter 0.24s ease,
+    opacity 0.24s ease,
+    border-color 0.24s ease,
+    box-shadow 0.24s ease;
 
   &.hit {
+    z-index: 1;
     border: 2px solid var(--game-mint);
     background:
-      linear-gradient(rgba(111, 211, 165, 0.12), rgba(111, 211, 165, 0.12)),
+      linear-gradient(rgba(111, 211, 165, 0.08), rgba(111, 211, 165, 0.08)),
       linear-gradient(180deg, rgba(255, 255, 255, 0.7), transparent 28%, transparent 72%, rgba(81, 52, 36, 0.12)),
       var(--game-ivory);
     box-shadow:
-      inset 0 0 0 2px rgba(244, 255, 250, 0.88),
-      0 0 0 2px rgba(111, 211, 165, 0.34),
-      0 0 14px rgba(111, 211, 165, 0.58);
+      inset 0 0 0 2px rgba(250, 255, 252, 0.96),
+      0 0 0 2px rgba(111, 211, 165, 0.46),
+      0 0 18px rgba(111, 211, 165, 0.68);
     animation: win-flash 0.7s ease-out;
   }
 }
